@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8f9fa;
+  --foreground: #1a1a2e;
+  --primary: #6a2c91;
+  --primary-light: #8c52a7;
+  --primary-dark: #4a1d63;
+  --secondary: #3f3b6c;
+  --accent: #7b2cbf;
+  --neutral: #e2e8f0;
+  --neutral-dark: #94a3b8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-neutral: var(--neutral);
+  --color-neutral-dark: var(--neutral-dark);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f1a;
+    --foreground: #f0f0f0;
+    --primary: #9d4edd;
+    --primary-light: #c77dff;
+    --primary-dark: #7b2cbf;
+    --secondary: #5a189a;
+    --accent: #e0aaff;
+    --neutral: #1e293b;
+    --neutral-dark: #334155;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Estilo de scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--neutral);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Animação de estrelas para o tema espacial */
+.stars-container {
+  overflow: hidden;
+}
+
+.stars, .stars2, .stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stars {
+  background: transparent url('/stars1.png') repeat top center;
+  z-index: -3;
+  animation: move-stars 100s linear infinite;
+}
+
+.stars2 {
+  background: transparent url('/stars2.png') repeat top center;
+  z-index: -2;
+  animation: move-stars 150s linear infinite;
+}
+
+.stars3 {
+  background: transparent url('/stars3.png') repeat top center;
+  z-index: -1;
+  animation: move-stars 200s linear infinite;
+}
+
+@keyframes move-stars {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 10000px 5000px;
+  }
+}
