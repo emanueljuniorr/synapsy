@@ -3,10 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDashboardData } from '@/lib/firestore';
+import { Task, Note, Event, StudyTopic } from '@/types';
+import { formatDate } from '@/lib/utils';
+
+interface DashboardData {
+  tasks: Task[];
+  notes: Note[];
+  events: Event[];
+  studyTopics: StudyTopic[];
+  counts: {
+    pendingTasks: number;
+    totalNotes: number;
+    upcomingEvents: number;
+  };
+}
 
 // Componente Dashboard
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   
@@ -14,15 +30,26 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
-    } else {
-      // Simular carregamento de dados
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
+      return;
     }
-  }, [isAuthenticated, authLoading, router]);
+    
+    // Buscar dados do dashboard quando o usuário estiver autenticado
+    if (isAuthenticated && user) {
+      const fetchDashboardData = async () => {
+        try {
+          setIsLoading(true);
+          const data = await getDashboardData(user.id);
+          setDashboardData(data);
+        } catch (error) {
+          console.error('Erro ao buscar dados do dashboard:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchDashboardData();
+    }
+  }, [isAuthenticated, authLoading, router, user]);
   
   // Se estiver carregando, mostrar um indicador
   if (authLoading || isLoading) {
@@ -32,6 +59,36 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+  // Contar tarefas para hoje
+  const countTasksForToday = () => {
+    if (!dashboardData?.tasks.length) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    return dashboardData.tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      return dueDate >= today && dueDate < tomorrow;
+    }).length;
+  };
+  
+  // Contar notas criadas esta semana
+  const countNotesThisWeek = () => {
+    if (!dashboardData?.notes.length) return 0;
+    
+    const today = new Date();
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    return dashboardData.notes.filter(note => {
+      const createdDate = new Date(note.createdAt);
+      return createdDate >= oneWeekAgo;
+    }).length;
+  };
   
   return (
     <div className="min-h-screen bg-background">
@@ -47,15 +104,6 @@ export default function DashboardPage() {
                 Synapsy
               </span>
             </div>
-            
-            {/* Menu de navegação */}
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="/dashboard" className="text-primary font-medium">Dashboard</a>
-              <a href="/tasks" className="text-foreground/70 hover:text-primary transition-colors">Tarefas</a>
-              <a href="/notes" className="text-foreground/70 hover:text-primary transition-colors">Anotações</a>
-              <a href="/calendar" className="text-foreground/70 hover:text-primary transition-colors">Calendário</a>
-              <a href="/study" className="text-foreground/70 hover:text-primary transition-colors">Estudos</a>
-            </nav>
             
             {/* Perfil do usuário */}
             <div className="flex items-center gap-2">
@@ -94,12 +142,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-3xl font-bold">5</span>
+                <span className="text-3xl font-bold">{dashboardData?.counts.pendingTasks || 0}</span>
                 <span className="text-foreground/60 text-sm ml-2">pendentes</span>
               </div>
               <div className="text-right">
                 <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  2 para hoje
+                  {countTasksForToday()} para hoje
                 </span>
               </div>
             </div>
@@ -117,12 +165,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-3xl font-bold">12</span>
+                <span className="text-3xl font-bold">{dashboardData?.counts.totalNotes || 0}</span>
                 <span className="text-foreground/60 text-sm ml-2">total</span>
               </div>
               <div className="text-right">
                 <span className="text-sm bg-accent/10 text-accent px-2 py-1 rounded-full">
-                  +3 esta semana
+                  +{countNotesThisWeek()} esta semana
                 </span>
               </div>
             </div>
@@ -140,12 +188,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-3xl font-bold">2</span>
+                <span className="text-3xl font-bold">{dashboardData?.counts.upcomingEvents || 0}</span>
                 <span className="text-foreground/60 text-sm ml-2">próximos</span>
               </div>
               <div className="text-right">
                 <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  1 amanhã
+                  {dashboardData?.events.length ? 1 : 0} amanhã
                 </span>
               </div>
             </div>
@@ -163,12 +211,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-3xl font-bold">8</span>
+                <span className="text-3xl font-bold">{dashboardData?.studyTopics.length || 0}</span>
                 <span className="text-foreground/60 text-sm ml-2">tópicos</span>
               </div>
               <div className="text-right">
                 <span className="text-sm bg-accent/10 text-accent px-2 py-1 rounded-full">
-                  80% completo
+                  {dashboardData?.studyTopics[0]?.progress || 0}% completo
                 </span>
               </div>
             </div>
@@ -183,26 +231,30 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-neutral rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold">Tarefas recentes</h2>
-                <a href="/tasks" className="text-primary text-sm hover:underline">Ver todas</a>
+                <button onClick={() => router.push('/tasks')} className="text-primary text-sm hover:underline">Ver todas</button>
               </div>
               
               <div className="space-y-3">
-                {[
-                  { id: 1, title: 'Finalizar relatório mensal', priority: 'high', due: 'Hoje, 18:00' },
-                  { id: 2, title: 'Preparar apresentação para reunião', priority: 'medium', due: 'Amanhã, 10:00' },
-                  { id: 3, title: 'Revisar documentação do projeto', priority: 'low', due: 'Em 2 dias' },
-                ].map(task => (
-                  <div key={task.id} className="flex items-center justify-between p-3 border border-neutral/20 rounded-lg hover:bg-neutral/5 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        task.priority === 'high' ? 'bg-red-500' : 
-                        task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}></div>
-                      <span>{task.title}</span>
+                {dashboardData?.tasks && dashboardData.tasks.length > 0 ? (
+                  dashboardData.tasks.map(task => (
+                    <div key={task.id} className="flex items-center justify-between p-3 border border-neutral/20 rounded-lg hover:bg-neutral/5 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          task.priority === 'high' ? 'bg-red-500' : 
+                          task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                        }`}></div>
+                        <span>{task.title}</span>
+                      </div>
+                      <span className="text-sm text-foreground/60">
+                        {task.dueDate ? formatDate(task.dueDate) : 'Sem data'}
+                      </span>
                     </div>
-                    <span className="text-sm text-foreground/60">{task.due}</span>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-foreground/60">
+                    Nenhuma tarefa pendente
                   </div>
-                ))}
+                )}
               </div>
             </div>
             
@@ -210,20 +262,27 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-neutral rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold">Anotações recentes</h2>
-                <a href="/notes" className="text-primary text-sm hover:underline">Ver todas</a>
+                <button onClick={() => router.push('/notes')} className="text-primary text-sm hover:underline">Ver todas</button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { id: 1, title: 'Ideias para novos projetos', excerpt: 'Lista de possíveis projetos para o próximo trimestre...', updated: 'Hoje' },
-                  { id: 2, title: 'Resumo da reunião semanal', excerpt: 'Pontos discutidos: orçamento, cronograma e recursos...', updated: 'Ontem' },
-                ].map(note => (
-                  <div key={note.id} className="p-4 border border-neutral/20 rounded-lg hover:bg-neutral/5 transition-colors">
-                    <h3 className="font-medium mb-2">{note.title}</h3>
-                    <p className="text-sm text-foreground/70 mb-3 line-clamp-2">{note.excerpt}</p>
-                    <span className="text-xs text-foreground/60">Atualizado: {note.updated}</span>
+                {dashboardData?.notes && dashboardData.notes.length > 0 ? (
+                  dashboardData.notes.map(note => (
+                    <div key={note.id} className="p-4 border border-neutral/20 rounded-lg hover:bg-neutral/5 transition-colors">
+                      <h3 className="font-medium mb-2">{note.title}</h3>
+                      <p className="text-sm text-foreground/70 mb-3 line-clamp-2">
+                        {note.content}
+                      </p>
+                      <span className="text-xs text-foreground/60">
+                        Atualizado: {formatDate(note.updatedAt)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-4 text-foreground/60">
+                    Nenhuma anotação encontrada
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -234,22 +293,28 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-neutral rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold">Próximos eventos</h2>
-                <a href="/calendar" className="text-primary text-sm hover:underline">Calendário</a>
+                <button onClick={() => router.push('/calendar')} className="text-primary text-sm hover:underline">Calendário</button>
               </div>
               
               <div className="space-y-4">
-                {[
-                  { id: 1, title: 'Reunião de equipe', date: 'Hoje, 14:00 - 15:30', location: 'Sala de reuniões' },
-                  { id: 2, title: 'Deadline do projeto Alpha', date: 'Amanhã, 18:00', location: null },
-                ].map(event => (
-                  <div key={event.id} className="border-l-4 border-primary pl-3">
-                    <h3 className="font-medium">{event.title}</h3>
-                    <p className="text-sm text-foreground/70">{event.date}</p>
-                    {event.location && (
-                      <p className="text-xs text-foreground/60">{event.location}</p>
-                    )}
+                {dashboardData?.events && dashboardData.events.length > 0 ? (
+                  dashboardData.events.map(event => (
+                    <div key={event.id} className="border-l-4 border-primary pl-3">
+                      <h3 className="font-medium">{event.title}</h3>
+                      <p className="text-sm text-foreground/70">
+                        {formatDate(event.startDate)}
+                        {event.isFullDay ? '' : ` ${new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                      </p>
+                      {event.location && (
+                        <p className="text-xs text-foreground/60">{event.location}</p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-foreground/60">
+                    Nenhum evento próximo
                   </div>
-                ))}
+                )}
               </div>
             </div>
             
@@ -257,25 +322,27 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-neutral rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold">Progresso de estudos</h2>
-                <a href="/study" className="text-primary text-sm hover:underline">Ver detalhes</a>
+                <button onClick={() => router.push('/study')} className="text-primary text-sm hover:underline">Ver detalhes</button>
               </div>
               
               <div className="space-y-4">
-                {[
-                  { id: 1, title: 'Desenvolvimento Web Avançado', progress: 80 },
-                  { id: 2, title: 'Gestão de Projetos', progress: 60 },
-                  { id: 3, title: 'Inteligência Artificial', progress: 30 },
-                ].map(topic => (
-                  <div key={topic.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">{topic.title}</span>
-                      <span className="text-xs font-medium">{topic.progress}%</span>
+                {dashboardData?.studyTopics && dashboardData.studyTopics.length > 0 ? (
+                  dashboardData.studyTopics.map(topic => (
+                    <div key={topic.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{topic.title}</span>
+                        <span className="text-xs font-medium">{topic.progress}%</span>
+                      </div>
+                      <div className="w-full bg-neutral/30 rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: `${topic.progress}%` }}></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-neutral/30 rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full" style={{ width: `${topic.progress}%` }}></div>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-foreground/60">
+                    Nenhum tópico de estudo encontrado
                   </div>
-                ))}
+                )}
               </div>
             </div>
             
@@ -285,7 +352,7 @@ export default function DashboardPage() {
               <p className="text-sm text-foreground/80 mb-4">
                 Você sabia que pode vincular tarefas a anotações para manter tudo organizado? Experimente clicar no botão de conexão ao criar uma nova tarefa!
               </p>
-              <a href="/help" className="text-primary text-sm font-medium hover:underline">Ver mais dicas</a>
+              <button onClick={() => router.push('/help')} className="text-primary text-sm font-medium hover:underline">Ver mais dicas</button>
             </div>
           </div>
         </div>
