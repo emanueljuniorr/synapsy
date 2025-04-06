@@ -1,40 +1,27 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import './globals.css'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { AuthProvider } from '@/contexts/AuthContext'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Synapsy - Sua IDE para produtividade e estudos",
-  description: "Uma plataforma focada em produtividade, planejamento e um ambiente de estudos, concentração e foco.",
-  keywords: ["produtividade", "estudos", "planejamento", "concentração", "foco", "tarefas", "anotações"],
-};
+  title: 'Synapsy - Conecte Ideias e Atividades',
+  description: 'Plataforma de produtividade para gerenciar tarefas, notas, calendário e estudos de forma integrada',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="pt-BR">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-background to-background via-neutral/10`}
-      >
-        <div className="stars-container fixed inset-0 z-[-1] opacity-30 pointer-events-none">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
-        </div>
-        {children}
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
-  );
+  )
 }

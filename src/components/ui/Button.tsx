@@ -1,58 +1,56 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { VariantProps, cva } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-interface ButtonProps {
-  children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  icon?: ReactNode;
+// Definindo as variantes do botão
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-neutral/20 hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3',
+        lg: 'h-11 rounded-md px-8',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+// Interface para as props do botão
+export interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
 }
 
-function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  className = '',
-  onClick,
-  disabled = false,
-  type = 'button',
-  icon,
-}: ButtonProps) {
-  const baseStyles = 'flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50';
-  
-  const variantStyles = {
-    primary: 'bg-primary text-white hover:bg-primary-dark',
-    secondary: 'bg-secondary text-white hover:bg-secondary/80',
-    outline: 'bg-transparent border border-primary text-primary hover:bg-primary/10',
-    ghost: 'bg-transparent text-primary hover:bg-primary/10',
-  };
-  
-  const sizeStyles = {
-    sm: 'text-xs px-3 py-1.5',
-    md: 'text-sm px-4 py-2',
-    lg: 'text-base px-6 py-3',
-  };
-  
-  const disabledStyles = disabled 
-    ? 'opacity-50 cursor-not-allowed' 
-    : 'cursor-pointer';
+// Componente Button com referência encaminhada
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
 
-  return (
-    <button
-      type={type}
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${className}`}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {icon && <span className="button-icon">{icon}</span>}
-      {children}
-    </button>
-  );
-}
+Button.displayName = 'Button';
 
 export default Button; 
