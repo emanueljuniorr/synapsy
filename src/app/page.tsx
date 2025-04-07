@@ -303,7 +303,10 @@ export default function Home() {
             </div>
             
             {/* Plano Teams */}
-            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg">
+            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg relative overflow-hidden">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-neutral text-white px-4 py-1 rounded-full text-sm font-medium">
+                Em breve
+              </div>
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold">Teams</h3>
                 <div className="mt-2 text-3xl font-bold">R$ 49,90</div>
@@ -343,9 +346,11 @@ export default function Home() {
                 </li>
               </ul>
               
-              <Link href="/auth/register" className="block text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors">
-                Contato para equipes
-              </Link>
+              <div className="block text-center py-2 px-4 border border-neutral/30 text-foreground/60 rounded-lg cursor-not-allowed bg-neutral/5">
+                Disponível em breve
+              </div>
+              
+              <div className="absolute -right-12 -bottom-12 w-32 h-32 bg-neutral/10 rounded-full"></div>
             </div>
           </div>
         </section>
