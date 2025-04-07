@@ -144,7 +144,7 @@ function Header() {
                   <p className="text-xs text-foreground/70 truncate">{user.email}</p>
                 </div>
                 <div>
-                  <a 
+                  <Link 
                     href="/dashboard" 
                     className="user-menu-item flex items-center gap-2 px-4 py-2 hover:bg-neutral/10"
                     onClick={() => setUserMenuOpen(false)}
@@ -155,7 +155,7 @@ function Header() {
                       <line x1="9" y1="21" x2="9" y2="9"></line>
                     </svg>
                     Dashboard
-                  </a>
+                  </Link>
                   <Link 
                     href="/settings" 
                     className="user-menu-item"
@@ -213,7 +213,7 @@ function Header() {
                     <p className="text-xs text-foreground/70 truncate">{user.email}</p>
                   </div>
                   <div>
-                    <a 
+                    <Link 
                       href="/dashboard" 
                       className="user-menu-item flex items-center gap-2 px-4 py-2 hover:bg-neutral/10"
                       onClick={() => setUserMenuOpen(false)}
@@ -224,7 +224,7 @@ function Header() {
                         <line x1="9" y1="21" x2="9" y2="9"></line>
                       </svg>
                       Dashboard
-                    </a>
+                    </Link>
                     <Link 
                       href="/settings" 
                       className="user-menu-item"
