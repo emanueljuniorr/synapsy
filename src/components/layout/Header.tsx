@@ -4,12 +4,15 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter, usePathname } from 'next/navigation';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Fechar o menu quando clicar fora dele
   useEffect(() => {
@@ -40,6 +43,27 @@ function Header() {
     }
   };
 
+  // Função para lidar com rolagem suave para seções
+  const scrollToSection = (sectionId: string) => {
+    // Fechar o menu mobile se estiver aberto
+    setMobileMenuOpen(false);
+    
+    // Se não estivermos na página inicial, navegue para a página inicial com o hash
+    if (pathname !== '/') {
+      router.push(`/${sectionId}`);
+      return;
+    }
+    
+    // Se estivermos na página inicial, role suavemente até a seção
+    const section = document.getElementById(sectionId.replace('#', ''));
+    if (section) {
+      window.scrollTo({
+        top: section.offsetTop - 80, // 80px de offset para considerar o header fixo
+        behavior: 'smooth',
+      });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-neutral/20">
       <div className="container mx-auto px-4 flex justify-between items-center h-16">
@@ -56,24 +80,24 @@ function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4">
-          <Link 
-            href="/about" 
+          <button 
+            onClick={() => scrollToSection('#about')} 
             className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
           >
             Sobre
-          </Link>
-          <Link 
-            href="/features" 
+          </button>
+          <button 
+            onClick={() => scrollToSection('#features')} 
             className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
           >
             Recursos
-          </Link>
-          <Link 
-            href="/pricing" 
+          </button>
+          <button 
+            onClick={() => scrollToSection('#pricing')} 
             className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
           >
             Preços
-          </Link>
+          </button>
           
           {!isLoading && !isAuthenticated ? (
             <>
@@ -254,27 +278,24 @@ function Header() {
         <div className="md:hidden bg-background border-b border-neutral/20">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
-              <Link 
-                href="/about" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              <button
+                onClick={() => scrollToSection('#about')}
+                className="px-4 py-2 text-left text-foreground/80 font-medium hover:text-primary transition-colors"
               >
                 Sobre
-              </Link>
-              <Link 
-                href="/features" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              </button>
+              <button 
+                onClick={() => scrollToSection('#features')}
+                className="px-4 py-2 text-left text-foreground/80 font-medium hover:text-primary transition-colors"
               >
                 Recursos
-              </Link>
-              <Link 
-                href="/pricing" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              </button>
+              <button 
+                onClick={() => scrollToSection('#pricing')}
+                className="px-4 py-2 text-left text-foreground/80 font-medium hover:text-primary transition-colors"
               >
                 Preços
-              </Link>
+              </button>
               
               {!isLoading && !isAuthenticated ? (
                 <>

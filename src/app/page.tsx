@@ -59,8 +59,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Marca seção espacial */}
-        <section className="py-16 relative overflow-hidden">
+        {/* About Section */}
+        <section id="about" className="py-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-background to-primary/10 opacity-70"></div>
           <div className="absolute inset-0">
             {/* Estrelas */}
@@ -134,6 +134,18 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            
+            <div className="mt-16 text-left">
+              <h3 className="text-2xl font-bold mb-4">Quem Somos</h3>
+              <p className="text-lg text-foreground/80 mb-6">
+                Somos uma equipe de desenvolvedores e entusiastas de produtividade que acredita no poder da organização para desbloquear o potencial humano. 
+                O Synapsy nasceu da nossa própria necessidade de ter um sistema integrado para gerenciar estudos, tarefas e planejamento.
+              </p>
+              <p className="text-lg text-foreground/80">
+                Nossa missão é criar ferramentas que realmente ajudem as pessoas a organizarem seus pensamentos, compromissos e conhecimentos, 
+                tudo em um ambiente inspirador e intuitivo que incentive o crescimento pessoal e profissional.
+              </p>
+            </div>
           </div>
         </section>
         
@@ -191,6 +203,150 @@ export default function Home() {
               }
               href="/auth/login"
             />
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="py-16">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Planos e Preços
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Plano Free */}
+            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold">Free</h3>
+                <div className="mt-2 text-3xl font-bold">R$ 0</div>
+                <div className="text-sm text-foreground/60">Para sempre</div>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Gerenciamento básico de tarefas
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Anotações em Markdown
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Calendário básico
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Limite de 50 notas
+                </li>
+              </ul>
+              
+              <Link href="/auth/register" className="block text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                Começar grátis
+              </Link>
+            </div>
+            
+            {/* Plano Pro */}
+            <div className="border-2 border-primary rounded-xl p-6 bg-white/5 backdrop-blur-sm shadow-lg relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                Mais popular
+              </div>
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold">Pro</h3>
+                <div className="mt-2 text-3xl font-bold">R$ 19,90</div>
+                <div className="text-sm text-foreground/60">por mês</div>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Tudo do plano Free
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Tarefas e notas ilimitadas
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Gráficos de conhecimento
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Flashcards e revisão espaçada
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Temas personalizados
+                </li>
+              </ul>
+              
+              <Link href="/auth/register" className="block text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                Assinar agora
+              </Link>
+            </div>
+            
+            {/* Plano Teams */}
+            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold">Teams</h3>
+                <div className="mt-2 text-3xl font-bold">R$ 49,90</div>
+                <div className="text-sm text-foreground/60">por mês, até 5 membros</div>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Tudo do plano Pro
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Colaboração em tempo real
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Controle de permissões
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Histórico de versões completo
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Suporte prioritário
+                </li>
+              </ul>
+              
+              <Link href="/auth/register" className="block text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors">
+                Contato para equipes
+              </Link>
+            </div>
           </div>
         </section>
 
