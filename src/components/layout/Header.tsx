@@ -56,6 +56,25 @@ function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4">
+          <Link 
+            href="/about" 
+            className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+          >
+            Sobre
+          </Link>
+          <Link 
+            href="/features" 
+            className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+          >
+            Recursos
+          </Link>
+          <Link 
+            href="/pricing" 
+            className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+          >
+            Preços
+          </Link>
+          
           {!isLoading && !isAuthenticated ? (
             <>
               <Link 
@@ -71,18 +90,7 @@ function Header() {
                 Registrar
               </Link>
             </>
-          ) : (
-            <>
-              {!isLoading && isAuthenticated && (
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
-                >
-                  Dashboard
-                </Link>
-              )}
-            </>
-          )}
+          ) : null}
         </nav>
 
         {/* User Menu (Desktop) */}
@@ -246,6 +254,28 @@ function Header() {
         <div className="md:hidden bg-background border-b border-neutral/20">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
+              <Link 
+                href="/about" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              >
+                Sobre
+              </Link>
+              <Link 
+                href="/features" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              >
+                Recursos
+              </Link>
+              <Link 
+                href="/pricing" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
+              >
+                Preços
+              </Link>
+              
               {!isLoading && !isAuthenticated ? (
                 <>
                   <Link 
@@ -263,19 +293,7 @@ function Header() {
                     Registrar
                   </Link>
                 </>
-              ) : (
-                <>
-                  {!isLoading && isAuthenticated && (
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-2 text-foreground/80 font-medium hover:text-primary transition-colors"
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                </>
-              )}
+              ) : null}
             </nav>
           </div>
         </div>

@@ -16,19 +16,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className="dark">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="theme-color" content="#080813" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} min-h-screen`}>
         <div className="stars-container">
           <div className="stars"></div>
           <div className="stars2"></div>
           <div className="stars3"></div>
         </div>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <div className="relative z-1">
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </div>
       </body>
     </html>
   )

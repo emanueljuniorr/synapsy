@@ -41,10 +41,12 @@
 }
 
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 /* Estilo de scrollbar personalizado */
@@ -74,6 +76,7 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: -10;
+  background-color: #080813; /* Fundo mais escuro para destacar as estrelas */
 }
 
 .stars, .stars2, .stars3 {
@@ -85,24 +88,31 @@ body {
   width: 100%;
   height: 100%;
   display: block;
+  background-size: cover;
 }
 
 .stars {
   background: transparent url('/stars1.png') repeat top center;
   z-index: -3;
   animation: move-stars 100s linear infinite;
+  opacity: 0.8;
+  background-size: 2000px 2000px;
 }
 
 .stars2 {
   background: transparent url('/stars2.png') repeat top center;
   z-index: -2;
   animation: move-stars 150s linear infinite;
+  opacity: 0.6;
+  background-size: 2500px 2500px;
 }
 
 .stars3 {
   background: transparent url('/stars3.png') repeat top center;
   z-index: -1;
   animation: move-stars 200s linear infinite;
+  opacity: 0.4;
+  background-size: 3000px 3000px;
 }
 
 @keyframes move-stars {
