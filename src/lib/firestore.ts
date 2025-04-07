@@ -190,15 +190,28 @@ export const getDashboardData = async (userId: string) => {
     );
     
     // Buscar eventos próximos
+    // Nota: É necessário criar um índice composto no Firebase para esta consulta:
+    // Coleção: events, Campos: userId ASC, startDate ASC, __name__ ASC
+    // Link: https://console.firebase.google.com/v1/r/project/synapsy-app/firestore/indexes?create_composite=Ckpwcm9qZWN0cy9zeW5hcHN5LWFwcC9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZXZlbnRzL2luZGV4ZXMvXxABGgoKBnVzZXJJZBABGg0KCXN0YXJ0RGF0ZRABGgwKCF9fbmFtZV9fEAE
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Versão temporária da consulta sem ordenação para evitar o erro de índice
     const eventsQuery = query(
       collection(db, 'events'),
       where('userId', '==', userId),
       where('startDate', '>=', today),
-      orderBy('startDate', 'asc'),
-      limit(3)
+      limit(5)
     );
+    
+    // Versão original da consulta (requer índice):
+    // const eventsQuery = query(
+    //   collection(db, 'events'),
+    //   where('userId', '==', userId),
+    //   where('startDate', '>=', today),
+    //   orderBy('startDate', 'asc'),
+    //   limit(3)
+    // );
     
     // Buscar tópicos de estudo
     const studyQuery = query(
@@ -220,6 +233,14 @@ export const getDashboardData = async (userId: string) => {
     const tasks = tasksSnapshot.docs.map(doc => fromFirestore(doc) as Task);
     const notes = notesSnapshot.docs.map(doc => fromFirestore(doc) as Note);
     const events = eventsSnapshot.docs.map(doc => fromFirestore(doc) as Event);
+    
+    // Ordenar eventos manualmente (já que removemos o orderBy da consulta)
+    const sortedEvents = [...events].sort((a, b) => {
+      const dateA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
+      const dateB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
+      return dateA.getTime() - dateB.getTime();
+    }).slice(0, 3); // Limitar a 3 eventos como na consulta original
+    
     const studyTopics = studySnapshot.docs.map(doc => fromFirestore(doc) as StudyTopic);
     
     // Contagens
@@ -233,7 +254,7 @@ export const getDashboardData = async (userId: string) => {
     return {
       tasks,
       notes,
-      events,
+      events: sortedEvents,
       studyTopics,
       counts: {
         pendingTasks: pendingTasksCount,

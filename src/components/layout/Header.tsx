@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, usePathname } from 'next/navigation';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -147,7 +147,11 @@ function Header() {
                   <Link 
                     href="/dashboard" 
                     className="user-menu-item"
-                    onClick={() => setUserMenuOpen(false)}
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      router.push('/dashboard');
+                    }}
+                    prefetch={true}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -216,7 +220,11 @@ function Header() {
                     <Link 
                       href="/dashboard" 
                       className="user-menu-item"
-                      onClick={() => setUserMenuOpen(false)}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push('/dashboard');
+                      }}
+                      prefetch={true}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
