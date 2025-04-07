@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import NoteCard from '@/components/notes/NoteCard';
+import { useRouter } from 'next/navigation';
 
 interface Note {
   id: string;
@@ -48,14 +49,19 @@ export default function NotesPage() {
   // Extrair todas as tags únicas
   const allTags = [...new Set(notes.flatMap(note => note.tags || []))];
   
+  const router = useRouter();
+  
   // Funções para gerenciar notas
   const handleEdit = (id: string) => {
-    // Implementação futura: abrir editor de notas
-    console.log(`Editar nota ${id}`);
+    router.push(`/notes/edit?id=${id}`);
   };
   
   const handleDelete = (id: string) => {
     setNotes(notes.filter(note => note.id !== id));
+  };
+  
+  const createNewNote = () => {
+    router.push('/notes/edit');
   };
   
   // Filtrar notas por termo de busca e tag selecionada
@@ -77,7 +83,10 @@ export default function NotesPage() {
           <h1 className="text-3xl font-bold">
             Anotações
           </h1>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors w-full sm:w-auto">
+          <button 
+            className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors w-full sm:w-auto"
+            onClick={createNewNote}
+          >
             Nova Nota
           </button>
         </div>

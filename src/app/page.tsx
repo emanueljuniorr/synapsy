@@ -303,11 +303,11 @@ export default function Home() {
             </div>
             
             {/* Plano Teams */}
-            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg relative overflow-hidden">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-neutral text-white px-4 py-1 rounded-full text-sm font-medium">
+            <div className="border border-neutral/20 rounded-xl p-6 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg relative overflow-visible mt-4">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-neutral text-white px-4 py-1 rounded-full text-sm font-medium z-10">
                 Em breve
               </div>
-              <div className="text-center mb-6">
+              <div className="text-center mb-6 mt-2">
                 <h3 className="text-xl font-bold">Teams</h3>
                 <div className="mt-2 text-3xl font-bold">R$ 49,90</div>
                 <div className="text-sm text-foreground/60">por mês, até 5 membros</div>
