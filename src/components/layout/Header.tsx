@@ -1,13 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, isLoading } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Fechar o menu quando clicar fora dele
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Gerar iniciais do nome do usuário
+  const getInitials = (name: string) => {
+    return name.split(' ')[0][0].toUpperCase();
+  };
+
+  // Tratar o logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUserMenuOpen(false);
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-neutral/20">
@@ -54,8 +85,142 @@ function Header() {
           )}
         </nav>
 
-        {/* User Menu */}
+        {/* User Menu (Desktop) */}
+        {!isLoading && isAuthenticated && user && (
+          <div className="hidden md:block relative" ref={userMenuRef}>
+            <div 
+              className="user-avatar"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+            >
+              {user.avatar ? (
+                <Image 
+                  src={user.avatar} 
+                  alt={user.name} 
+                  width={40} 
+                  height={40} 
+                  className="rounded-full" 
+                />
+              ) : (
+                getInitials(user.name)
+              )}
+            </div>
+            
+            {userMenuOpen && (
+              <div className="user-menu">
+                <div className="px-4 py-3 border-b border-neutral">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-foreground/70 truncate">{user.email}</p>
+                </div>
+                <div>
+                  <Link 
+                    href="/dashboard" 
+                    className="user-menu-item"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/settings" 
+                    className="user-menu-item"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    Configurações
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="user-menu-item w-full text-left"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center">
+          {!isLoading && isAuthenticated && user ? (
+            // Avatar no mobile
+            <div className="relative mr-2" ref={userMenuRef}>
+              <div 
+                className="user-avatar"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+              >
+                {user.avatar ? (
+                  <Image 
+                    src={user.avatar} 
+                    alt={user.name} 
+                    width={36} 
+                    height={36} 
+                    className="rounded-full" 
+                  />
+                ) : (
+                  getInitials(user.name)
+                )}
+              </div>
+              
+              {userMenuOpen && (
+                <div className="user-menu">
+                  <div className="px-4 py-3 border-b border-neutral">
+                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-xs text-foreground/70 truncate">{user.email}</p>
+                  </div>
+                  <div>
+                    <Link 
+                      href="/dashboard" 
+                      className="user-menu-item"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                      </svg>
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/settings" 
+                      className="user-menu-item"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                      Configurações
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="user-menu-item w-full text-left"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                      Sair
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+
           <button
             type="button"
             className="text-foreground/80 hover:text-primary"
