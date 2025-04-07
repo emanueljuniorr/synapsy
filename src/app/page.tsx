@@ -17,29 +17,126 @@ export default function Home() {
               Uma plataforma completa para transformar sua forma de estudar e trabalhar.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link href="/tasks" className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors">
-                Começar agora
+              <Link href="/auth/register" className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors">
+                Criar conta gratuita
               </Link>
-              <Link href="#features" className="px-6 py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary/10 transition-colors">
-                Conheça os recursos
+              <Link href="/auth/login" className="px-6 py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary/10 transition-colors">
+                Entrar
               </Link>
             </div>
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="relative w-full max-w-md aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 backdrop-blur-sm">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-4xl">S</span>
+          
+          <div className="flex-1 relative">
+            <div className="w-full h-[400px] relative">
+              <div className="absolute w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl -top-10 -right-10 animate-pulse"></div>
+              <div className="absolute w-[200px] h-[200px] bg-accent/20 rounded-full blur-3xl bottom-0 left-20 animate-pulse" style={{ animationDelay: "1s" }}></div>
+              
+              <div className="relative z-10 bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl shadow-xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className="flex-1 h-6 bg-neutral/10 rounded-md"></div>
                 </div>
-                <div className="absolute w-48 h-48 rounded-full border border-primary/20 animate-pulse"></div>
-                <div className="absolute w-64 h-64 rounded-full border border-accent/20 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <div className="absolute w-80 h-80 rounded-full border border-secondary/10 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                
+                <div className="space-y-4">
+                  <div className="h-8 bg-primary/10 rounded-md w-3/4"></div>
+                  <div className="h-4 bg-neutral/10 rounded-md w-full"></div>
+                  <div className="h-4 bg-neutral/10 rounded-md w-5/6"></div>
+                  <div className="h-4 bg-neutral/10 rounded-md w-4/6"></div>
+                  
+                  <div className="flex gap-3 mt-8">
+                    <div className="h-8 w-20 bg-primary/20 rounded-md"></div>
+                    <div className="h-8 w-24 bg-accent/20 rounded-md"></div>
+                  </div>
+                </div>
+                
+                {/* Floating elements */}
+                <div className="absolute -top-5 -right-5 w-16 h-16 bg-primary/10 rounded-xl rotate-12 animate-float"></div>
+                <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-accent/10 rounded-full animate-float" style={{ animationDelay: "1.5s" }}></div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
+        {/* Marca seção espacial */}
+        <section className="py-16 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-background to-primary/10 opacity-70"></div>
+          <div className="absolute inset-0">
+            {/* Estrelas */}
+            {Array.from({ length: 50 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
+                style={{
+                  top: `${Math.random() * 100}%`,
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  opacity: Math.random() * 0.7 + 0.3
+                }}
+              ></div>
+            ))}
+          </div>
+          
+          <div className="relative text-center max-w-4xl mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Expanda seu universo de produtividade
+            </h2>
+            <p className="text-lg text-foreground/80 mb-10">
+              Como o cosmos, suas ideias são infinitas. Organize-as em um único lugar e alcance as estrelas.
+            </p>
+            
+            <div className="flex flex-wrap gap-6 justify-center items-center">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-4 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                    <path d="M2 12h20"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold">Global</div>
+                  <div className="text-sm text-foreground/60">Acesse de qualquer lugar</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-4 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                    <line x1="16" y1="8" x2="2" y2="22"></line>
+                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold">Personalizado</div>
+                  <div className="text-sm text-foreground/60">Adapte ao seu estilo</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-4 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500">
+                    <path d="M12 2v8"></path>
+                    <path d="m4.93 10.93 1.41 1.41"></path>
+                    <path d="M2 18h2"></path>
+                    <path d="M20 18h2"></path>
+                    <path d="m19.07 10.93-1.41 1.41"></path>
+                    <path d="M22 22H2"></path>
+                    <path d="m16 6-4 4-4-4"></path>
+                    <path d="M16 18a4 4 0 0 0-8 0"></path>
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold">Intuitivo</div>
+                  <div className="text-sm text-foreground/60">Fácil de usar</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section id="features" className="pt-8">
           <h2 className="text-3xl font-bold text-center mb-12">
             Recursos Principais
@@ -54,7 +151,7 @@ export default function Home() {
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                 </svg>
               }
-              href="/tasks"
+              href="/auth/login"
             />
             <FeatureCard 
               title="Anotações Interligadas" 
@@ -68,7 +165,7 @@ export default function Home() {
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
               }
-              href="/notes"
+              href="/auth/login"
             />
             <FeatureCard 
               title="Agendamento" 
@@ -81,7 +178,7 @@ export default function Home() {
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               }
-              href="/calendar"
+              href="/auth/login"
             />
             <FeatureCard 
               title="Ferramentas de Estudo" 
@@ -92,42 +189,68 @@ export default function Home() {
                   <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                 </svg>
               }
-              href="/study"
+              href="/auth/login"
             />
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 md:p-12 text-center mt-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Pronto para aumentar sua produtividade?
-          </h2>
-          <p className="text-lg text-foreground/80 max-w-2xl mx-auto mb-8">
-            Comece a usar o Synapsy gratuitamente e descubra uma nova forma de organizar seus estudos e tarefas.
-          </p>
-          <Link href="/tasks" className="px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors inline-block">
-            Começar agora
-          </Link>
+        <section className="text-center py-16 px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Comece a organizar sua vida agora
+            </h2>
+            <p className="text-lg text-foreground/80 mb-8">
+              Junte-se a milhares de estudantes e profissionais que já estão transformando sua produtividade com o Synapsy.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href="/auth/register" className="px-8 py-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors">
+                Criar conta gratuita
+              </Link>
+            </div>
+          </div>
         </section>
+      </div>
+
+      {/* Orbiting planets decoration */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
+        <div className="absolute w-[600px] h-[600px] rounded-full border border-primary/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute w-4 h-4 bg-primary rounded-full left-0 top-1/2 -translate-y-1/2 animate-orbit"></div>
+        </div>
+        <div className="absolute w-[400px] h-[400px] rounded-full border border-accent/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute w-3 h-3 bg-accent rounded-full right-0 top-1/2 -translate-y-1/2 animate-orbit" style={{ animationDuration: "15s" }}></div>
+        </div>
+        <div className="absolute w-[200px] h-[200px] rounded-full border border-purple-500/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute w-2 h-2 bg-purple-500 rounded-full left-1/2 -bottom-1 animate-orbit" style={{ animationDuration: "8s" }}></div>
+        </div>
       </div>
     </MainLayout>
   );
 }
 
-function FeatureCard({ title, description, icon, href }: { 
+function FeatureCard({ 
+  title, 
+  description, 
+  icon,
+  href 
+}: { 
   title: string; 
   description: string; 
   icon: React.ReactNode;
   href: string;
 }) {
   return (
-    <Link href={href} className="block group">
-      <div className="h-full flex flex-col bg-white dark:bg-neutral rounded-xl p-6 border border-neutral/20 shadow-sm hover:border-primary/40 hover:shadow-md transition-all">
-        <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+    <Link href={href} className="group">
+      <div className="h-full p-6 rounded-xl border border-neutral/20 bg-white/50 dark:bg-neutral/50 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform group-hover:-translate-y-1">
+        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
           {icon}
         </div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-foreground/70 text-sm flex-1">{description}</p>
+        <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        <p className="text-foreground/70">
+          {description}
+        </p>
       </div>
     </Link>
   );

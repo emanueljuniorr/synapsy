@@ -13,7 +13,9 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -34,6 +36,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -117,6 +120,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Função de login com Google
+  const loginWithGoogle = async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      
+      // Criar provider do Google
+      const googleProvider = new GoogleAuthProvider();
+      googleProvider.setCustomParameters({ prompt: 'select_account' });
+      
+      // Autenticar com popup
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = userCredential.user;
+      
+      // Verificar se o usuário já existe no Firestore
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      
+      // Se o documento do usuário não existir, criá-lo
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        // Atualizar informações do usuário
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          updatedAt: serverTimestamp(),
+          avatar: firebaseUser.photoURL, // Atualizar avatar caso tenha mudado
+        }, { merge: true });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao fazer login com Google:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Função de registro
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
@@ -166,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated,
       login,
+      loginWithGoogle,
       register,
       logout
     }}>
