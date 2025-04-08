@@ -33,7 +33,7 @@ export default function SynapsyMarkdownEditor({
 }: MarkdownEditorProps) {
   const [content, setContent] = useState(initialValue);
   const [isPreview, setIsPreview] = useState(false);
-  const [showToolbar, setShowToolbar] = useState(false);
+  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -105,14 +105,15 @@ export default function SynapsyMarkdownEditor({
     }
   };
 
-  // Mostrar toolbar quando o editor receber foco ou texto for selecionado
+  // Mostrar toolbar apenas quando texto for selecionado
   useEffect(() => {
     const handleSelection = () => {
       const textarea = editorRef.current;
       if (!textarea) return;
 
-      if (textarea.selectionStart !== textarea.selectionEnd) {
-        setShowToolbar(true);
+      const hasSelection = textarea.selectionStart !== textarea.selectionEnd;
+      setShowFloatingToolbar(hasSelection);
+      if (hasSelection) {
         updateToolbarPosition();
       }
     };
@@ -120,7 +121,7 @@ export default function SynapsyMarkdownEditor({
     const handleClickOutside = (event: MouseEvent) => {
       if (editorRef.current && !editorRef.current.contains(event.target as Node) &&
           toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
-        setShowToolbar(false);
+        setShowFloatingToolbar(false);
       }
     };
 
@@ -134,15 +135,9 @@ export default function SynapsyMarkdownEditor({
 
   return (
     <div className="w-full h-full min-h-[300px] rounded-xl overflow-hidden bg-background/40 backdrop-blur-lg border border-white/10">
-      {/* Barra de ferramentas flutuante */}
-      {showToolbar && !isPreview && (
-        <div 
-          ref={toolbarRef}
-          style={{
-            transform: `translate(${cursorPosition.left}px, ${cursorPosition.top}px)`,
-          }}
-          className="absolute z-20 bg-neutral-900/95 backdrop-blur-lg rounded-lg shadow-lg border border-white/10 p-1.5 flex flex-wrap items-center gap-1 max-w-md"
-        >
+      {/* Barra de ferramentas fixa */}
+      <div className="flex items-center justify-between gap-2 p-2 border-b border-white/10">
+        <div className="flex flex-wrap items-center gap-1">
           {toolbarButtons.map((button, index) => (
             <button
               key={index}
@@ -156,26 +151,52 @@ export default function SynapsyMarkdownEditor({
               </span>
             </button>
           ))}
-          
-          <div className="h-5 w-px bg-white/20 mx-1" />
-          <button
-            onClick={() => setIsPreview(!isPreview)}
-            className="p-1.5 rounded hover:bg-white/10 text-white/80 hover:text-white transition-colors"
-            title={isPreview ? 'Modo edição' : 'Visualizar'}
-          >
-            <RiMore2Fill size={18} />
-          </button>
+        </div>
+
+        <button
+          onClick={() => setIsPreview(!isPreview)}
+          className={`px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors ${
+            isPreview 
+              ? 'bg-purple-600 text-white hover:bg-purple-700' 
+              : 'bg-white/5 text-white/80 hover:bg-white/10 hover:text-white'
+          }`}
+        >
+          <RiMore2Fill size={18} />
+          <span className="text-sm font-medium">
+            {isPreview ? 'Modo Edição' : 'Visualizar'}
+          </span>
+        </button>
+      </div>
+
+      {/* Toolbar flutuante (apenas quando texto selecionado) */}
+      {showFloatingToolbar && !isPreview && (
+        <div 
+          ref={toolbarRef}
+          style={{
+            transform: `translate(${cursorPosition.left}px, ${cursorPosition.top}px)`,
+          }}
+          className="absolute z-20 bg-neutral-900/95 backdrop-blur-lg rounded-lg shadow-lg border border-white/10 p-1.5 flex flex-wrap items-center gap-1"
+        >
+          {toolbarButtons.map((button, index) => (
+            <button
+              key={index}
+              onClick={button.action}
+              className="p-1.5 rounded hover:bg-white/10 text-white/80 hover:text-white transition-colors group relative"
+              title={`${button.label}${button.shortcut ? ` (${button.shortcut})` : ''}`}
+            >
+              <button.icon size={18} />
+            </button>
+          ))}
         </div>
       )}
 
       {/* Área de edição/visualização */}
-      <div className="relative h-full" style={{ height }}>
+      <div className="relative h-full" style={{ height: `calc(${height} - 56px)` }}>
         {!isPreview ? (
           <textarea
             ref={editorRef}
             value={content}
             onChange={(e) => handleChange(e.target.value)}
-            onFocus={() => setShowToolbar(true)}
             onSelect={updateToolbarPosition}
             placeholder={placeholder}
             className="w-full h-full p-6 bg-transparent resize-none focus:outline-none text-foreground placeholder-foreground/40 text-lg leading-relaxed"
