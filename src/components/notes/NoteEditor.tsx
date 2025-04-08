@@ -19,6 +19,7 @@ export default function NoteEditor({ id }: NoteEditorProps) {
     content: '',
     tags: []
   });
+  const [tagInput, setTagInput] = useState('');
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -43,6 +44,24 @@ export default function NoteEditor({ id }: NoteEditorProps) {
       setIsLoading(false);
     }
   }
+
+  const handleAddTag = (tag: string) => {
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !note.tags?.includes(trimmedTag)) {
+      setNote({
+        ...note,
+        tags: [...(note.tags || []), trimmedTag]
+      });
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (indexToRemove: number) => {
+    setNote({
+      ...note,
+      tags: note.tags?.filter((_, index) => index !== indexToRemove)
+    });
+  };
 
   async function handleSave() {
     if (!note.title || !note.content) {
@@ -115,16 +134,42 @@ export default function NoteEditor({ id }: NoteEditorProps) {
         </div>
 
         <div className="mb-4">
-          <input
-            type="text"
-            value={note.tags?.join(', ') || ''}
-            onChange={(e) => setNote({ 
-              ...note, 
-              tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-            })}
-            placeholder="Tags (separadas por vírgula)..."
-            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500 transition-all duration-300 hover:bg-white/10 focus:bg-white/10 hover:placeholder-white/60 focus:placeholder-white/60"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddTag(tagInput);
+                } else if (e.key === ',' || e.key === ' ') {
+                  e.preventDefault();
+                  handleAddTag(tagInput);
+                }
+              }}
+              placeholder="Adicione tags (pressione Enter ou vírgula)..."
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500 transition-all duration-300 hover:bg-white/10 focus:bg-white/10 hover:placeholder-white/60 focus:placeholder-white/60"
+            />
+          </div>
+          {note.tags && note.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {note.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="group flex items-center gap-1 px-2 py-1 text-sm rounded-lg bg-white/10 text-white/70 border border-white/10"
+                >
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(index)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white/90"
+                  >
+                    <RiCloseLine size={16} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-white/20">
