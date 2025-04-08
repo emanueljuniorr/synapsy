@@ -1,6 +1,6 @@
 "use client";
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { getNoteById, updateNote } from '@/services/notes';
 import { Note } from '@/types/notes';
 import SynapsyMarkdownEditor from '@/components/notes/MarkdownEditor';
@@ -15,7 +15,8 @@ interface EditNotePageProps {
 
 export default function EditNotePage({ params }: EditNotePageProps) {
   const router = useRouter();
-  const id = params.id;
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
