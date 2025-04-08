@@ -276,4 +276,22 @@ export const getDashboardData = async (userId: string) => {
       }
     };
   }
+};
+
+// Função para buscar notas recentes
+export const getRecentNotes = async (userId: string, limitCount: number = 5): Promise<Note[]> => {
+  try {
+    const notesQuery = query(
+      collection(db, 'notes'),
+      where('userId', '==', userId),
+      orderBy('updatedAt', 'desc'),
+      limit(limitCount)
+    );
+    
+    const querySnapshot = await getDocs(notesQuery);
+    return querySnapshot.docs.map(doc => fromFirestore(doc) as Note);
+  } catch (error) {
+    console.error('Erro ao buscar notas recentes:', error);
+    return [];
+  }
 }; 
