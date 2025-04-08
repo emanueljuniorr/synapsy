@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { getNoteById, updateNote, createNote } from '@/services/notes';
 import { Note } from '@/types/notes';
@@ -14,8 +14,9 @@ interface NoteEditorPageProps {
 }
 
 export default function NoteEditorPage({ params }: NoteEditorPageProps) {
+  const id = use(Promise.resolve(params.id));
   const router = useRouter();
-  const isNew = params.id === 'new';
+  const isNew = id === 'new';
   const [note, setNote] = useState<Partial<Note>>({
     title: '',
     content: '',
@@ -28,11 +29,11 @@ export default function NoteEditorPage({ params }: NoteEditorPageProps) {
     if (!isNew) {
       loadNote();
     }
-  }, [params.id]);
+  }, [id]);
 
   async function loadNote() {
     try {
-      const loadedNote = await getNoteById(params.id);
+      const loadedNote = await getNoteById(id);
       if (loadedNote) {
         setNote(loadedNote);
       } else {
@@ -63,7 +64,7 @@ export default function NoteEditorPage({ params }: NoteEditorPageProps) {
         });
       } else {
         await updateNote({
-          id: params.id,
+          id,
           title: note.title,
           content: note.content,
           tags: note.tags
