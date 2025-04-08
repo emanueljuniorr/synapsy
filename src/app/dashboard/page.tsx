@@ -13,6 +13,11 @@ import RecentTasks from '@/components/dashboard/RecentTasks';
 import RecentNotes from '@/components/dashboard/RecentNotes';
 import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 import StudyTopics from '@/components/dashboard/StudyTopics';
+import WorkflowCard from '@/components/dashboard/WorkflowCard';
+import { 
+  RiFileTextLine, RiCalendarLine, 
+  RiTaskLine, RiBookOpenLine 
+} from 'react-icons/ri';
 
 interface DashboardData {
   tasks: Task[];
@@ -99,76 +104,59 @@ export default function DashboardPage() {
       return createdDate >= oneWeekAgo;
     }).length;
   };
-  
+
+  const workflows = [
+    {
+      title: 'Anotações',
+      description: 'Crie e organize suas anotações com um editor markdown poderoso',
+      icon: RiFileTextLine,
+      href: '/notes',
+      gradient: 'bg-gradient-to-br from-purple-600 to-indigo-600'
+    },
+    {
+      title: 'Calendário',
+      description: 'Gerencie seus eventos e compromissos de forma eficiente',
+      icon: RiCalendarLine,
+      href: '/calendar',
+      gradient: 'bg-gradient-to-br from-blue-600 to-cyan-600'
+    },
+    {
+      title: 'Tarefas',
+      description: 'Organize suas tarefas e projetos com listas e prioridades',
+      icon: RiTaskLine,
+      href: '/tasks',
+      gradient: 'bg-gradient-to-br from-pink-600 to-rose-600'
+    },
+    {
+      title: 'Estudos',
+      description: 'Planeje seus estudos e crie materiais de revisão',
+      icon: RiBookOpenLine,
+      href: '/study',
+      gradient: 'bg-gradient-to-br from-violet-600 to-purple-600'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Elementos decorativos espaciais */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
-        <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
-        <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
+    <div className="min-h-screen bg-background p-6 md:p-8">
+      {/* Cabeçalho */}
+      <header className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          Bem-vindo de volta, {user?.name || 'usuário'}!
+        </h1>
+        <p className="text-foreground/60">
+          Continue de onde parou ou comece algo novo.
+        </p>
+      </header>
+
+      {/* Grid de Workflows */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {workflows.map((workflow, index) => (
+          <WorkflowCard key={index} {...workflow} />
+        ))}
       </div>
 
-      <div className="relative z-10">
-        <Header />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-6 space-y-6">
-            {/* Seção de Boas-vindas */}
-            <section className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-              <h1 className="text-2xl font-bold mb-2">Bem-vindo de volta!</h1>
-              <p className="text-foreground/60">Continue de onde parou...</p>
-            </section>
-
-            {/* Grid de Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Card de Tarefas */}
-              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Tarefas Recentes</h2>
-                  <Link href="/tasks" className="text-primary hover:opacity-80 transition-opacity">
-                    Ver todas
-                  </Link>
-                </div>
-                <RecentTasks tasks={dashboardData?.tasks || []} />
-              </div>
-
-              {/* Card de Notas */}
-              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Notas Recentes</h2>
-                  <Link href="/notes" className="text-primary hover:opacity-80 transition-opacity">
-                    Ver todas
-                  </Link>
-                </div>
-                <RecentNotes notes={dashboardData?.notes || []} />
-              </div>
-
-              {/* Card de Eventos */}
-              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Próximos Eventos</h2>
-                  <Link href="/calendar" className="text-primary hover:opacity-80 transition-opacity">
-                    Ver todos
-                  </Link>
-                </div>
-                <UpcomingEvents events={dashboardData?.events || []} />
-              </div>
-            </div>
-
-            {/* Seção de Estudos */}
-            <section className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Tópicos de Estudo</h2>
-                <Link href="/study" className="text-primary hover:opacity-80 transition-opacity">
-                  Ver todos
-                </Link>
-              </div>
-              <StudyTopics topics={dashboardData?.studyTopics || []} />
-            </section>
-          </main>
-        </div>
-      </div>
+      {/* Decoração de fundo */}
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-background to-background pointer-events-none" />
     </div>
   );
 } 
