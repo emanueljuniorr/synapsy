@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f9fa;
-  --foreground: #1a1a2e;
-  --primary: #6a2c91;
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --primary: #8B5CF6;
   --primary-light: #8c52a7;
-  --primary-dark: #4a1d63;
+  --primary-dark: #7C3AED;
   --secondary: #3f3b6c;
   --accent: #7b2cbf;
   --neutral: #e2e8f0;
@@ -126,9 +126,9 @@ body {
 
 /* Novas animações para elementos espaciais */
 @keyframes twinkle {
-  0% {
+  0%, 100% {
     opacity: 0.2;
-    transform: scale(0.8) rotate(0deg);
+    transform: scale(1) rotate(0deg);
     filter: blur(0px);
   }
   50% {
@@ -137,9 +137,7 @@ body {
     filter: blur(1px);
   }
   100% {
-    opacity: 0.2;
-    transform: scale(0.8) rotate(360deg);
-    filter: blur(0px);
+    transform: scale(1) rotate(360deg);
   }
 }
 
@@ -173,7 +171,7 @@ body {
 }
 
 .animate-twinkle {
-  animation: twinkle 3s ease-in-out infinite;
+  animation: twinkle 4s infinite ease-in-out;
 }
 
 .animate-orbit {
@@ -254,4 +252,34 @@ body {
     width: 36px;
     height: 36px;
   }
+}
+
+/* Efeitos de Vidro */
+.glass {
+  @apply bg-white/5 backdrop-blur-lg border border-white/10;
+}
+
+/* Gradientes */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+/* Efeitos de Hover */
+.hover-glow:hover {
+  box-shadow: 0 0 20px var(--primary);
+}
+
+/* Elementos Espaciais */
+.space-dot {
+  @apply w-2 h-2 rounded-full bg-primary opacity-50;
+  box-shadow: 0 0 15px var(--primary);
+}
+
+.space-line {
+  @apply h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent;
+}
+
+/* Transições suaves */
+* {
+  @apply transition-colors duration-200;
 }
