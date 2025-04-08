@@ -130,7 +130,7 @@ export default function DashboardPage() {
                     Ver todas
                   </Link>
                 </div>
-                <RecentTasks />
+                <RecentTasks tasks={dashboardData?.tasks || []} />
               </div>
 
               {/* Card de Notas */}
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                     Ver todas
                   </Link>
                 </div>
-                <RecentNotes />
+                <RecentNotes notes={dashboardData?.notes || []} />
               </div>
 
               {/* Card de Eventos */}
@@ -152,7 +152,7 @@ export default function DashboardPage() {
                     Ver todos
                   </Link>
                 </div>
-                <UpcomingEvents />
+                <UpcomingEvents events={dashboardData?.events || []} />
               </div>
             </div>
 
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                   Ver todos
                 </Link>
               </div>
-              <StudyTopics />
+              <StudyTopics topics={dashboardData?.studyTopics || []} />
             </section>
           </main>
         </div>

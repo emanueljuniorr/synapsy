@@ -40,30 +40,33 @@ export interface Note {
 // Tipo para evento
 export interface Event {
   id: string;
+  userId: string;
   title: string;
-  description?: string;
+  description: string;
   startDate: Date;
   endDate: Date;
   location?: string;
-  isFullDay: boolean;
-  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
-  color?: string;
+  isRecurring: boolean;
+  recurrencePattern?: {
+    frequency: 'daily' | 'weekly' | 'monthly';
+    interval: number;
+    endDate?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
-  userId: string;
 }
 
 // Tipo para estudo
 export interface StudyTopic {
   id: string;
+  userId: string;
   title: string;
-  description?: string;
-  progress: number; // 0-100
-  dueDate?: Date;
-  resources?: StudyResource[];
+  description: string;
+  progress: number;
+  totalHours: number;
+  completedHours: number;
   createdAt: Date;
   updatedAt: Date;
-  userId: string;
 }
 
 // Tipo para recurso de estudo

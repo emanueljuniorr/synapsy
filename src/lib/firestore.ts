@@ -294,4 +294,42 @@ export const getRecentNotes = async (userId: string, limitCount: number = 5): Pr
     console.error('Erro ao buscar notas recentes:', error);
     return [];
   }
+};
+
+// Funções de Tópicos de Estudo
+export const getStudyTopics = async (userId: string): Promise<StudyTopic[]> => {
+  try {
+    const topicsQuery = query(
+      collection(db, 'studyTopics'),
+      where('userId', '==', userId),
+      orderBy('updatedAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(topicsQuery);
+    return querySnapshot.docs.map(doc => fromFirestore(doc) as StudyTopic);
+  } catch (error) {
+    console.error('Erro ao buscar tópicos de estudo:', error);
+    return [];
+  }
+};
+
+// Funções de Eventos
+export const getUpcomingEvents = async (userId: string): Promise<Event[]> => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const eventsQuery = query(
+      collection(db, 'events'),
+      where('userId', '==', userId),
+      where('startDate', '>=', today),
+      orderBy('startDate', 'asc')
+    );
+    
+    const querySnapshot = await getDocs(eventsQuery);
+    return querySnapshot.docs.map(doc => fromFirestore(doc) as Event);
+  } catch (error) {
+    console.error('Erro ao buscar eventos:', error);
+    return [];
+  }
 }; 
