@@ -19,7 +19,7 @@ interface NoteCardProps {
 export default function NoteCard({
   id,
   title,
-  content,
+  content = '',
   tags = [],
   createdAt,
   updatedAt,
@@ -33,18 +33,22 @@ export default function NoteCard({
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold text-white">{title}</h3>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onEdit?.(id)}
-            className="p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/10"
-          >
-            <RiEdit2Line size={20} />
-          </button>
-          <button
-            onClick={() => onDelete?.(id)}
-            className="p-2 text-white/60 hover:text-red-400 transition-colors rounded-lg hover:bg-white/10"
-          >
-            <RiDeleteBinLine size={20} />
-          </button>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(id)}
+              className="p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+            >
+              <RiEdit2Line size={20} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(id)}
+              className="p-2 text-white/60 hover:text-red-400 transition-colors rounded-lg hover:bg-white/10"
+            >
+              <RiDeleteBinLine size={20} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -71,7 +75,7 @@ export default function NoteCard({
         </button>
       )}
 
-      {tags && tags.length > 0 && (
+      {Array.isArray(tags) && tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-4">
           {tags.map((tag, index) => (
             <span
