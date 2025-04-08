@@ -19,37 +19,39 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
-        {/* Logo */}
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-              Synapsy
-            </span>
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 h-14">
+        <div className="flex items-center justify-between h-full">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center">
+              <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                Synapsy
+              </span>
+            </Link>
+          </div>
 
-        {/* Navigation Links - Only show on homepage */}
-        {isHomePage && (
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/#about" className="text-sm hover:text-primary transition-colors">
-              Sobre
-            </Link>
-            <Link href="/#features" className="text-sm hover:text-primary transition-colors">
-              Recursos
-            </Link>
-            <Link href="/#plans" className="text-sm hover:text-primary transition-colors">
-              Planos
-            </Link>
-            <Link href="/#contact" className="text-sm hover:text-primary transition-colors">
-              Contato
-            </Link>
-          </nav>
-        )}
+          {/* Navigation Links - Only show on homepage */}
+          {isHomePage && (
+            <nav className="hidden md:flex items-center justify-center flex-1 space-x-8">
+              <Link href="/#about" className="text-sm hover:text-primary transition-colors">
+                Sobre
+              </Link>
+              <Link href="/#features" className="text-sm hover:text-primary transition-colors">
+                Recursos
+              </Link>
+              <Link href="/#plans" className="text-sm hover:text-primary transition-colors">
+                Planos
+              </Link>
+              <Link href="/#contact" className="text-sm hover:text-primary transition-colors">
+                Contato
+              </Link>
+            </nav>
+          )}
 
-        {/* User Menu */}
-        <div className="flex items-center space-x-4">
-          <UserMenu />
+          {/* User Menu */}
+          <div className="flex-shrink-0">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>

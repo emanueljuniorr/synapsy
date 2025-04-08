@@ -19,17 +19,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                           pathname.startsWith('/study');
 
   return (
-    <div className="min-h-screen flex flex-col bg-background/80 backdrop-blur-sm">
+    <div className="min-h-screen flex flex-col bg-background/90 backdrop-blur-sm overflow-x-hidden">
       <Header />
       
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex">
         {isDashboardRoute && <Sidebar />}
         
         <main className="flex-1 overflow-y-auto">
-          {children}
+          <div className="container mx-auto px-4 py-8 md:py-12">
+            {children}
+          </div>
         </main>
       </div>
+      
       <Footer />
     </div>
   );
-} 
+}
