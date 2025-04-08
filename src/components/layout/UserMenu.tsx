@@ -58,6 +58,7 @@ export default function UserMenu() {
               width={32}
               height={32}
               className="w-full h-full object-cover"
+              priority
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-sm font-medium text-primary">
@@ -68,12 +69,20 @@ export default function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 py-2 bg-background border border-white/10 rounded-lg shadow-lg backdrop-blur-sm">
+        <div className="absolute right-0 mt-2 w-48 py-2 bg-background/95 backdrop-blur-sm border border-white/10 rounded-lg shadow-lg">
           <div className="px-4 py-2 border-b border-white/10">
             <p className="text-sm font-medium truncate">{user.displayName}</p>
             <p className="text-xs text-foreground/60 truncate">{user.email}</p>
           </div>
           
+          <Link
+            href="/dashboard"
+            className="block px-4 py-2 text-sm hover:bg-white/5 transition-colors"
+            onClick={() => setIsOpen(false)}
+          >
+            Dashboard
+          </Link>
+
           <Link
             href="/profile"
             className="block px-4 py-2 text-sm hover:bg-white/5 transition-colors"
