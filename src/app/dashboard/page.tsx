@@ -1,23 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDashboardData } from '@/lib/firestore';
 import { Task, Note, Event, StudyTopic } from '@/types';
-import { formatDate } from '@/lib/utils';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import RecentTasks from '@/components/dashboard/RecentTasks';
 import RecentNotes from '@/components/dashboard/RecentNotes';
 import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
 import StudyTopics from '@/components/dashboard/StudyTopics';
-import WorkflowCard from '@/components/dashboard/WorkflowCard';
-import { 
-  RiFileTextLine, RiCalendarLine, 
-  RiTaskLine, RiBookOpenLine 
-} from 'react-icons/ri';
+import ActivityChart from '@/components/dashboard/ActivityChart';
+import ProductivityChart from '@/components/dashboard/ProductivityChart';
 
 interface DashboardData {
   tasks: Task[];
@@ -31,16 +27,12 @@ interface DashboardData {
   };
 }
 
-// Componente Dashboard
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  
-  const isActive = (path: string) => pathname === path;
-  
+
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -65,7 +57,7 @@ export default function DashboardPage() {
       fetchDashboardData();
     }
   }, [isAuthenticated, authLoading, router, user]);
-  
+
   // Se estiver carregando, mostrar um indicador
   if (authLoading || isLoading) {
     return (
@@ -74,89 +66,109 @@ export default function DashboardPage() {
       </div>
     );
   }
-  
-  // Contar tarefas para hoje
-  const countTasksForToday = () => {
-    if (!dashboardData?.tasks.length) return 0;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    return dashboardData.tasks.filter(task => {
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      return dueDate >= today && dueDate < tomorrow;
-    }).length;
-  };
-  
-  // Contar notas criadas esta semana
-  const countNotesThisWeek = () => {
-    if (!dashboardData?.notes.length) return 0;
-    
-    const today = new Date();
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    return dashboardData.notes.filter(note => {
-      const createdDate = new Date(note.createdAt);
-      return createdDate >= oneWeekAgo;
-    }).length;
-  };
-
-  const workflows = [
-    {
-      title: 'Anotações',
-      description: 'Crie e organize suas anotações com um editor markdown poderoso',
-      icon: RiFileTextLine,
-      href: '/notes',
-      gradient: 'bg-gradient-to-br from-purple-600 to-indigo-600'
-    },
-    {
-      title: 'Calendário',
-      description: 'Gerencie seus eventos e compromissos de forma eficiente',
-      icon: RiCalendarLine,
-      href: '/calendar',
-      gradient: 'bg-gradient-to-br from-blue-600 to-cyan-600'
-    },
-    {
-      title: 'Tarefas',
-      description: 'Organize suas tarefas e projetos com listas e prioridades',
-      icon: RiTaskLine,
-      href: '/tasks',
-      gradient: 'bg-gradient-to-br from-pink-600 to-rose-600'
-    },
-    {
-      title: 'Estudos',
-      description: 'Planeje seus estudos e crie materiais de revisão',
-      icon: RiBookOpenLine,
-      href: '/study',
-      gradient: 'bg-gradient-to-br from-violet-600 to-purple-600'
-    }
-  ];
 
   return (
-    <div className="min-h-screen bg-background p-6 md:p-8">
-      {/* Cabeçalho */}
-      <header className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Bem-vindo de volta, {user?.name || 'usuário'}!
-        </h1>
-        <p className="text-foreground/60">
-          Continue de onde parou ou comece algo novo.
-        </p>
-      </header>
-
-      {/* Grid de Workflows */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {workflows.map((workflow, index) => (
-          <WorkflowCard key={index} {...workflow} />
-        ))}
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Elementos decorativos espaciais */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
+        <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
+        <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
       </div>
 
-      {/* Decoração de fundo */}
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-background to-background pointer-events-none" />
+      <div className="relative z-10">
+        <Header />
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 p-6 space-y-6">
+            {/* Seção de Boas-vindas e Estatísticas */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Card de Boas-vindas */}
+              <div className="md:col-span-2 bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                <h1 className="text-2xl font-bold mb-2">Bem-vindo de volta, {user?.name}!</h1>
+                <p className="text-foreground/60 mb-4">Aqui está um resumo das suas atividades recentes.</p>
+                
+                {/* Estatísticas Rápidas */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-background/20 rounded-xl p-4">
+                    <p className="text-sm text-foreground/60">Tarefas Pendentes</p>
+                    <p className="text-2xl font-bold">{dashboardData?.counts.pendingTasks || 0}</p>
+                  </div>
+                  <div className="bg-background/20 rounded-xl p-4">
+                    <p className="text-sm text-foreground/60">Notas Totais</p>
+                    <p className="text-2xl font-bold">{dashboardData?.counts.totalNotes || 0}</p>
+                  </div>
+                  <div className="bg-background/20 rounded-xl p-4">
+                    <p className="text-sm text-foreground/60">Eventos Próximos</p>
+                    <p className="text-2xl font-bold">{dashboardData?.counts.upcomingEvents || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card de Produtividade */}
+              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                <h2 className="text-lg font-semibold mb-4">Produtividade</h2>
+                <ProductivityChart data={dashboardData} />
+              </div>
+            </section>
+
+            {/* Grid de Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Card de Tarefas */}
+              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Tarefas Recentes</h2>
+                  <Link href="/tasks" className="text-primary hover:opacity-80 transition-opacity">
+                    Ver todas
+                  </Link>
+                </div>
+                <RecentTasks tasks={dashboardData?.tasks || []} />
+              </div>
+
+              {/* Card de Notas */}
+              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Notas Recentes</h2>
+                  <Link href="/notes" className="text-primary hover:opacity-80 transition-opacity">
+                    Ver todas
+                  </Link>
+                </div>
+                <RecentNotes notes={dashboardData?.notes || []} />
+              </div>
+
+              {/* Card de Eventos */}
+              <div className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/50 transition-colors">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Próximos Eventos</h2>
+                  <Link href="/calendar" className="text-primary hover:opacity-80 transition-opacity">
+                    Ver todos
+                  </Link>
+                </div>
+                <UpcomingEvents events={dashboardData?.events || []} />
+              </div>
+            </div>
+
+            {/* Gráfico de Atividades */}
+            <section className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Atividades da Semana</h2>
+              </div>
+              <ActivityChart data={dashboardData} />
+            </section>
+
+            {/* Seção de Estudos */}
+            <section className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Tópicos de Estudo</h2>
+                <Link href="/study" className="text-primary hover:opacity-80 transition-opacity">
+                  Ver todos
+                </Link>
+              </div>
+              <StudyTopics topics={dashboardData?.studyTopics || []} />
+            </section>
+          </main>
+        </div>
+      </div>
     </div>
   );
-} 
+}

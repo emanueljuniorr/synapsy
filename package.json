@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@uiw/react-markdown-editor": "^6.1.2",
+    "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.6.0",
