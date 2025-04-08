@@ -4,7 +4,7 @@ function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-foreground/60">
-            &copy; {new Date().getFullYear()} Synapsy. Todos os direitos reservados. Criado com 💜 por Sophia.
+            &copy; {new Date().getFullYear()} Synapsy. Todos os direitos reservados.
           </div>
           <div className="flex items-center gap-4">
             <a href="#" className="text-sm text-foreground/60 hover:text-primary transition-colors">

@@ -107,13 +107,36 @@ function Header() {
                   <span className="text-sm font-medium hidden sm:inline-block">
                     {user?.name || 'Usuário'}
                   </span>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  {user?.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.name || 'Avatar'} 
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                  )}
                 </button>
 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral rounded-lg shadow-lg border border-neutral/20 py-1 z-50">
+                    {!isDashboardRoute && (
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-neutral/10"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="14" width="7" height="7"></rect>
+                          <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        Dashboard
+                      </Link>
+                    )}
                     <Link
                       href="/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-neutral/10"

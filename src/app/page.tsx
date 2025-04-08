@@ -28,32 +28,34 @@ export default function Home() {
           
           <div className="flex-1 relative">
             <div className="w-full h-[400px] relative">
-              <div className="absolute w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl -top-10 -right-10 animate-pulse"></div>
-              <div className="absolute w-[200px] h-[200px] bg-accent/20 rounded-full blur-3xl bottom-0 left-20 animate-pulse" style={{ animationDelay: "1s" }}></div>
-              
-              <div className="relative z-10 bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl shadow-xl">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <div className="flex-1 h-6 bg-neutral/10 rounded-md"></div>
-                </div>
+              <div className="relative z-10">
+                <div className="w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl -top-10 -right-10 animate-pulse"></div>
+                <div className="w-[200px] h-[200px] bg-accent/20 rounded-full blur-3xl bottom-0 left-20 animate-pulse" style={{ animationDelay: "1s" }}></div>
                 
-                <div className="space-y-4">
-                  <div className="h-8 bg-primary/10 rounded-md w-3/4"></div>
-                  <div className="h-4 bg-neutral/10 rounded-md w-full"></div>
-                  <div className="h-4 bg-neutral/10 rounded-md w-5/6"></div>
-                  <div className="h-4 bg-neutral/10 rounded-md w-4/6"></div>
-                  
-                  <div className="flex gap-3 mt-8">
-                    <div className="h-8 w-20 bg-primary/20 rounded-md"></div>
-                    <div className="h-8 w-24 bg-accent/20 rounded-md"></div>
+                <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl shadow-xl">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="flex-1 h-6 bg-neutral/10 rounded-md"></div>
                   </div>
+                  
+                  <div className="space-y-4">
+                    <div className="h-8 bg-primary/10 rounded-md w-3/4"></div>
+                    <div className="h-4 bg-neutral/10 rounded-md w-full"></div>
+                    <div className="h-4 bg-neutral/10 rounded-md w-5/6"></div>
+                    <div className="h-4 bg-neutral/10 rounded-md w-4/6"></div>
+                    
+                    <div className="flex gap-3 mt-8">
+                      <div className="h-8 w-20 bg-primary/20 rounded-md"></div>
+                      <div className="h-8 w-24 bg-accent/20 rounded-md"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating elements */}
+                  <div className="absolute -top-5 -right-5 w-16 h-16 bg-primary/10 rounded-xl rotate-12 animate-float"></div>
+                  <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-accent/10 rounded-full animate-float" style={{ animationDelay: "1.5s" }}></div>
                 </div>
-                
-                {/* Floating elements */}
-                <div className="absolute -top-5 -right-5 w-16 h-16 bg-primary/10 rounded-xl rotate-12 animate-float"></div>
-                <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-accent/10 rounded-full animate-float" style={{ animationDelay: "1.5s" }}></div>
               </div>
             </div>
           </div>
