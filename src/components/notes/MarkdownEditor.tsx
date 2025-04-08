@@ -7,8 +7,8 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { 
   RiBold, RiItalic, RiStrikethrough, RiCodeLine, 
   RiH1, RiH2, RiH3, RiListUnordered, RiListOrdered,
-  RiLink, RiImage, RiSeparator, RiMore2Fill,
-  RiCheckboxLine, RiQuoteLine, RiTableLine
+  RiLinkM, RiImageLine, RiDivideLine, RiMore2Fill,
+  RiCheckboxLine, RiQuoteLine, RiTable2
 } from 'react-icons/ri';
 
 interface MarkdownEditorProps {
@@ -80,10 +80,10 @@ export default function SynapsyMarkdownEditor({
     { icon: RiListOrdered, label: 'Lista Numerada', action: () => insertText('1. ') },
     { icon: RiCheckboxLine, label: 'Lista de Tarefas', action: () => insertText('- [ ] ') },
     { icon: RiQuoteLine, label: 'Citação', action: () => insertText('> ') },
-    { icon: RiLink, label: 'Link', action: () => insertText('[', '](url)') },
-    { icon: RiImage, label: 'Imagem', action: () => insertText('![', '](url)') },
-    { icon: RiTableLine, label: 'Tabela', action: () => insertText('\n| Coluna 1 | Coluna 2 |\n|----------|----------|\n|          |          |\n') },
-    { icon: RiSeparator, label: 'Separador', action: () => insertText('\n---\n') },
+    { icon: RiLinkM, label: 'Link', action: () => insertText('[', '](url)') },
+    { icon: RiImageLine, label: 'Imagem', action: () => insertText('![', '](url)') },
+    { icon: RiTable2, label: 'Tabela', action: () => insertText('\n| Coluna 1 | Coluna 2 |\n|----------|----------|\n|          |          |\n') },
+    { icon: RiDivideLine, label: 'Separador', action: () => insertText('\n---\n') },
   ];
 
   // Atualizar posição da toolbar flutuante
