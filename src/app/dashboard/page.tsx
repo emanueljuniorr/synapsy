@@ -7,6 +7,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getDashboardData } from '@/lib/firestore';
 import { Task, Note, Event, StudyTopic } from '@/types';
 import { formatDate } from '@/lib/utils';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import RecentTasks from '@/components/dashboard/RecentTasks';
+import RecentNotes from '@/components/dashboard/RecentNotes';
+import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
+import StudyTopics from '@/components/dashboard/StudyTopics';
 
 interface DashboardData {
   tasks: Task[];
