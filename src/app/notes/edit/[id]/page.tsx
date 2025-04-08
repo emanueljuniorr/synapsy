@@ -6,7 +6,8 @@ import { Note } from '@/types/notes';
 
 export default function EditNotePage() {
   const router = useRouter();
-  const { id } = router.query;
+  const { query } = router;
+  const id = query?.id;
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
