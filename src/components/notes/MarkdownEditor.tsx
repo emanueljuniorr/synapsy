@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import '@uiw/react-markdown-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -192,27 +192,25 @@ function SynapsyMarkdownEditor({
 
       {/* Editor/Preview */}
       <div className="rounded-lg border border-neutral/20 overflow-hidden bg-background/50">
-        {typeof window !== 'undefined' && (
-          <>
-            {isPreviewMode ? (
-              <div className="p-6 min-h-[300px] prose prose-neutral dark:prose-invert max-w-none" style={{ height }}>
-                <MarkdownPreview source={value} />
-              </div>
-            ) : (
-              <MarkdownEditor
-                ref={editorRef}
-                value={value}
-                onChange={handleChange}
-                height={height}
-                placeholder={placeholder}
-                visible={true}
-                theme={dark ? 'dark' : 'light'}
-                enableScroll={true}
-                hideToolbar={true}
-              />
-            )}
-          </>
-        )}
+        <Suspense fallback={<div className="p-6 min-h-[300px] animate-pulse bg-neutral/10" style={{ height }}></div>}>
+          {isPreviewMode ? (
+            <div className="p-6 min-h-[300px] prose prose-neutral dark:prose-invert max-w-none" style={{ height }}>
+              <MarkdownPreview source={value} />
+            </div>
+          ) : (
+            <MarkdownEditor
+              ref={editorRef}
+              value={value}
+              onChange={handleChange}
+              height={height}
+              placeholder={placeholder}
+              visible={true}
+              theme={dark ? 'dark' : 'light'}
+              enableScroll={true}
+              hideToolbar={true}
+            />
+          )}
+        </Suspense>
       </div>
 
       <style jsx global>{`
