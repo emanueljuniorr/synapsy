@@ -29,9 +29,29 @@ const nextConfig = {
       },
     });
 
-    // Regra específica para o grpc-js
+    // Regra específica para o grpc-js package.json
+    config.module.rules.push({
+      test: /node_modules\/@grpc\/grpc-js\/package\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: JSON.stringify({
+            name: "@grpc/grpc-js",
+            version: "1.9.15",
+            main: "build/src/index.js",
+            types: "build/src/index.d.ts"
+          }),
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
+    // Regra geral para o grpc-js
     config.module.rules.push({
       test: /node_modules\/@grpc\/grpc-js\/.*\.json$/,
+      exclude: /node_modules\/@grpc\/grpc-js\/package\.json$/,
       use: 'json-loader',
       type: 'javascript/auto',
     });
