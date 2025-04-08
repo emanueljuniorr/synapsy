@@ -4,6 +4,8 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import { usePathname } from 'next/navigation';
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -19,6 +21,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background/80 backdrop-blur-sm flex flex-col relative z-10">
+      <Navbar />
       <Header />
       
       <div className="flex flex-1 overflow-hidden">
@@ -28,6 +31,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
       </div>
+      <Footer />
     </div>
   );
 } 

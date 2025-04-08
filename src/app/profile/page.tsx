@@ -16,11 +16,13 @@ export default function ProfilePage() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUser(user);
-        // Converte o timestamp de criação da conta para data formatada
-        const date = new Date(Number(user.metadata.creationTime));
-        const month = date.toLocaleString('pt-BR', { month: 'short' });
-        const year = date.getFullYear();
-        setCreatedAt(`${month} ${year}`);
+        // Corrigindo a formatação da data
+        if (user.metadata.creationTime) {
+          const date = new Date(user.metadata.creationTime);
+          const month = date.toLocaleString('pt-BR', { month: 'long' });
+          const year = date.getFullYear();
+          setCreatedAt(`${month} ${year}`);
+        }
 
         // Aqui você pode fazer uma chamada para sua API para obter o plano do usuário
         // Por enquanto vamos simular

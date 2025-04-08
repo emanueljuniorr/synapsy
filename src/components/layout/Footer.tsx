@@ -93,7 +93,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/10 text-center text-sm text-foreground/60">
-          <p>© {new Date().getFullYear()} Synapsy. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Synapsy. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

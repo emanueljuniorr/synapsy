@@ -67,10 +67,6 @@ export default function SettingsPage() {
                 title="Lembretes de Estudo"
                 description="Receba lembretes sobre seus horários de estudo"
               />
-              <NotificationSetting
-                title="Notificações por Email"
-                description="Receba um resumo semanal das suas atividades"
-              />
             </div>
           </section>
 
@@ -89,7 +85,6 @@ export default function SettingsPage() {
               <PrivacySetting
                 title="Compartilhar Estatísticas"
                 description="Compartilhar suas estatísticas de uso anonimamente"
-                defaultChecked
               />
             </div>
           </section>
@@ -109,7 +104,6 @@ export default function SettingsPage() {
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
                 }
-                isConnected
               />
               <IntegrationCard
                 name="GitHub"
