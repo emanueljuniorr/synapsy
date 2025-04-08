@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,17 +22,18 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#080813" />
       </head>
-      <body className={`${inter.className} min-h-screen`}>
-        <div className="stars-container">
-          <div className="stars"></div>
-          <div className="stars2"></div>
-          <div className="stars3"></div>
+      <body className={cn(
+        inter.className,
+        "min-h-screen bg-background antialiased overflow-x-hidden"
+      )}>
+        <div className="stars-container fixed inset-0 z-0">
+          <div id="stars"></div>
+          <div id="stars2"></div>
+          <div id="stars3"></div>
         </div>
-        <div className="relative z-1">
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </div>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

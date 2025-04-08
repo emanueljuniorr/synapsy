@@ -48,7 +48,7 @@ function Header() {
     <header className="bg-white dark:bg-neutral shadow-sm border-b border-neutral/20 sticky top-0 z-10">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             {isDashboardRoute && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -62,15 +62,15 @@ function Header() {
               </button>
             )}
             
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                Synapsy
-              </span>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="text-white font-bold text-lg">S</span>
+            </div>
+            <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+              Synapsy
+            </span>
+          </Link>
+        </div>
 
           {/* Barra de pesquisa */}
           {isDashboardRoute && (
@@ -84,10 +84,10 @@ function Header() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
+                    </svg>
               </div>
-            </div>
-          )}
+          </div>
+        )}
 
           {/* Menu do usuário */}
           {isAuthenticated ? (
@@ -101,15 +101,15 @@ function Header() {
 
               <div className="relative" ref={userMenuRef}>
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
                   <span className="text-sm font-medium hidden sm:inline-block">
                     {user?.name || 'Usuário'}
                   </span>
-                  {user?.photoURL ? (
+                  {user?.photoURL || user?.avatar ? (
                     <img 
-                      src={user.photoURL} 
+                      src={user.photoURL || user.avatar} 
                       alt={user.name || 'Avatar'} 
                       className="w-9 h-9 rounded-full object-cover"
                     />
@@ -119,12 +119,12 @@ function Header() {
                     </div>
                   )}
                 </button>
-
-                {userMenuOpen && (
+              
+              {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral rounded-lg shadow-lg border border-neutral/20 py-1 z-50">
                     {!isDashboardRoute && (
                       <Link
-                        href="/dashboard"
+                      href="/dashboard" 
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-neutral/10"
                         onClick={() => setUserMenuOpen(false)}
                       >
@@ -148,8 +148,8 @@ function Header() {
                       </svg>
                       Perfil
                     </Link>
-                    <Link
-                      href="/settings"
+                    <Link 
+                      href="/settings" 
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-neutral/10"
                       onClick={() => setUserMenuOpen(false)}
                     >
@@ -160,7 +160,7 @@ function Header() {
                       Configurações
                     </Link>
                     <hr className="my-1 border-neutral/20" />
-                    <button
+                    <button 
                       onClick={handleLogout}
                       className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-neutral/10 w-full text-left"
                     >
@@ -173,7 +173,7 @@ function Header() {
                     </button>
                   </div>
                 )}
-              </div>
+                </div>
             </div>
           ) : (
             <div className="flex items-center gap-4">
@@ -237,35 +237,35 @@ function Header() {
               </svg>
               Anotações
             </Link>
-            <Link
+                  <Link 
               href="/calendar"
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 pathname === '/calendar' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" />
               </svg>
               Calendário
-            </Link>
-            <Link
+                  </Link>
+                  <Link 
               href="/study"
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 pathname === '/study' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
               </svg>
               Estudos
-            </Link>
-          </nav>
+                  </Link>
+            </nav>
         </div>
       )}
     </header>
   );
 }
 
-export default Header;
+export default Header; 

@@ -5,7 +5,7 @@ export interface User {
   id: string;
   name: string;
   email: string | null;
-  photoURL?: string;
+  photoURL: string | null;
   avatar?: string;
   createdAt?: Date;
   updatedAt?: Date;

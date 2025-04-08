@@ -18,7 +18,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                           pathname.startsWith('/study');
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background/80 backdrop-blur-sm flex flex-col relative z-10">
       <Header />
       
       <div className="flex flex-1 overflow-hidden">

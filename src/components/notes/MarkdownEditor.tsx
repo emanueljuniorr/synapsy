@@ -198,18 +198,18 @@ function SynapsyMarkdownEditor({
               <MarkdownPreview source={value} />
             </div>
           ) : (
-            <MarkdownEditor
+          <MarkdownEditor
               ref={editorRef}
-              value={value}
-              onChange={handleChange}
-              height={height}
-              placeholder={placeholder}
-              visible={true}
-              theme={dark ? 'dark' : 'light'}
-              enableScroll={true}
+            value={value}
+            onChange={handleChange}
+            height={height}
+            placeholder={placeholder}
+            visible={true}
+            theme={dark ? 'dark' : 'light'}
+            enableScroll={true}
               hideToolbar={true}
-            />
-          )}
+          />
+        )}
         </Suspense>
       </div>
 
