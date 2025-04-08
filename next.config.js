@@ -36,6 +36,34 @@ const nextConfig = {
       type: 'javascript/auto',
     });
 
+    // Regra mais específica para character-entities-legacy em react-syntax-highlighter
+    config.module.rules.push({
+      test: /node_modules\/react-syntax-highlighter\/node_modules\/character-entities-legacy\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
+    // Regra mais específica para character-entities-legacy geral
+    config.module.rules.push({
+      test: /node_modules\/.*character-entities-legacy\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
     // Regra para arquivos de entidades HTML (character-entities-*)
     config.module.rules.push({
       test: /node_modules\/character-entities.*\/.*\.json$/,
