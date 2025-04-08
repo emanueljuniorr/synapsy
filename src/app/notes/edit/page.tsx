@@ -116,25 +116,31 @@ export default function EditNotePage() {
   
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">
-            {isNewNote ? 'Nova Nota' : 'Editar Nota'}
-          </h1>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => router.push('/notes')}
-              className="px-4 py-2 border border-neutral/30 text-foreground/70 rounded-lg hover:bg-neutral/10 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={saveNote}
-              disabled={isSaving}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSaving ? 'Salvando...' : 'Salvar Nota'}
-            </button>
+      <div className="max-w-5xl mx-auto px-4">
+        {/* Header com gradiente e efeito de vidro */}
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
+          <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                {isNewNote ? 'Nova Nota' : 'Editar Nota'}
+              </h1>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => router.push('/notes')}
+                  className="px-4 py-2 rounded-xl border border-white/10 text-foreground/70 hover:bg-white/5 transition-all duration-300"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={saveNote}
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed backdrop-blur-lg"
+                >
+                  {isSaving ? 'Salvando...' : 'Salvar Nota'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -145,8 +151,8 @@ export default function EditNotePage() {
         ) : (
           <div className="space-y-6">
             {/* Título */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium mb-1">
+            <div className="bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              <label htmlFor="title" className="block text-sm font-medium mb-2 text-foreground/70">
                 Título
               </label>
               <input
@@ -155,16 +161,16 @@ export default function EditNotePage() {
                 value={note.title}
                 onChange={handleTitleChange}
                 placeholder="Digite o título da nota..."
-                className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white dark:bg-neutral"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder-foreground/30 text-lg transition-all duration-300"
               />
             </div>
             
             {/* Tags */}
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium mb-1">
+            <div className="bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              <label htmlFor="tags" className="block text-sm font-medium mb-2 text-foreground/70">
                 Tags
               </label>
-              <div className="flex items-center">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   id="tags"
@@ -172,28 +178,28 @@ export default function EditNotePage() {
                   onChange={handleTagInputChange}
                   onKeyDown={handleTagInputKeyDown}
                   placeholder="Adicione tags (pressione Enter)..."
-                  className="flex-1 px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white dark:bg-neutral"
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder-foreground/30 transition-all duration-300"
                 />
                 <button
                   onClick={() => addTag(tagInput.trim())}
                   disabled={!tagInput.trim()}
-                  className="ml-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="px-4 py-3 bg-primary/80 hover:bg-primary text-white rounded-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed backdrop-blur-lg whitespace-nowrap"
                 >
-                  Adicionar
+                  Adicionar Tag
                 </button>
               </div>
               
               {note.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-4">
                   {note.tags.map(tag => (
                     <div 
                       key={tag} 
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
                     >
-                      <span>#{tag}</span>
+                      <span className="text-sm">#{tag}</span>
                       <button 
                         onClick={() => removeTag(tag)}
-                        className="text-primary hover:text-red-500"
+                        className="text-primary hover:text-red-500 transition-colors"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -207,34 +213,21 @@ export default function EditNotePage() {
             </div>
             
             {/* Editor Markdown */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
+            <div className="bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              <label className="block text-sm font-medium mb-2 text-foreground/70">
                 Conteúdo
               </label>
-              <div className="border-0 rounded-lg overflow-hidden">
-                <SynapsyMarkdownEditor
-                  initialValue={note.content}
-                  onChange={handleContentChange}
-                  height="500px"
-                />
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-xl blur-3xl" />
+                <div className="relative">
+                  <SynapsyMarkdownEditor
+                    initialValue={note.content}
+                    onChange={handleContentChange}
+                    height="600px"
+                    placeholder="Comece a escrever... Use Markdown para formatar seu texto"
+                  />
+                </div>
               </div>
-            </div>
-            
-            {/* Botões de ação (rodapé da página) */}
-            <div className="flex justify-end gap-2 pt-4">
-              <button 
-                onClick={() => router.push('/notes')}
-                className="px-4 py-2 border border-neutral/30 text-foreground/70 rounded-lg hover:bg-neutral/10 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={saveNote}
-                disabled={isSaving}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSaving ? 'Salvando...' : 'Salvar Nota'}
-              </button>
             </div>
           </div>
         )}

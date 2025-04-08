@@ -4,6 +4,7 @@ import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import NoteCard from '@/components/notes/NoteCard';
 import { useRouter } from 'next/navigation';
+import { RiAddLine, RiSearchLine, RiHashtag } from 'react-icons/ri';
 
 interface Note {
   id: string;
@@ -78,94 +79,111 @@ export default function NotesPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-bold">
-            Anotações
-          </h1>
-          <button 
-            className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors w-full sm:w-auto"
-            onClick={createNewNote}
-          >
-            Nova Nota
-          </button>
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Elementos decorativos espaciais */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
+          <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
+          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
         </div>
-        
-        {/* Barra de pesquisa e filtros */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-foreground/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Pesquisar anotações..."
-                className="pl-10 pr-4 py-2 border border-neutral/20 rounded-lg w-full bg-white dark:bg-neutral focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Tags */}
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button
-              className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                selectedTag === null 
-                  ? 'bg-primary text-white' 
-                  : 'bg-neutral/20 text-foreground/70 hover:bg-neutral/30'
-              }`}
-              onClick={() => setSelectedTag(null)}
-            >
-              Todas
-            </button>
-            {allTags.map(tag => (
-              <button
-                key={tag}
-                className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                  selectedTag === tag 
-                    ? 'bg-primary text-white' 
-                    : 'bg-neutral/20 text-foreground/70 hover:bg-neutral/30'
-                }`}
-                onClick={() => setSelectedTag(tag)}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
-        )}
-        
-        {/* Lista de Notas */}
-        <div className="grid gap-4">
-          {filteredNotes.length > 0 ? (
-            filteredNotes.map(note => (
-              <NoteCard
-                key={note.id}
-                id={note.id}
-                title={note.title}
-                content={note.content}
-                tags={note.tags}
-                createdAt={note.createdAt}
-                updatedAt={note.updatedAt}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))
-          ) : (
-            <div className="text-center py-12 bg-neutral/10 rounded-lg">
-              <p className="text-foreground/60">
-                {searchTerm || selectedTag
-                  ? 'Nenhuma anotação encontrada com os filtros selecionados.'
-                  : 'Você não tem nenhuma anotação ainda. Crie uma nova nota para começar!'}
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Cabeçalho */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                Anotações
+              </h1>
+              <p className="text-foreground/60 mt-1">
+                Organize suas ideias e conhecimentos
               </p>
             </div>
-          )}
+            <button 
+              onClick={createNewNote}
+              className="group relative px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
+            >
+              <RiAddLine className="w-5 h-5" />
+              <span>Nova Nota</span>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity blur-xl -z-10" />
+            </button>
+          </div>
+          
+          {/* Barra de pesquisa e filtros */}
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <RiSearchLine className="w-5 h-5 text-foreground/40" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Pesquisar anotações..."
+                    className="pl-10 pr-4 py-2 w-full bg-white/5 backdrop-blur border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              {/* Tags */}
+              {allTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <RiHashtag className="w-5 h-5 text-foreground/40" />
+                  <button
+                    className={`text-sm px-4 py-1.5 rounded-xl transition-all ${
+                      selectedTag === null 
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                        : 'bg-white/5 text-foreground/70 hover:bg-white/10'
+                    }`}
+                    onClick={() => setSelectedTag(null)}
+                  >
+                    Todas
+                  </button>
+                  {allTags.map(tag => (
+                    <button
+                      key={tag}
+                      className={`text-sm px-4 py-1.5 rounded-xl transition-all ${
+                        selectedTag === tag 
+                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                          : 'bg-white/5 text-foreground/70 hover:bg-white/10'
+                      }`}
+                      onClick={() => setSelectedTag(tag)}
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Lista de Notas */}
+          <div className="grid gap-6">
+            {filteredNotes.length > 0 ? (
+              filteredNotes.map(note => (
+                <NoteCard
+                  key={note.id}
+                  id={note.id}
+                  title={note.title}
+                  content={note.content}
+                  tags={note.tags}
+                  createdAt={note.createdAt}
+                  updatedAt={note.updatedAt}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))
+            ) : (
+              <div className="text-center py-12 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl">
+                <p className="text-foreground/60">
+                  {searchTerm || selectedTag
+                    ? 'Nenhuma anotação encontrada com os filtros selecionados.'
+                    : 'Você não tem nenhuma anotação ainda. Crie uma nova nota para começar!'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </MainLayout>
