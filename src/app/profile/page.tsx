@@ -1,3 +1,5 @@
+"use client";
+
 import { Metadata } from "next";
 import MainLayout from "@/components/layout/MainLayout";
 import { auth } from "@/lib/firebase";
