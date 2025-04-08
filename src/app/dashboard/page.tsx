@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDashboardData } from '@/lib/firestore';
 import { Task, Note, Event, StudyTopic } from '@/types';
 import { formatDate } from '@/lib/utils';
-import Link from 'next/link';
 
 interface DashboardData {
   tasks: Task[];
@@ -24,9 +24,11 @@ interface DashboardData {
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [activeSection, setActiveSection] = useState('dashboard');
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  
+  const isActive = (path: string) => pathname === path;
   
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
@@ -150,10 +152,10 @@ export default function DashboardPage() {
         {/* Barra lateral */}
         <aside className="hidden md:block w-64 bg-white dark:bg-neutral border-r border-neutral/20 p-4 overflow-y-auto">
           <nav className="space-y-1">
-            <button 
-              onClick={() => setActiveSection('dashboard')}
+            <Link
+              href="/dashboard"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeSection === 'dashboard' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
+                isActive('/dashboard') ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -163,55 +165,55 @@ export default function DashboardPage() {
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               Dashboard
-            </button>
+            </Link>
             
-            <button 
-              onClick={() => setActiveSection('tasks')}
+            <Link
+              href="/tasks"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeSection === 'tasks' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
+                isActive('/tasks') ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v4" /><path d="M12 18v4" /><path d="m4.93 4.93 2.83 2.83" /><path d="m16.24 16.24 2.83 2.83" /><path d="M2 12h4" /><path d="M18 12h4" /><path d="m4.93 19.07 2.83-2.83" /><path d="m16.24 7.76 2.83-2.83" />
               </svg>
               Tarefas
-            </button>
+            </Link>
             
-            <button 
-              onClick={() => setActiveSection('notes')}
+            <Link
+              href="/notes"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeSection === 'notes' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
+                isActive('/notes') ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="m22 2-20 20" />
               </svg>
               Anotações
-            </button>
+            </Link>
             
-            <button 
-              onClick={() => setActiveSection('calendar')}
+            <Link
+              href="/calendar"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeSection === 'calendar' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
+                isActive('/calendar') ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" />
               </svg>
               Calendário
-            </button>
-            
-            <button 
-              onClick={() => setActiveSection('study')}
+            </Link>
+
+            <Link
+              href="/study"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left ${
-                activeSection === 'study' ? 'bg-primary text-white' : 'hover:bg-neutral/10'
+                isActive('/study') ? 'bg-primary text-white' : 'hover:bg-neutral/10'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
               </svg>
               Estudos
-            </button>
+            </Link>
           </nav>
           
           <div className="mt-8 pt-6 border-t border-neutral/20">
