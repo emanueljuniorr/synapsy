@@ -1,16 +1,10 @@
 "use client";
 
-import { Metadata } from "next";
 import MainLayout from "@/components/layout/MainLayout";
 import { auth } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import { User } from "firebase/auth";
 import Image from "next/image";
-
-export const metadata: Metadata = {
-  title: "Perfil | Synapsy",
-  description: "Gerencie seu perfil e preferências no Synapsy",
-};
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
