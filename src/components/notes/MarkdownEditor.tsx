@@ -8,7 +8,7 @@ import {
   RiBold, RiItalic, RiStrikethrough, RiCodeLine, 
   RiH1, RiH2, RiH3, RiListUnordered, RiListOrdered,
   RiLinkM, RiImageLine, RiDivideLine, RiMore2Fill,
-  RiCheckboxLine, RiQuoteLine, RiTable2
+  RiCheckboxLine, RiDoubleQuotesL, RiTable2
 } from 'react-icons/ri';
 
 interface MarkdownEditorProps {
@@ -79,7 +79,7 @@ export default function SynapsyMarkdownEditor({
     { icon: RiListUnordered, label: 'Lista', action: () => insertText('- ') },
     { icon: RiListOrdered, label: 'Lista Numerada', action: () => insertText('1. ') },
     { icon: RiCheckboxLine, label: 'Lista de Tarefas', action: () => insertText('- [ ] ') },
-    { icon: RiQuoteLine, label: 'Citação', action: () => insertText('> ') },
+    { icon: RiDoubleQuotesL, label: 'Citação', action: () => insertText('> ') },
     { icon: RiLinkM, label: 'Link', action: () => insertText('[', '](url)') },
     { icon: RiImageLine, label: 'Imagem', action: () => insertText('![', '](url)') },
     { icon: RiTable2, label: 'Tabela', action: () => insertText('\n| Coluna 1 | Coluna 2 |\n|----------|----------|\n|          |          |\n') },
