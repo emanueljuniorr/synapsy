@@ -11,18 +11,34 @@ const nextConfig = {
   },
   // Configuração para resolver problemas com arquivos JSON nas dependências
   webpack: (config, { isServer }) => {
-    // Resolver problemas com arquivos JSON em todas as dependências
+    // Desativar o parser de JSON padrão para todos os arquivos JSON
+    // e usar um parser personalizado que é mais tolerante
+    config.module.rules.forEach((rule) => {
+      if (rule.type === 'json') {
+        rule.type = undefined;
+      }
+    });
+    
+    // Adicionar um loader específico para arquivos JSON
     config.module.rules.unshift({
       test: /\.json$/,
+      loader: 'json5-loader',
       type: 'javascript/auto',
-      resolve: {
-        fullySpecified: false
-      }
+      options: {
+        esModule: false,
+      },
     });
 
     // Regra específica para o grpc-js
     config.module.rules.push({
       test: /node_modules\/@grpc\/grpc-js\/.*\.json$/,
+      use: 'json-loader',
+      type: 'javascript/auto',
+    });
+
+    // Regra para arquivos de entidades HTML (character-entities-*)
+    config.module.rules.push({
+      test: /node_modules\/character-entities.*\/.*\.json$/,
       use: 'json-loader',
       type: 'javascript/auto',
     });
@@ -34,14 +50,32 @@ const nextConfig = {
         "fs": false,
         "net": false,
         "tls": false,
-        "dns": false
+        "dns": false,
+        "path": false,
+        "url": false,
+        "stream": false,
+        "http": false,
+        "https": false,
+        "zlib": false,
+        "util": false
       };
     }
     
     return config;
   },
   // Transpilação de dependências que precisam de suporte ao ESM
-  transpilePackages: ['@grpc/grpc-js', '@firebase/firestore']
+  transpilePackages: [
+    '@grpc/grpc-js', 
+    '@firebase/firestore', 
+    'character-entities',
+    'character-entities-legacy', 
+    'character-reference-invalid',
+    'remark',
+    'unified',
+    'unist',
+    'mdast',
+    'react-syntax-highlighter'
+  ]
 };
 
 module.exports = nextConfig; 
