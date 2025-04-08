@@ -1,20 +1,33 @@
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+'use client';
+
+import { ReactNode } from 'react';
+import Header from './Header';
+import Sidebar from './Sidebar';
+import { usePathname } from 'next/navigation';
 
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({ children }: MainLayoutProps) {
+  const pathname = usePathname();
+  const isDashboardRoute = pathname.startsWith('/dashboard') || 
+                          pathname.startsWith('/tasks') || 
+                          pathname.startsWith('/notes') || 
+                          pathname.startsWith('/calendar') || 
+                          pathname.startsWith('/study');
+
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 w-full max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl">
-        {children}
-      </main>
-      <Footer />
+      
+      <div className="flex flex-1 overflow-hidden">
+        {isDashboardRoute && <Sidebar />}
+        
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
-}
-
-export default MainLayout; 
+} 
