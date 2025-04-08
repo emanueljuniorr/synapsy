@@ -88,52 +88,56 @@ export default function NoteEditorPage({ params }: NoteEditorPageProps) {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
-        <input
-          type="text"
-          value={note.title}
-          onChange={(e) => setNote({ ...note, title: e.target.value })}
-          placeholder="Título da nota..."
-          className="text-3xl font-bold bg-transparent border-none focus:outline-none text-white placeholder-white/40 w-full"
-        />
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/notes')}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <RiCloseLine size={20} />
-            <span>Cancelar</span>
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RiSaveLine size={20} />
-            <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
-          </button>
+      <div className="backdrop-blur-md bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg transition-all duration-300 hover:bg-white/10">
+        <div className="flex items-center justify-between mb-6">
+          <input
+            type="text"
+            value={note.title}
+            onChange={(e) => setNote({ ...note, title: e.target.value })}
+            placeholder="Título da nota..."
+            className="text-3xl font-bold bg-transparent border-none focus:outline-none text-white placeholder-white/40 w-full transition-all duration-300 hover:placeholder-white/60 focus:placeholder-white/60"
+          />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/notes')}
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20"
+            >
+              <RiCloseLine size={20} className="transition-transform duration-300 group-hover:rotate-90" />
+              <span>Cancelar</span>
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-purple-500/20"
+            >
+              <RiSaveLine size={20} className="transition-transform duration-300 group-hover:scale-110" />
+              <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            value={note.tags?.join(', ') || ''}
+            onChange={(e) => setNote({ 
+              ...note, 
+              tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+            })}
+            placeholder="Tags (separadas por vírgula)..."
+            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500 transition-all duration-300 hover:bg-white/10 focus:bg-white/10 hover:placeholder-white/60 focus:placeholder-white/60"
+          />
+        </div>
+
+        <div className="rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-white/20">
+          <SynapsyMarkdownEditor
+            initialValue={note.content}
+            onChange={(content) => setNote({ ...note, content })}
+            placeholder="Comece a escrever sua nota..."
+            height="calc(100vh - 280px)"
+          />
         </div>
       </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          value={note.tags?.join(', ') || ''}
-          onChange={(e) => setNote({ 
-            ...note, 
-            tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-          })}
-          placeholder="Tags (separadas por vírgula)..."
-          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500 transition-colors"
-        />
-      </div>
-
-      <SynapsyMarkdownEditor
-        initialValue={note.content}
-        onChange={(content) => setNote({ ...note, content })}
-        placeholder="Comece a escrever sua nota..."
-        height="calc(100vh - 240px)"
-      />
     </div>
   );
 } 
