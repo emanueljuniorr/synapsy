@@ -146,7 +146,7 @@ export default function SynapsyMarkdownEditor({
               title={`${button.label}${button.shortcut ? ` (${button.shortcut})` : ''}`}
             >
               <button.icon size={18} />
-              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs bg-neutral-800 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-neutral-900 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg border border-white/10">
                 {button.label}
               </span>
             </button>
