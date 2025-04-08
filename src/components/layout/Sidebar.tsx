@@ -13,7 +13,7 @@ export default function Sidebar() {
     { path: '/tasks', label: 'Tarefas', icon: 'list-check' },
     { path: '/notes', label: 'Anotações', icon: 'note' },
     { path: '/calendar', label: 'Calendário', icon: 'calendar' },
-    { path: '/studies', label: 'Estudos', icon: 'book' }
+    { path: '/study', label: 'Estudos', icon: 'book' }
   ];
 
   const recentProjects = [

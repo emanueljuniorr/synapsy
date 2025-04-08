@@ -160,7 +160,7 @@ export default function DashboardPage() {
             <section className="bg-background/40 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Tópicos de Estudo</h2>
-                <Link href="/studies" className="text-primary hover:opacity-80 transition-opacity">
+                <Link href="/study" className="text-primary hover:opacity-80 transition-opacity">
                   Ver todos
                 </Link>
               </div>

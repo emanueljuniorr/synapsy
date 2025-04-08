@@ -47,7 +47,7 @@ export default function StudyTopics() {
       <div className="text-center py-8">
         <p className="text-foreground/60 mb-4">Nenhum tópico de estudo criado</p>
         <Link 
-          href="/studies/new" 
+          href="/study/new" 
           className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
         >
           Criar Tópico
@@ -61,7 +61,7 @@ export default function StudyTopics() {
       {topics.map((topic) => (
         <Link 
           key={topic.id} 
-          href={`/studies/${topic.id}`}
+          href={`/study/${topic.id}`}
           className="block p-4 rounded-lg bg-background/50 hover:bg-background/70 border border-white/5 hover:border-primary/30 transition-all"
         >
           <div className="flex items-start justify-between gap-4">

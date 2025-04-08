@@ -7,7 +7,7 @@ const NO_FOOTER_ROUTES = [
   '/dashboard',
   '/calendar',
   '/notes',
-  '/studies',
+  '/study',
   '/tasks',
   '/workflow',
   '/auth',
