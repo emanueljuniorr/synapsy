@@ -1,5 +1,9 @@
 import { Metadata } from "next";
 import MainLayout from "@/components/layout/MainLayout";
+import { auth } from "@/lib/firebase";
+import { useEffect, useState } from "react";
+import { User } from "firebase/auth";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Perfil | Synapsy",
@@ -7,6 +11,30 @@ export const metadata: Metadata = {
 };
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [createdAt, setCreatedAt] = useState<string>("");
+  const [plan, setPlan] = useState({ name: "Free", color: "neutral" });
+
+  useEffect(() => {
+    // Observa mudanças no estado de autenticação
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setUser(user);
+        // Converte o timestamp de criação da conta para data formatada
+        const date = new Date(Number(user.metadata.creationTime));
+        const month = date.toLocaleString('pt-BR', { month: 'short' });
+        const year = date.getFullYear();
+        setCreatedAt(`${month} ${year}`);
+
+        // Aqui você pode fazer uma chamada para sua API para obter o plano do usuário
+        // Por enquanto vamos simular
+        setPlan({ name: "Pro", color: "primary" });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -20,9 +48,19 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-primary to-accent p-1">
-                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl font-bold text-white">
-                    EJ
-                  </div>
+                  {user?.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt={user.displayName || "Avatar"}
+                      width={96}
+                      height={96}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center text-2xl font-bold text-white">
+                      {user?.displayName?.charAt(0) || "U"}
+                    </div>
+                  )}
                 </div>
                 <button className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-primary-dark transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,14 +72,14 @@ export default function ProfilePage() {
 
               {/* Informações do Perfil */}
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold mb-2">Emanuel Junior</h1>
-                <p className="text-foreground/60 mb-4">emanuel@example.com</p>
+                <h1 className="text-2xl font-bold mb-2">{user?.displayName || "Usuário"}</h1>
+                <p className="text-foreground/60 mb-4">{user?.email}</p>
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                    Plano Pro
+                  <span className={`px-3 py-1 bg-${plan.color}/10 text-${plan.color} rounded-full text-sm`}>
+                    Plano {plan.name}
                   </span>
                   <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm">
-                    Desde Set 2023
+                    Desde {createdAt}
                   </span>
                 </div>
               </div>
@@ -70,7 +108,8 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                  defaultValue="Emanuel Junior"
+                  defaultValue={user?.displayName || ""}
+                  placeholder="Seu nome completo"
                 />
               </div>
               <div>
@@ -80,7 +119,8 @@ export default function ProfilePage() {
                 <input
                   type="email"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                  defaultValue="emanuel@example.com"
+                  defaultValue={user?.email || ""}
+                  disabled
                 />
               </div>
               <div>
@@ -114,16 +154,6 @@ export default function ProfilePage() {
                 <div>
                   <h3 className="font-medium">Notificações por Email</h3>
                   <p className="text-sm text-foreground/60">Receba atualizações sobre suas atividades</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-neutral/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Tema Escuro</h3>
-                  <p className="text-sm text-foreground/60">Alterne entre tema claro e escuro</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
