@@ -34,12 +34,28 @@ function SynapsyMarkdownEditor({
 }: MarkdownEditorProps) {
   const [value, setValue] = useState(initialValue);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
   const editorRef = useRef<any>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Sincronizar com a prop initialValue se ela mudar
   useEffect(() => {
     setValue(initialValue);
   }, [initialValue]);
+
+  // Fechar a toolbar quando clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+        setShowToolbar(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Gerenciar mudanças no editor
   const handleChange = (editor: any, data: any, value: string) => {
@@ -48,146 +64,138 @@ function SynapsyMarkdownEditor({
   };
 
   // Atalhos para inserir elementos comuns
-  const insertHeading = (level: number) => {
-    const prefix = '#'.repeat(level) + ' ';
-    const newValue = value + `\n${prefix}Título ${level}\n`;
+  const insertContent = (type: string) => {
+    let newContent = '';
+    switch (type) {
+      case 'h1':
+        newContent = '\n# ';
+        break;
+      case 'h2':
+        newContent = '\n## ';
+        break;
+      case 'h3':
+        newContent = '\n### ';
+        break;
+      case 'bullet':
+        newContent = '\n- ';
+        break;
+      case 'number':
+        newContent = '\n1. ';
+        break;
+      case 'code':
+        newContent = '\n```\n\n```\n';
+        break;
+      case 'image':
+        newContent = '\n![]()\n';
+        break;
+      case 'table':
+        newContent = '\n| Coluna 1 | Coluna 2 |\n|----------|----------|\n|          |          |\n';
+        break;
+      default:
+        return;
+    }
+    const newValue = value + newContent;
     setValue(newValue);
     onChange(newValue);
+    setShowToolbar(false);
   };
 
-  const insertList = (ordered: boolean = false) => {
-    const prefix = ordered ? '1. ' : '- ';
-    const newValue = value + `\n${prefix}Item da lista\n`;
-    setValue(newValue);
-    onChange(newValue);
-  };
-
-  const insertCodeBlock = () => {
-    const newValue = value + '\n```javascript\n// Seu código aqui\n```\n';
-    setValue(newValue);
-    onChange(newValue);
-  };
-
-  const insertImage = () => {
-    const newValue = value + '\n![Descrição da imagem](url_da_imagem)\n';
-    setValue(newValue);
-    onChange(newValue);
-  };
-
-  const insertTable = () => {
-    const newValue = value + '\n| Coluna 1 | Coluna 2 | Coluna 3 |\n| --- | --- | --- |\n| Conteúdo 1 | Conteúdo 2 | Conteúdo 3 |\n';
-    setValue(newValue);
-    onChange(newValue);
-  };
-
-  const dark = true; // Para adaptar a temas claros/escuros futuramente
+  const dark = true;
 
   return (
-    <div className="markdown-editor-container">
-      {/* Barra de ferramentas personalizada */}
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-neutral/10 rounded-t-lg border border-b-0 border-neutral/20">
-        <button 
-          onClick={() => insertHeading(1)} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm font-medium"
-          title="Título 1"
-        >
-          H1
-        </button>
-        <button 
-          onClick={() => insertHeading(2)} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm font-medium"
-          title="Título 2"
-        >
-          H2
-        </button>
-        <button 
-          onClick={() => insertHeading(3)} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm font-medium"
-          title="Título 3"
-        >
-          H3
-        </button>
-        <div className="w-px h-5 bg-neutral/20 mx-1"></div>
-        <button 
-          onClick={() => insertList(false)} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm"
-          title="Lista com marcadores"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-        </button>
-        <button 
-          onClick={() => insertList(true)} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm"
-          title="Lista numerada"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="10" y1="6" x2="21" y2="6"></line>
-            <line x1="10" y1="12" x2="21" y2="12"></line>
-            <line x1="10" y1="18" x2="21" y2="18"></line>
-            <path d="M4 6h1v4"></path>
-            <path d="M4 10h2"></path>
-            <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
-          </svg>
-        </button>
-        <button 
-          onClick={() => insertCodeBlock()} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm"
-          title="Bloco de código"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-        </button>
-        <button 
-          onClick={() => insertImage()} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm"
-          title="Inserir imagem"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <polyline points="21 15 16 10 5 21"></polyline>
-          </svg>
-        </button>
-        <button 
-          onClick={() => insertTable()} 
-          className="p-1.5 rounded hover:bg-neutral/20 text-sm"
-          title="Inserir tabela"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="3" y1="15" x2="21" y2="15"></line>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
-          </svg>
-        </button>
-        <div className="flex-grow"></div>
-        {showPreview && (
-          <button 
-            onClick={() => setIsPreviewMode(!isPreviewMode)} 
-            className={`p-1.5 rounded hover:bg-neutral/20 text-sm font-medium ${isPreviewMode ? 'bg-neutral/20' : ''}`}
-            title={isPreviewMode ? "Modo de edição" : "Modo de visualização"}
-          >
-            {isPreviewMode ? "Editar" : "Visualizar"}
-          </button>
-        )}
-      </div>
+    <div className="markdown-editor-container relative">
+      {/* Botão minimalista para mostrar a toolbar */}
+      <button
+        onClick={() => setShowToolbar(!showToolbar)}
+        className="absolute top-2 right-2 z-10 p-1.5 rounded-md hover:bg-neutral/10 transition-colors"
+        title="Mostrar ferramentas"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+        </svg>
+      </button>
 
-      {/* O Wrapper div abaixo garante que o editor está dentro de um componente cliente */}
-      <div className="rounded-b-lg border border-neutral/20 overflow-hidden">
+      {/* Toolbar flutuante */}
+      {showToolbar && (
+        <div
+          ref={toolbarRef}
+          className="absolute top-10 right-2 z-20 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border border-neutral/20 p-2 flex flex-col gap-1 min-w-[180px]"
+        >
+          <button
+            onClick={() => insertContent('h1')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span className="font-semibold">H1</span>
+            <span className="text-xs text-neutral-500">Título grande</span>
+          </button>
+          <button
+            onClick={() => insertContent('h2')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span className="font-semibold">H2</span>
+            <span className="text-xs text-neutral-500">Título médio</span>
+          </button>
+          <button
+            onClick={() => insertContent('h3')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span className="font-semibold">H3</span>
+            <span className="text-xs text-neutral-500">Título pequeno</span>
+          </button>
+          <hr className="my-1 border-neutral/20" />
+          <button
+            onClick={() => insertContent('bullet')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span>•</span>
+            <span className="text-sm">Lista com marcadores</span>
+          </button>
+          <button
+            onClick={() => insertContent('number')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span>1.</span>
+            <span className="text-sm">Lista numerada</span>
+          </button>
+          <hr className="my-1 border-neutral/20" />
+          <button
+            onClick={() => insertContent('code')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span className="font-mono">{`{ }`}</span>
+            <span className="text-sm">Bloco de código</span>
+          </button>
+          <button
+            onClick={() => insertContent('image')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span>🖼️</span>
+            <span className="text-sm">Inserir imagem</span>
+          </button>
+          <button
+            onClick={() => insertContent('table')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span>📊</span>
+            <span className="text-sm">Inserir tabela</span>
+          </button>
+          <hr className="my-1 border-neutral/20" />
+          <button
+            onClick={() => setIsPreviewMode(!isPreviewMode)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-neutral/10 text-sm w-full text-left"
+          >
+            <span>{isPreviewMode ? '✏️' : '👁️'}</span>
+            <span className="text-sm">{isPreviewMode ? 'Modo edição' : 'Visualizar'}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Editor/Preview */}
+      <div className="rounded-lg border border-neutral/20 overflow-hidden bg-background/50">
         {typeof window !== 'undefined' && (
           <>
             {isPreviewMode ? (
-              <div className="p-4 min-h-[300px]" style={{ height }}>
+              <div className="p-6 min-h-[300px] prose prose-neutral dark:prose-invert max-w-none" style={{ height }}>
                 <MarkdownPreview source={value} />
               </div>
             ) : (
@@ -200,66 +208,94 @@ function SynapsyMarkdownEditor({
                 visible={true}
                 theme={dark ? 'dark' : 'light'}
                 enableScroll={true}
-                hideToolbar={true} // Escondemos a toolbar padrão pois criamos nossa própria
+                hideToolbar={true}
               />
             )}
           </>
         )}
       </div>
+
       <style jsx global>{`
         .w-md-editor {
-          border-radius: 0 0 0.5rem 0.5rem;
-          overflow: hidden;
-          border: none;
+          background: transparent !important;
+          border: none !important;
         }
         .w-md-editor-text {
           font-size: 1rem;
-          line-height: 1.6;
-          padding: 0.5rem;
+          line-height: 1.8;
+          padding: 1.5rem !important;
+        }
+        .w-md-editor-text-pre > code,
+        .w-md-editor-text-input {
+          font-size: 1rem !important;
+          line-height: 1.8 !important;
         }
         .wmde-markdown {
           font-size: 1rem;
-          line-height: 1.6;
+          line-height: 1.8;
+          background: transparent !important;
         }
         .wmde-markdown h1 {
-          font-size: 1.7rem;
+          font-size: 2rem;
+          font-weight: 700;
           border-bottom: 1px solid rgba(128, 128, 128, 0.2);
-          padding-bottom: 0.3rem;
-          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          margin: 2rem 0 1rem;
         }
         .wmde-markdown h2 {
           font-size: 1.5rem;
+          font-weight: 600;
           border-bottom: 1px solid rgba(128, 128, 128, 0.2);
-          padding-bottom: 0.3rem;
-          margin-bottom: 1rem;
+          padding-bottom: 0.4rem;
+          margin: 1.5rem 0 1rem;
         }
         .wmde-markdown h3 {
           font-size: 1.25rem;
+          font-weight: 600;
+          margin: 1.2rem 0 0.8rem;
         }
         .wmde-markdown pre {
           background-color: rgba(0, 0, 0, 0.05);
-          border-radius: 0.25rem;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          margin: 1rem 0;
         }
         .wmde-markdown blockquote {
           border-left: 3px solid var(--primary, #9d4edd);
-          padding-left: 1rem;
+          padding: 0.5rem 0 0.5rem 1rem;
+          margin: 1rem 0;
           color: rgba(128, 128, 128, 0.8);
+          font-style: italic;
         }
         .wmde-markdown img {
           max-width: 100%;
-          border-radius: 0.25rem;
+          border-radius: 0.5rem;
+          margin: 1rem 0;
         }
         .wmde-markdown table {
           border-collapse: collapse;
           width: 100%;
+          margin: 1rem 0;
         }
         .wmde-markdown table th,
         .wmde-markdown table td {
           border: 1px solid rgba(128, 128, 128, 0.2);
-          padding: 0.5rem;
+          padding: 0.75rem;
         }
         .wmde-markdown table th {
           background-color: rgba(0, 0, 0, 0.05);
+          font-weight: 600;
+        }
+        .wmde-markdown ul,
+        .wmde-markdown ol {
+          padding-left: 1.5rem;
+          margin: 1rem 0;
+        }
+        .wmde-markdown li {
+          margin: 0.5rem 0;
+        }
+        .wmde-markdown p {
+          margin: 1rem 0;
         }
       `}</style>
     </div>
