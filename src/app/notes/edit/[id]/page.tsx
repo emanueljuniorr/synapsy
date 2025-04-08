@@ -65,7 +65,8 @@ export default function EditNotePage({ params }: EditNotePageProps) {
     setIsSaving(true);
 
     try {
-      await updateNote(id, { 
+      await updateNote({ 
+        id, 
         title, 
         content,
         tags 
