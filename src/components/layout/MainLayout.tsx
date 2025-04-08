@@ -4,7 +4,6 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import { usePathname } from 'next/navigation';
-import Navbar from "./Navbar";
 import Footer from "./Footer";
 
 interface MainLayoutProps {
@@ -20,14 +19,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                           pathname.startsWith('/study');
 
   return (
-    <div className="min-h-screen bg-background/80 backdrop-blur-sm flex flex-col relative z-10">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-background/80 backdrop-blur-sm">
       <Header />
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         {isDashboardRoute && <Sidebar />}
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
