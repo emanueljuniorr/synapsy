@@ -12,14 +12,14 @@ export default function EditNotePage() {
   const [content, setContent] = useState('');
 
   useEffect(() => {
-    if (id) {
+    if (router.isReady && id) {
       getNoteById(id).then((fetchedNote) => {
         setNote(fetchedNote);
         setTitle(fetchedNote.title);
         setContent(fetchedNote.content);
       });
     }
-  }, [id]);
+  }, [router.isReady, id]);
 
   const handleSave = async () => {
     if (note) {
