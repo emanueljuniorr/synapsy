@@ -420,7 +420,35 @@ export default function RelaxPage() {
   const [showMeditationTimerModal, setShowMeditationTimerModal] = useState(false);
 
   // Modal para configurações de som
-  const [showSoundModal, setShowSoundModal] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
+
+  // Adicione volumes e soundNames
+  const [volumes, setVolumes] = useState({
+    rain: 50,
+    forest: 50,
+    ocean: 50,
+    fireplace: 50,
+    night: 50,
+    meditation: 50,
+  });
+
+  const soundNames = {
+    rain: 'Chuva',
+    forest: 'Floresta',
+    ocean: 'Oceano',
+    fireplace: 'Lareira',
+    night: 'Noite',
+    meditation: 'Meditação',
+  };
+
+  const handleVolumeChange = (sound: string, newValue: number) => {
+    const newVolumes = { ...volumes, [sound]: newValue };
+    setVolumes(newVolumes);
+  };
+
+  const saveVolumes = () => {
+    localStorage.setItem('relaxSoundVolumes', JSON.stringify(volumes));
+  };
 
   return (
     <MainLayout>
@@ -447,7 +475,7 @@ export default function RelaxPage() {
             <div className="flex items-center gap-3">
               {/* Botão para abrir o modal de configurações de som */}
               <button
-                onClick={() => setShowSoundModal(true)}
+                onClick={() => setShowSoundSettings(true)}
                 className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-foreground/60 hover:text-primary"
               >
                 <RiSettings4Line className="w-5 h-5" />
@@ -489,54 +517,57 @@ export default function RelaxPage() {
         </div>
       )}
 
-      {/* Modal para configurações de som */}
-      {showSoundModal && (
+      {/* Modal de configurações de som */}
+      {showSoundSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowSoundModal(false)}></div>
-          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowSoundSettings(false)}></div>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Configurações de Som</h3>
               <button
-                onClick={() => setShowSoundModal(false)}
+                onClick={() => setShowSoundSettings(false)}
                 className="p-1 rounded-full hover:bg-white/10 transition-colors"
               >
                 <RiCloseLine className="w-5 h-5 text-foreground/60" />
               </button>
             </div>
+            
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-foreground/70 mb-2">Volume da Música</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => setVolume(parseInt(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-foreground/70 mb-2">Volume dos Efeitos</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => setVolume(parseInt(e.target.value))}
-                  className="w-full"
-                />
-              </div>
+              {Object.keys(volumes).map((sound, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-foreground/80">{soundNames[sound]}</span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={volumes[sound]}
+                      onChange={(e) => handleVolumeChange(sound, parseInt(e.target.value))}
+                      className="w-32 accent-primary"
+                      style={{
+                        background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${volumes[sound]}%, rgba(255, 255, 255, 0.1) ${volumes[sound]}%, rgba(255, 255, 255, 0.1) 100%)`,
+                        height: '4px',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none'
+                      }}
+                    />
+                    <span className="text-sm text-foreground/60 w-8">{volumes[sound]}%</span>
+                  </div>
+                </div>
+              ))}
             </div>
+            
             <div className="mt-6 flex justify-end gap-2">
               <button
-                onClick={() => setShowSoundModal(false)}
+                onClick={() => setShowSoundSettings(false)}
                 className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
               >
                 Cancelar
               </button>
               <button
-                onClick={() => setShowSoundModal(false)}
-                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+                onClick={saveVolumes}
+                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors shadow-md shadow-primary/20"
               >
                 Salvar
               </button>
@@ -594,7 +625,14 @@ export default function RelaxPage() {
                     max="100" 
                     value={volume} 
                     onChange={(e) => setVolume(Number(e.target.value))}
-                    className="w-24"
+                    className="w-24 accent-primary"
+                    style={{
+                      background: 'linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ' + volume + '%, rgba(255, 255, 255, 0.2) ' + volume + '%, rgba(255, 255, 255, 0.2) 100%)',
+                      height: '3px',
+                      borderRadius: '4px',
+                      outline: 'none',
+                      WebkitAppearance: 'none'
+                    }}
                   />
                 </>
               )}
@@ -725,7 +763,14 @@ export default function RelaxPage() {
                           max="100" 
                           value={volume} 
                           onChange={(e) => setVolume(Number(e.target.value))}
-                          className="flex-1"
+                          className="flex-1 accent-primary"
+                          style={{
+                            background: 'linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ' + volume + '%, rgba(255, 255, 255, 0.2) ' + volume + '%, rgba(255, 255, 255, 0.2) 100%)',
+                            height: '3px',
+                            borderRadius: '4px',
+                            outline: 'none',
+                            WebkitAppearance: 'none'
+                          }}
                         />
                       </div>
                     </div>

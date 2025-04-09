@@ -16,6 +16,7 @@ import {
   RiHome4Line
 } from 'react-icons/ri';
 import Link from 'next/link';
+import { Switch } from '@/components/ui/switch';
 
 // Sons para diferentes fases do Pomodoro
 const SOUNDS = {
@@ -434,7 +435,14 @@ export default function FocusPage() {
                         max="100" 
                         value={settings.volume} 
                         onChange={(e) => setSettings({...settings, volume: Number(e.target.value)})}
-                        className="w-full"
+                        className="w-full accent-primary"
+                        style={{
+                          background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${settings.volume}%, rgba(255, 255, 255, 0.1) ${settings.volume}%, rgba(255, 255, 255, 0.1) 100%)`,
+                          height: '4px',
+                          borderRadius: '4px',
+                          outline: 'none',
+                          WebkitAppearance: 'none'
+                        }}
                       />
                     </div>
                   )}
@@ -467,122 +475,129 @@ export default function FocusPage() {
         {showSettings && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/50" onClick={() => setShowSettings(false)}></div>
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Configurações do Pomodoro</h3>
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Configurações do Pomodoro</h3>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="p-1 text-foreground/60 hover:text-foreground transition-colors rounded-full"
+                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
                 >
-                  <RiCloseLine className="w-5 h-5" />
+                  <RiCloseLine className="w-5 h-5 text-foreground/60" />
                 </button>
               </div>
-
+              
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Tempo de Foco (minutos)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="90"
-                    value={settings.focusTime}
-                    onChange={(e) => setSettings({...settings, focusTime: Number(e.target.value)})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Tempo de Pausa Curta (minutos)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="30"
-                    value={settings.shortBreakTime}
-                    onChange={(e) => setSettings({...settings, shortBreakTime: Number(e.target.value)})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Tempo de Pausa Longa (minutos)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={settings.longBreakTime}
-                    onChange={(e) => setSettings({...settings, longBreakTime: Number(e.target.value)})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground/80">
-                    Auto-iniciar pausas
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                <div className="grid gap-4">
+                  <div>
+                    <label htmlFor="focusTime" className="block text-sm text-foreground/70 mb-1">
+                      Tempo de Foco (min)
+                    </label>
                     <input
-                      type="checkbox"
-                      checked={settings.autoStartBreaks}
-                      onChange={(e) => setSettings({...settings, autoStartBreaks: e.target.checked})}
-                      className="sr-only peer"
+                      type="number"
+                      id="focusTime"
+                      value={settings.focusTime}
+                      onChange={(e) => setSettings({...settings, focusTime: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     />
-                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground/80">
-                    Auto-iniciar pomodoros
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="shortBreakTime" className="block text-sm text-foreground/70 mb-1">
+                      Pausa Curta (min)
+                    </label>
                     <input
-                      type="checkbox"
-                      checked={settings.autoStartPomodoros}
-                      onChange={(e) => setSettings({...settings, autoStartPomodoros: e.target.checked})}
-                      className="sr-only peer"
+                      type="number"
+                      id="shortBreakTime"
+                      value={settings.shortBreakTime}
+                      onChange={(e) => setSettings({...settings, shortBreakTime: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     />
-                    <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Volume do Som
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={settings.volume}
-                    onChange={(e) => setSettings({...settings, volume: Number(e.target.value)})}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-foreground/60">
-                    <span>Mudo</span>
-                    <span>100%</span>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="longBreakTime" className="block text-sm text-foreground/70 mb-1">
+                      Pausa Longa (min)
+                    </label>
+                    <input
+                      type="number"
+                      id="longBreakTime"
+                      value={settings.longBreakTime}
+                      onChange={(e) => setSettings({...settings, longBreakTime: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
                   </div>
                 </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={() => saveSettings(settings)}
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
-                  >
-                    Salvar
-                  </button>
+                
+                <div className="flex flex-col space-y-3 mt-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="autoStartBreaks"
+                      checked={settings.autoStartBreaks}
+                      onChange={(e) => setSettings({...settings, autoStartBreaks: e.target.checked })}
+                      className="w-4 h-4 accent-primary mr-2"
+                    />
+                    <label htmlFor="autoStartBreaks" className="text-sm text-foreground/80">
+                      Auto-iniciar pausas
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="autoStartPomodoros"
+                      checked={settings.autoStartPomodoros}
+                      onChange={(e) => setSettings({...settings, autoStartPomodoros: e.target.checked })}
+                      className="w-4 h-4 accent-primary mr-2"
+                    />
+                    <label htmlFor="autoStartPomodoros" className="text-sm text-foreground/80">
+                      Auto-iniciar pomodoros
+                    </label>
+                  </div>
                 </div>
+                
+                <div className="mt-4">
+                  <label htmlFor="volume" className="block text-sm text-foreground/70 mb-1">
+                    Volume do Alarme
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      id="volume"
+                      min="0"
+                      max="100"
+                      value={settings.volume}
+                      onChange={(e) => setSettings({...settings, volume: parseInt(e.target.value) })}
+                      className="w-full accent-primary"
+                      style={{
+                        background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${settings.volume}%, rgba(255, 255, 255, 0.1) ${settings.volume}%, rgba(255, 255, 255, 0.1) 100%)`,
+                        height: '4px',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none'
+                      }}
+                    />
+                    <span className="text-sm text-foreground/60 w-8">{settings.volume}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSettings(false);
+                    saveSettings(settings);
+                  }}
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors shadow-md shadow-primary/20"
+                >
+                  Salvar
+                </button>
               </div>
             </div>
           </div>
