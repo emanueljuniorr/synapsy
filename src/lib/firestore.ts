@@ -18,6 +18,21 @@ import {
 import { db, auth } from '@/lib/firebase';
 import { User, Task, Note, Event, StudyTopic, Subject, Flashcard } from '@/types';
 
+// Adicionar a definição do tipo DashboardData
+export interface DashboardData {
+  tasks: Task[];
+  notes: Note[];
+  subjects: StudyTopic[];
+  counts: {
+    pendingTasks: number;
+    completedTasks: number;
+    totalNotes: number;
+    totalSubjects?: number;
+    dueFlashcards: number;
+  };
+  focusSessions: { date: string; minutes: number }[];
+}
+
 // Função para converter Timestamp do Firestore para Date
 export const fromFirestore = (doc: QueryDocumentSnapshot<DocumentData>) => {
   const data = doc.data();
@@ -238,9 +253,12 @@ export const getDashboardData = async (userId: string): Promise<DashboardData> =
       const data = doc.data();
       notes.push({
         id: doc.id,
+        userId: data.userId,
         title: data.title,
         content: data.content,
+        categories: data.categories || [],
         tags: data.tags || [],
+        isPinned: data.isPinned || false,
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined
       });
@@ -765,5 +783,3 @@ export const updateSubjectReviewStatus = async (subjectId: string): Promise<bool
     return false;
   }
 };
-
-} 

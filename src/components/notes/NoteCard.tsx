@@ -10,6 +10,8 @@ interface NoteCardProps {
   title: string;
   content: string;
   tags?: string[];
+  categories?: string[];
+  isPinned?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   onEdit?: (id: string) => void;
@@ -21,6 +23,8 @@ export default function NoteCard({
   title,
   content = '',
   tags = [],
+  categories = [],
+  isPinned = false,
   createdAt,
   updatedAt,
   onEdit,
@@ -75,18 +79,30 @@ export default function NoteCard({
         </button>
       )}
 
-      {Array.isArray(tags) && tags.length > 0 && (
+      {/* Exibir categorias e tags */}
+      {(Array.isArray(categories) && categories.length > 0) || (Array.isArray(tags) && tags.length > 0) ? (
         <div className="flex flex-wrap gap-2 mt-4">
-          {tags.map((tag, index) => (
+          {/* Exibir categorias */}
+          {Array.isArray(categories) && categories.length > 0 && categories.map((category, index) => (
             <span
-              key={index}
+              key={`category-${index}`}
+              className="px-2 py-1 text-xs rounded-lg bg-primary/20 text-primary border border-primary/20"
+            >
+              {category}
+            </span>
+          ))}
+          
+          {/* Exibir tags */}
+          {Array.isArray(tags) && tags.length > 0 && tags.map((tag, index) => (
+            <span
+              key={`tag-${index}`}
               className="px-2 py-1 text-xs rounded-lg bg-white/10 text-white/70 border border-white/10"
             >
               {tag}
             </span>
           ))}
         </div>
-      )}
+      ) : null}
 
       {(createdAt || updatedAt) && (
         <div className="mt-4 text-xs text-white/40">

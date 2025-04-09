@@ -46,15 +46,25 @@ export default function NotesPage() {
     router.push(`/notes/edit/${id}`);
   };
 
-  const allTags = Array.from(new Set(notes.flatMap(note => note.tags)));
+  // Obter todas as categorias e tags para filtro
+  const allTags = Array.from(new Set(notes.flatMap(note => 
+    (note.categories || []).concat(note.tags || [])
+  )));
 
   const filteredNotes = notes.filter(note => {
     const query = searchQuery.toLowerCase();
+    // Combinar categorias e tags para pesquisa
+    const noteTags = (note.categories || []).concat(note.tags || []);
+    
     const matchesQuery =
       note.title.toLowerCase().includes(query) ||
       note.content.toLowerCase().includes(query) ||
-      note.tags.some(tag => tag.toLowerCase().includes(query));
-    const matchesTag = selectedTag ? note.tags.includes(selectedTag) : true;
+      noteTags.some(tag => tag.toLowerCase().includes(query));
+    
+    const matchesTag = selectedTag 
+      ? noteTags.includes(selectedTag) 
+      : true;
+    
     return matchesQuery && matchesTag;
   });
 
