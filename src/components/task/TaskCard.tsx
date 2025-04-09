@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RiEdit2Line, RiDeleteBinLine } from 'react-icons/ri';
+import { RiEdit2Line, RiDeleteBinLine, RiPriceTag3Line } from 'react-icons/ri';
 
 interface TaskCardProps {
   id: string;
@@ -10,6 +10,7 @@ interface TaskCardProps {
   dueDate?: Date;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
+  category?: string;
   onToggleComplete: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -22,6 +23,7 @@ function TaskCard({
   dueDate,
   priority,
   completed,
+  category,
   onToggleComplete,
   onEdit,
   onDelete
@@ -76,11 +78,20 @@ function TaskCard({
               )}
             </div>
             
-            {dueDate && (
-              <div className="text-sm text-foreground/50 mb-3">
-                Vencimento: {formatDate(dueDate)}
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              {dueDate && (
+                <div className="text-sm text-foreground/50">
+                  Vencimento: {formatDate(dueDate)}
+                </div>
+              )}
+              
+              {category && (
+                <div className="flex items-center text-sm text-primary/70">
+                  <RiPriceTag3Line className="w-4 h-4 mr-1" />
+                  {category}
+                </div>
+              )}
+            </div>
             
             {description && (
               <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-48' : 'max-h-0'}`}>

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import TaskCard from '@/components/task/TaskCard';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Task {
   id: string;
@@ -55,6 +57,20 @@ export default function TasksPage() {
   ]);
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  // Form states para criar/editar tarefa
+  const [formTitle, setFormTitle] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formDueDate, setFormDueDate] = useState('');
+  const [formPriority, setFormPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [formCategory, setFormCategory] = useState('');
+
+  // Categorias comuns para o dropdown
+  const commonCategories = ['Desenvolvimento', 'Estudo', 'Design', 'Reunião', 'Pessoal', 'Trabalho'];
   
   // Funções para gerenciar tarefas
   const handleToggleComplete = (id: string) => {
@@ -63,13 +79,84 @@ export default function TasksPage() {
     ));
   };
   
-  const handleEdit = (id: string) => {
-    // Implementação futura: abrir modal de edição
-    console.log(`Editar tarefa ${id}`);
+  const openTaskModal = (task?: Task) => {
+    if (task) {
+      // Modo edição
+      setCurrentTask(task);
+      setFormTitle(task.title);
+      setFormDescription(task.description || '');
+      setFormDueDate(task.dueDate ? format(task.dueDate, 'yyyy-MM-dd') : '');
+      setFormPriority(task.priority);
+      setFormCategory(task.category || '');
+    } else {
+      // Modo criação
+      setCurrentTask(null);
+      setFormTitle('');
+      setFormDescription('');
+      setFormDueDate('');
+      setFormPriority('medium');
+      setFormCategory('');
+    }
+    setIsTaskModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setIsTaskModalOpen(false);
+    setCurrentTask(null);
   };
   
-  const handleDelete = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const handleEdit = (id: string) => {
+    const taskToEdit = tasks.find(task => task.id === id);
+    if (taskToEdit) {
+      openTaskModal(taskToEdit);
+    }
+  };
+  
+  const openDeleteModal = (id: string) => {
+    setTaskToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (taskToDelete) {
+      setTasks(tasks.filter(task => task.id !== taskToDelete));
+      setIsDeleteModalOpen(false);
+      setTaskToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setTaskToDelete(null);
+  };
+
+  const handleSaveTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const taskData: Omit<Task, 'id'> = {
+      title: formTitle,
+      description: formDescription || undefined,
+      dueDate: formDueDate ? new Date(formDueDate) : undefined,
+      priority: formPriority,
+      completed: currentTask ? currentTask.completed : false,
+      category: formCategory || undefined,
+    };
+
+    if (currentTask) {
+      // Atualizar tarefa existente
+      setTasks(tasks.map(task => 
+        task.id === currentTask.id ? { ...task, ...taskData } : task
+      ));
+    } else {
+      // Criar nova tarefa
+      const newTask: Task = {
+        ...taskData,
+        id: Date.now().toString(), // ID temporário simples
+      };
+      setTasks([...tasks, newTask]);
+    }
+
+    closeTaskModal();
   };
   
   // Filtrar tarefas com base no filtro selecionado
@@ -100,7 +187,10 @@ export default function TasksPage() {
                 Gerencie suas atividades e projetos
               </p>
             </div>
-            <button className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2">
+            <button 
+              onClick={() => openTaskModal()}
+              className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -158,9 +248,10 @@ export default function TasksPage() {
                   dueDate={task.dueDate}
                   priority={task.priority}
                   completed={task.completed}
+                  category={task.category}
                   onToggleComplete={handleToggleComplete}
                   onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onDelete={openDeleteModal}
                 />
               ))
             ) : (
@@ -176,6 +267,147 @@ export default function TasksPage() {
             )}
           </div>
         </div>
+
+        {/* Modal de Criar/Editar Tarefa */}
+        {isTaskModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div 
+              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+                <h3 className="text-xl font-bold text-white">
+                  {currentTask ? 'Editar Tarefa' : 'Nova Tarefa'}
+                </h3>
+              </div>
+
+              <form onSubmit={handleSaveTask} className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Título
+                  </label>
+                  <input
+                    type="text"
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Digite o título da tarefa"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Descrição (opcional)
+                  </label>
+                  <textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                    placeholder="Adicione detalhes sobre a tarefa"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground/80 mb-1">
+                      Data de Vencimento
+                    </label>
+                    <input
+                      type="date"
+                      value={formDueDate}
+                      onChange={(e) => setFormDueDate(e.target.value)}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground/80 mb-1">
+                      Prioridade
+                    </label>
+                    <select
+                      value={formPriority}
+                      onChange={(e) => setFormPriority(e.target.value as 'low' | 'medium' | 'high')}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="low">Baixa</option>
+                      <option value="medium">Média</option>
+                      <option value="high">Alta</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Categoria
+                  </label>
+                  <input
+                    type="text"
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Ex: Trabalho, Pessoal, Estudo"
+                    list="categories"
+                  />
+                  <datalist id="categories">
+                    {commonCategories.map((category) => (
+                      <option key={category} value={category} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeTaskModal}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
+                  >
+                    {currentTask ? 'Atualizar' : 'Criar'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação de Exclusão */}
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+              <div className="p-5 bg-gradient-to-r from-red-500/20 to-red-600/20">
+                <h3 className="text-xl font-bold text-white">Confirmar Exclusão</h3>
+              </div>
+
+              <div className="p-5">
+                <p className="text-foreground/80 mb-6">
+                  Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={cancelDelete}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-all shadow-lg shadow-red-500/20"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

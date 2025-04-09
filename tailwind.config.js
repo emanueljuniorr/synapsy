@@ -24,6 +24,13 @@ module.exports = {
       },
       animation: {
         'pulse': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'twinkle': 'twinkle 3s ease-in-out infinite',
+      },
+      keyframes: {
+        twinkle: {
+          '0%, 100%': { opacity: 0.2, transform: 'scale(0.9)' },
+          '50%': { opacity: 1, transform: 'scale(1)' },
+        },
       },
     },
   },
