@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: checkoutData.success_url || `${process.env.NEXT_PUBLIC_APP_URL}/profile?checkout_success=true`,
-      cancel_url: checkoutData.cancel_url || `${process.env.NEXT_PUBLIC_APP_URL}/plans?checkout_canceled=true`,
+      success_url: checkoutData.success_url || `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/profile?checkout_success=true`,
+      cancel_url: checkoutData.cancel_url || `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/plans?checkout_canceled=true`,
       metadata: {
         userId: checkoutData.userId,
         checkoutId: sessionId

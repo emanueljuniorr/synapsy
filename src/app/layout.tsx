@@ -1,10 +1,25 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Poppins } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 
-const inter = Inter({ subsets: ['latin'] })
+// Configuração principal da fonte
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  fallback: ['system-ui', 'sans-serif']
+})
+
+// Fonte secundária para títulos
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  fallback: ['system-ui', 'sans-serif']
+})
 
 export const metadata: Metadata = {
   title: 'Synapsy - Conecte Ideias e Atividades',
@@ -17,14 +32,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className={`dark ${inter.variable} ${poppins.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#080813" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={cn(
         inter.className,
-        "min-h-screen bg-background antialiased overflow-x-hidden"
+        "min-h-screen bg-background font-sans antialiased overflow-x-hidden"
       )}>
         <div className="stars-container fixed inset-0 z-0">
           <div id="stars"></div>
