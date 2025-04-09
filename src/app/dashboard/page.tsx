@@ -35,20 +35,20 @@ export default function DashboardPage() {
     const fetchData = async () => {
       if (!auth.currentUser) {
         router.push('/login');
-        return;
-      }
-      
-      try {
-        setIsLoading(true);
-        const data = await getDashboardData();
-        setDashboardData(data);
-      } catch (error) {
-        console.error('Erro ao buscar dados do dashboard:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      return;
+    }
     
+        try {
+          setIsLoading(true);
+        const data = await getDashboardData();
+          setDashboardData(data);
+        } catch (error) {
+          console.error('Erro ao buscar dados do dashboard:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
     fetchData();
   }, [router]);
 
@@ -61,7 +61,7 @@ export default function DashboardPage() {
             <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
             <p className="text-lg font-medium">Carregando dados do dashboard...</p>
           </div>
-        </div>
+      </div>
       </MainLayout>
     );
   }
@@ -85,13 +85,13 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Elementos decorativos espaciais */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
-          <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
-          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
-        </div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Elementos decorativos espaciais */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
+        <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
+        <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
+      </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
           {/* Cabeçalho do Dashboard */}
@@ -106,21 +106,21 @@ export default function DashboardPage() {
                   <p className="text-foreground/60 mb-4">
                     Bem-vindo(a) ao seu espaço de produtividade e estudo.
                   </p>
-                  
-                  {/* Estatísticas Rápidas */}
+                
+                {/* Estatísticas Rápidas */}
                   <div className="grid grid-cols-3 gap-4 mt-4">
                     <div className="bg-background/20 rounded-xl p-4 flex items-center">
                       <ListTodo className="h-8 w-8 mr-3 text-blue-500" />
                       <div>
-                        <p className="text-sm text-foreground/60">Tarefas Pendentes</p>
-                        <p className="text-2xl font-bold">{dashboardData?.counts.pendingTasks || 0}</p>
-                      </div>
+                    <p className="text-sm text-foreground/60">Tarefas Pendentes</p>
+                    <p className="text-2xl font-bold">{dashboardData?.counts.pendingTasks || 0}</p>
+                  </div>
                     </div>
                     <div className="bg-background/20 rounded-xl p-4 flex items-center">
                       <FileText className="h-8 w-8 mr-3 text-indigo-500" />
                       <div>
                         <p className="text-sm text-foreground/60">Notas</p>
-                        <p className="text-2xl font-bold">{dashboardData?.counts.totalNotes || 0}</p>
+                    <p className="text-2xl font-bold">{dashboardData?.counts.totalNotes || 0}</p>
                       </div>
                     </div>
                     <div className="bg-background/20 rounded-xl p-4 flex items-center">
@@ -160,9 +160,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          </div>
+              </div>
 
-          {/* Grid de Cards */}
+            {/* Grid de Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Card de Tarefas Recentes */}
             <Card className="bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 transition-colors">
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                             </span>
                           ))}
                         </div>
-                      </div>
+              </div>
                     ))
                   ) : (
                     <p className="text-foreground/50 text-center py-4">Nenhuma nota encontrada</p>
@@ -276,7 +276,7 @@ export default function DashboardPage() {
                           <Button asChild variant="ghost" size="sm">
                             <Link href={`/study/${subject.id}/study`}>Estudar</Link>
                           </Button>
-                        </div>
+              </div>
                       ))
                   ) : (
                     <p className="text-foreground/50 text-center py-4">Nenhuma matéria com flashcards para revisar</p>
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                 </Button>
               </CardFooter>
             </Card>
-          </div>
+              </div>
 
           {/* Gráfico de Focus Sessions */}
           <div className="mb-8">
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                 </Button>
               </CardFooter>
             </Card>
-          </div>
+            </div>
 
           {/* Seção de Ações Rápidas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -364,9 +364,9 @@ export default function DashboardPage() {
               <Link href="/focus">
                 <Timer className="h-12 w-12 text-green-500" />
                 <span className="font-medium">Iniciar Foco</span>
-              </Link>
+                </Link>
             </Button>
-          </div>
+              </div>
         </div>
       </div>
     </MainLayout>

@@ -46,15 +46,26 @@ export default function StatsPage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
         
+        // Garantir que o usuário tem um uid válido
+        const userId = user?.uid;
+        if (!userId) {
+          console.error("ID de usuário não disponível");
+          setLoading(false);
+          return;
+        }
+        
         // Buscar todas as matérias do usuário
         const subjectsQuery = query(
           collection(db, 'subjects'),
-          where('userId', '==', user.uid)
+          where('userId', '==', userId)
         );
         
         const subjectsSnapshot = await getDocs(subjectsQuery);

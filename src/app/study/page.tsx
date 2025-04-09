@@ -37,9 +37,16 @@ export default function StudyPage() {
       }
       
       try {
+        const userId = auth.currentUser?.uid;
+        if (!userId) {
+          console.error("ID de usuário não disponível");
+          setLoading(false);
+          return;
+        }
+        
         const subjectsRef = query(
           collection(db, 'subjects'),
-          where('userId', '==', auth.currentUser.uid)
+          where('userId', '==', userId)
         );
         const subjectsSnapshot = await getDocs(subjectsRef);
         
@@ -51,8 +58,8 @@ export default function StudyPage() {
             where('subjectId', '==', docSnap.id)
           );
           const flashcardsSnapshot = await getDocs(flashcardsQuery);
-          
-          const today = new Date();
+    
+    const today = new Date();
           today.setHours(23, 59, 59, 999);
           
           let dueCount = 0;
@@ -60,7 +67,7 @@ export default function StudyPage() {
             const flashcard = flashcardDoc.data();
             if (!flashcard.nextReview) {
               dueCount++;
-            } else {
+    } else {
               const nextReview = flashcard.nextReview.toDate ? 
                     flashcard.nextReview.toDate() : 
                     new Date(flashcard.nextReview);
@@ -72,7 +79,7 @@ export default function StudyPage() {
           
           return {
             id: docSnap.id,
-            name: subjectData.name,
+              name: subjectData.name, 
             description: subjectData.description || '',
             color: subjectData.color || '#4F46E5',
             totalFlashcards: flashcardsSnapshot.size,
@@ -121,25 +128,25 @@ export default function StudyPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
             <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
+            <div>
                   <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent flex items-center">
                     <BrainCircuit className="mr-3 h-8 w-8" />
-                    Estudos
-                  </h1>
-                  <p className="text-foreground/60 mt-1">
+                Estudos
+              </h1>
+              <p className="text-foreground/60 mt-1">
                     Gerencie suas matérias e flashcards com repetição espaçada
-                  </p>
-                </div>
+              </p>
+            </div>
                 <Button
                   onClick={() => router.push('/study/new')}
-                  className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
-                >
+              className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
+            >
                   <Plus className="w-5 h-5" />
-                  <span>Nova Matéria</span>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+              <span>Nova Matéria</span>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
                 </Button>
-              </div>
-
+          </div>
+          
               <div className="relative mt-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
                 <Input
@@ -152,7 +159,7 @@ export default function StudyPage() {
               </div>
             </div>
           </div>
-
+          
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
@@ -202,21 +209,21 @@ export default function StudyPage() {
                         <p className="text-muted-foreground">
                           Total: {subject.totalFlashcards} flashcards
                         </p>
-                      </div>
-                      
+        </div>
+
                       {subject.dueFlashcards > 0 && (
                         <Button variant="ghost" size="sm" className="flex items-center">
                           <BookOpen className="h-4 w-4 mr-2" />
                           Estudar
                         </Button>
                       )}
-                    </div>
+              </div>
                   </Card>
                 </Link>
               ))}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+          </div>
       </div>
     </MainLayout>
   );

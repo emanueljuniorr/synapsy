@@ -47,6 +47,7 @@ export default function NewSubjectPage() {
         description: "Você precisa estar logado para criar uma matéria",
         variant: "destructive",
       });
+      router.push('/login');
       return;
     }
     
@@ -62,12 +63,18 @@ export default function NewSubjectPage() {
     try {
       setIsSubmitting(true);
       
+      // Garantir que o usuário existe e tem um uid válido
+      const userId = user?.uid;
+      if (!userId) {
+        throw new Error("ID de usuário não disponível");
+      }
+      
       // Criar nova matéria
       const subjectData = {
         name,
-        description,
-        color,
-        userId: user.uid,
+        description: description || '',
+        color: color || COLORS[0],
+        userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         flashcardsCount: 0,

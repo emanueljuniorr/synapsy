@@ -175,7 +175,10 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     throw new Error('Usuário não autenticado');
   }
 
-  const userId = auth.currentUser.uid;
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    throw new Error('ID de usuário não disponível');
+  }
   
   try {
     // Buscar tarefas recentes
