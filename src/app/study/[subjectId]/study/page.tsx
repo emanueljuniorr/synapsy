@@ -110,7 +110,9 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
         const mode = searchParams.get('mode');
         
         // Buscar dados da matéria
-        const subjectDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId));
+        const subjectRef = doc(db, 'subjects', subjectId);
+        const subjectDoc = await getDoc(subjectRef);
+        
         if (!subjectDoc.exists()) {
           toast({
             title: "Erro",
@@ -122,6 +124,18 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
         }
         
         const subjectData = subjectDoc.data();
+        
+        // Verificar se a matéria pertence ao usuário atual
+        if (subjectData.userId !== auth.currentUser.uid) {
+          toast({
+            title: "Acesso negado",
+            description: "Você não tem permissão para acessar esta matéria",
+            variant: "destructive"
+          });
+          router.push('/study');
+          return;
+        }
+        
         setSubject({
           id: subjectDoc.id,
           name: subjectData.name,
@@ -132,7 +146,11 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
         const today = new Date();
         today.setHours(23, 59, 59, 999); // Fim do dia de hoje
         
-        const flashcardsRef = collection(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards');
+        const flashcardsRef = query(
+          collection(db, 'flashcards'),
+          where('subjectId', '==', subjectId),
+          where('userId', '==', auth.currentUser.uid)
+        );
         const flashcardsSnapshot = await getDocs(flashcardsRef);
         
         const allCards = flashcardsSnapshot.docs.map(doc => {
@@ -200,38 +218,36 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
       const currentCard = flashcards[currentCardIndex];
       const updatedCard = calculateNextReview(grade, currentCard);
       
-      // Atualizar no Firestore
-      await updateDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', currentCard.id), {
+      // Atualizar dados no Firestore
+      const flashcardRef = doc(db, 'flashcards', currentCard.id);
+      await updateDoc(flashcardRef, {
+        nextReview: updatedCard.nextReview,
         repetitions: updatedCard.repetitions,
         easeFactor: updatedCard.easeFactor,
         interval: updatedCard.interval,
-        nextReview: Timestamp.fromDate(updatedCard.nextReview),
+        lastReviewed: new Date()
       });
       
-      // Atualizar localmente
+      // Atualizar lista de flashcards localmente
       const updatedFlashcards = [...flashcards];
       updatedFlashcards[currentCardIndex] = updatedCard;
       setFlashcards(updatedFlashcards);
       
-      // Avançar para o próximo cartão
+      // Avançar para o próximo cartão ou finalizar a sessão
       if (currentCardIndex < flashcards.length - 1) {
-        setCurrentCardIndex(prevIndex => prevIndex + 1);
+        setCurrentCardIndex(currentCardIndex + 1);
         setShowAnswer(false);
         setProgress(Math.round(((currentCardIndex + 1) / totalCards) * 100));
       } else {
-        // Sessão concluída
         setSessionCompleted(true);
         setProgress(100);
-        toast({
-          title: "Sessão concluída",
-          description: "Você revisou todos os flashcards para hoje!",
-        });
       }
+      
     } catch (error) {
       console.error('Erro ao atualizar flashcard:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o flashcard",
+        description: "Não foi possível salvar seu progresso",
         variant: "destructive",
       });
     }

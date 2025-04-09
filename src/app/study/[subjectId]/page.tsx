@@ -100,12 +100,24 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           return;
         }
         
-        // Buscar a matéria na coleção 'subjects' do usuário
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        // Buscar a matéria na coleção 'subjects'
+        const subjectRef = doc(db, "subjects", subjectId);
         const subjectDoc = await getDoc(subjectRef);
         
         if (subjectDoc.exists()) {
           const subjectData = subjectDoc.data();
+          
+          // Verificar se a matéria pertence ao usuário atual
+          if (subjectData.userId !== auth.currentUser.uid) {
+            clearTimeout(safetyTimer);
+            toast({
+              title: "Acesso negado",
+              description: "Você não tem permissão para acessar esta matéria",
+              variant: "destructive"
+            });
+            router.push('/study');
+            return;
+          }
           
           setSubject({
             id: subjectDoc.id,
@@ -117,7 +129,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           });
           
           // Buscar flashcards relacionados a esta matéria
-          const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards");
+          const flashcardsRef = query(
+            collection(db, "flashcards"),
+            where("subjectId", "==", subjectId)
+          );
           const flashcardsSnap = await getDocs(flashcardsRef);
           
           const loadedFlashcards: Flashcard[] = [];
@@ -188,10 +203,12 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         repetitions: 0,
         easeFactor: 2.5,
         interval: 0,
+        subjectId: subjectId,
+        userId: auth.currentUser.uid
       };
       
-      // Adicionar à coleção de flashcards do usuário e da matéria, mantendo a mesma estrutura da página de estudo
-      const flashcardsRef = collection(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards');
+      // Adicionar à coleção de flashcards
+      const flashcardsRef = collection(db, 'flashcards');
       const docRef = await addDoc(flashcardsRef, flashcardData);
       
       const newFlashcard = {
@@ -205,7 +222,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       // Atualizar contador de cards na matéria
       if (subject) {
         // Atualizar na coleção subjects
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        const subjectRef = doc(db, "subjects", subjectId);
         await updateDoc(subjectRef, {
           flashcardsCount: (subject.totalCards || 0) + 1
         });
@@ -244,35 +261,33 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     setIsSubmittingFlashcard(true);
 
     try {
-      // Atualizar na coleção de flashcards do usuário
-      const flashcardRef = doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', currentFlashcard.id);
+      // Atualizar na coleção de flashcards
+      const flashcardRef = doc(db, 'flashcards', currentFlashcard.id);
       
       await updateDoc(flashcardRef, {
         question: newQuestion,
         answer: newAnswer,
-        difficulty: newDifficulty,
-        updatedAt: new Date()
+        difficulty: newDifficulty
       });
       
-      const updatedFlashcards = flashcards.map(card => 
+      // Atualizar o estado local com a versão editada
+      setFlashcards(flashcards.map(card => 
         card.id === currentFlashcard.id 
-          ? { ...card, question: newQuestion, answer: newAnswer, difficulty: newDifficulty }
+          ? {...card, question: newQuestion, answer: newAnswer, difficulty: newDifficulty} 
           : card
-      );
+      ));
       
-      setFlashcards(updatedFlashcards);
       setEditCardOpen(false);
       setCurrentFlashcard(null);
       setNewQuestion('');
       setNewAnswer('');
-      setNewDifficulty('medium');
       
       toast({
         title: "Sucesso",
         description: "Flashcard atualizado com sucesso"
       });
     } catch (error) {
-      console.error("Erro ao editar flashcard:", error);
+      console.error("Erro ao atualizar flashcard:", error);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o flashcard",
@@ -293,22 +308,17 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!flashcardToDelete || !auth.currentUser) return;
     
     try {
-      // Excluir da coleção de flashcards do usuário
-      const flashcardRef = doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', flashcardToDelete);
+      // Excluir da coleção de flashcards
+      const flashcardRef = doc(db, 'flashcards', flashcardToDelete);
       await deleteDoc(flashcardRef);
       
-      // Atualizar a lista removendo o flashcard deletado
+      // Remover do state
       setFlashcards(flashcards.filter(card => card.id !== flashcardToDelete));
       
-      toast({
-        title: "Flashcard deletado",
-        description: "O flashcard foi removido com sucesso",
-      });
-      
-      // Atualizar contador de cards na matéria
+      // Atualizar contador na matéria
       if (subject) {
         // Atualizar na coleção subjects
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        const subjectRef = doc(db, "subjects", subjectId);
         await updateDoc(subjectRef, {
           flashcardsCount: Math.max((subject.totalCards || 0) - 1, 0)
         });
@@ -318,16 +328,21 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           totalCards: Math.max((subject.totalCards || 0) - 1, 0)
         });
       }
-    } catch (error) {
-      console.error('Erro ao deletar flashcard:', error);
+      
       toast({
-        title: "Erro ao deletar",
-        description: "Não foi possível remover o flashcard",
-        variant: "destructive",
+        title: "Sucesso",
+        description: "Flashcard excluído com sucesso"
       });
-    } finally {
+      
       setFlashcardToDelete(null);
       setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Erro ao excluir flashcard:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o flashcard",
+        variant: "destructive"
+      });
     }
   };
 
