@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Button from '@/components/ui/Button';
+import MainLayout from '@/components/layout/MainLayout';
+import { Button } from '@/components/ui/button';
 
 // Etapas do workflow
 type Step = 'welcome' | 'interests' | 'preferences' | 'complete';
