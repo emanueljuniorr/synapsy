@@ -20,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   // Função para formatar segundos em formato legível
@@ -34,20 +35,44 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!auth.currentUser) {
-        router.push('auth/login');
-      return;
-    }
+        router.push('/auth/login');
+        return;
+      }
     
-        try {
-          setIsLoading(true);
-        const data = await getDashboardData();
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log('Buscando dados do dashboard para:', auth.currentUser.uid);
+        const data = await getDashboardData(auth.currentUser.uid);
+        
+        if (!data) {
+          console.error('Nenhum dado retornado da função getDashboardData');
+          setError('Não foi possível carregar os dados do dashboard');
+          // Criar dados vazios para evitar erros de renderização
+          setDashboardData({
+            tasks: [],
+            notes: [],
+            subjects: [],
+            counts: {
+              pendingTasks: 0,
+              completedTasks: 0,
+              totalNotes: 0,
+              dueFlashcards: 0
+            },
+            focusSessions: []
+          });
+        } else {
+          console.log('Dados do dashboard recebidos:', data);
           setDashboardData(data);
-        } catch (error) {
-          console.error('Erro ao buscar dados do dashboard:', error);
-        } finally {
-          setIsLoading(false);
         }
-      };
+      } catch (error) {
+        console.error('Erro ao buscar dados do dashboard:', error);
+        setError('Erro ao carregar os dados: ' + (error instanceof Error ? error.message : String(error)));
+      } finally {
+        setIsLoading(false);
+      }
+    };
       
     fetchData();
   }, [router]);
@@ -62,6 +87,30 @@ export default function DashboardPage() {
             <p className="text-lg font-medium">Carregando dados do dashboard...</p>
           </div>
       </div>
+      </MainLayout>
+    );
+  }
+
+  // Se houver erro, mostrar mensagem
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="flex min-h-screen flex-col items-center justify-center p-4">
+          <div className="w-full max-w-md text-center">
+            <div className="text-red-500 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-lg font-medium">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-lg"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
       </MainLayout>
     );
   }
@@ -208,9 +257,13 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => router.push('/tasks')}>
-                  Ver todas as tarefas
-                </Button>
+                <button
+                  onClick={() => router.push('/tasks')}
+                  className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                >
+                  <span>Ver todas as tarefas</span>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                </button>
               </CardFooter>
             </Card>
 
@@ -244,9 +297,13 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => router.push('/notes')}>
-                  Ver todas as notas
-                </Button>
+                <button
+                  onClick={() => router.push('/notes')}
+                  className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                >
+                  <span>Ver todas as notas</span>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                </button>
               </CardFooter>
             </Card>
 
@@ -287,9 +344,13 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => router.push('/study')}>
-                  Ver todas as matérias
-                </Button>
+                <button
+                  onClick={() => router.push('/study')}
+                  className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                >
+                  <span>Ver todas as matérias</span>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                </button>
               </CardFooter>
             </Card>
               </div>
@@ -317,58 +378,55 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full" size="sm">
-                  <Link href="/focus">Iniciar sessão de foco</Link>
-                </Button>
+                <Link href="/focus" className="w-full">
+                  <button
+                    className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                  >
+                    <span>Iniciar sessão de foco</span>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                  </button>
+                </Link>
               </CardFooter>
             </Card>
             </div>
 
           {/* Seção de Ações Rápidas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button 
-              asChild 
-              variant="outline" 
-              className="p-6 h-auto flex flex-col items-center gap-4 border-white/10 bg-background/20 backdrop-blur-lg hover:border-primary/30"
-            >
-              <Link href="/tasks">
+            <Link href="/tasks">
+              <button 
+                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+              >
                 <ListTodo className="h-12 w-12 text-blue-500" />
                 <span className="font-medium">Nova Tarefa</span>
-              </Link>
-            </Button>
+              </button>
+            </Link>
             
-            <Button 
-              asChild 
-              variant="outline" 
-              className="p-6 h-auto flex flex-col items-center gap-4 border-white/10 bg-background/20 backdrop-blur-lg hover:border-primary/30"
-            >
-              <Link href="/notes/new">
+            <Link href="/notes/new">
+              <button
+                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+              >
                 <FileText className="h-12 w-12 text-indigo-500" />
                 <span className="font-medium">Nova Nota</span>
-              </Link>
-            </Button>
+              </button>
+            </Link>
             
-            <Button 
-              asChild 
-              variant="outline" 
-              className="p-6 h-auto flex flex-col items-center gap-4 border-white/10 bg-background/20 backdrop-blur-lg hover:border-primary/30"
-            >
-              <Link href="/study/new">
+            <Link href="/study/new">
+              <button
+                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+              >
                 <BookOpen className="h-12 w-12 text-violet-500" />
                 <span className="font-medium">Nova Matéria</span>
-              </Link>
-            </Button>
+              </button>
+            </Link>
             
-            <Button 
-              asChild 
-              variant="outline" 
-              className="p-6 h-auto flex flex-col items-center gap-4 border-white/10 bg-background/20 backdrop-blur-lg hover:border-primary/30"
-            >
-              <Link href="/focus">
+            <Link href="/focus">
+              <button
+                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+              >
                 <Timer className="h-12 w-12 text-green-500" />
                 <span className="font-medium">Iniciar Foco</span>
-                </Link>
-            </Button>
+              </button>
+            </Link>
               </div>
         </div>
       </div>

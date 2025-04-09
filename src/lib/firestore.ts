@@ -170,21 +170,17 @@ export const deleteNote = async (noteId: string): Promise<boolean> => {
 };
 
 // Função para buscar os dados da página inicial do usuário
-export const getDashboardData = async (): Promise<DashboardData> => {
-  if (!auth.currentUser) {
-    throw new Error('Usuário não autenticado');
-  }
-
-  const userId = auth.currentUser?.uid;
+export const getDashboardData = async (userId: string): Promise<DashboardData> => {
   if (!userId) {
-    throw new Error('ID de usuário não disponível');
+    throw new Error('ID de usuário não fornecido');
   }
   
   try {
     // Buscar tarefas recentes
-    const tasksRef = collection(db, 'users', userId, 'tasks');
+    const tasksRef = collection(db, 'tasks');
     const tasksQuery = query(
       tasksRef,
+      where('userId', '==', userId),
       orderBy('dueDate', 'asc'),
       limit(5)
     );
@@ -207,28 +203,31 @@ export const getDashboardData = async (): Promise<DashboardData> => {
       };
       
       tasks.push(task);
-      
-      if (task.completed) {
-        completedTasks++;
-      } else {
-        pendingTasks++;
-      }
     });
 
     // Buscar o total de tarefas pendentes
-    const allTasksQuery = query(tasksRef, where('completed', '==', false));
-    const allTasksSnapshot = await getDocs(allTasksQuery);
-    pendingTasks = allTasksSnapshot.size;
+    const pendingTasksQuery = query(
+      tasksRef, 
+      where('userId', '==', userId),
+      where('completed', '==', false)
+    );
+    const pendingTasksSnapshot = await getDocs(pendingTasksQuery);
+    pendingTasks = pendingTasksSnapshot.size;
 
     // Buscar tarefas completadas
-    const completedTasksQuery = query(tasksRef, where('completed', '==', true));
+    const completedTasksQuery = query(
+      tasksRef,
+      where('userId', '==', userId),
+      where('completed', '==', true)
+    );
     const completedTasksSnapshot = await getDocs(completedTasksQuery);
     completedTasks = completedTasksSnapshot.size;
     
     // Buscar notas recentes
-    const notesRef = collection(db, 'users', userId, 'notes');
+    const notesRef = collection(db, 'notes');
     const notesQuery = query(
       notesRef,
+      where('userId', '==', userId),
       orderBy('updatedAt', 'desc'),
       limit(5)
     );
@@ -248,12 +247,14 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     });
 
     // Contar o total de notas
-    const allNotesSnapshot = await getDocs(notesRef);
+    const allNotesQuery = query(notesRef, where('userId', '==', userId));
+    const allNotesSnapshot = await getDocs(allNotesQuery);
     const totalNotes = allNotesSnapshot.size;
     
     // Buscar matérias de estudo
-    const subjectsRef = collection(db, 'users', userId, 'subjects');
-    const subjectsSnapshot = await getDocs(subjectsRef);
+    const subjectsRef = collection(db, 'subjects');
+    const subjectsQuery = query(subjectsRef, where('userId', '==', userId));
+    const subjectsSnapshot = await getDocs(subjectsQuery);
     
     const subjects: StudyTopic[] = [];
     let dueFlashcards = 0;
@@ -264,8 +265,13 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     // Buscar dados de flashcards para cada matéria
     const subjectsPromises = subjectsSnapshot.docs.map(async (docSnap) => {
       const subjectData = docSnap.data();
-      const flashcardsRef = collection(db, 'users', userId, 'subjects', docSnap.id, 'flashcards');
-      const flashcardsSnapshot = await getDocs(flashcardsRef);
+      const flashcardsRef = collection(db, 'flashcards');
+      const flashcardsQuery = query(
+        flashcardsRef,
+        where('subjectId', '==', docSnap.id),
+        where('userId', '==', userId)
+      );
+      const flashcardsSnapshot = await getDocs(flashcardsQuery);
       
       // Contar flashcards para revisão hoje
       let subjectDueCount = 0;
@@ -298,12 +304,13 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     subjects.push(...subjectsData);
     
     // Buscar dados de sessões de foco (últimos 7 dias)
-    const focusSessionsRef = collection(db, 'users', userId, 'focusSessions');
+    const focusSessionsRef = collection(db, 'focusSessions');
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
     const focusSessionsQuery = query(
       focusSessionsRef,
+      where('userId', '==', userId),
       where('endTime', '>=', sevenDaysAgo),
       orderBy('endTime', 'asc')
     );
@@ -357,7 +364,20 @@ export const getDashboardData = async (): Promise<DashboardData> => {
     };
   } catch (error) {
     console.error('Erro ao buscar dados do dashboard:', error);
-    throw error;
+    // Retornar estrutura vazia em vez de lançar erro
+    return {
+      tasks: [],
+      notes: [],
+      subjects: [],
+      counts: {
+        pendingTasks: 0,
+        completedTasks: 0,
+        totalNotes: 0,
+        totalSubjects: 0,
+        dueFlashcards: 0
+      },
+      focusSessions: []
+    };
   }
 };
 
