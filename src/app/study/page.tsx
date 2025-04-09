@@ -23,6 +23,23 @@ interface Flashcard {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
+// Componente StatCard movido para antes do seu uso
+function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
+  return (
+    <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/30 transition-all group">
+      <div className="flex items-center gap-4">
+        <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+          {icon}
+        </div>
+        <div>
+          <p className="text-foreground/60 text-sm">{title}</p>
+          <p className="text-2xl font-bold text-foreground/90">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StudyPage() {
   // Estados principais
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -511,21 +528,5 @@ export default function StudyPage() {
         )}
       </div>
     </MainLayout>
-  );
-}
-
-function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
-  return (
-    <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg hover:border-primary/30 transition-all group">
-      <div className="flex items-center gap-4">
-        <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-          {icon}
-        </div>
-        <div>
-          <p className="text-foreground/60 text-sm">{title}</p>
-          <p className="text-2xl font-bold text-foreground/90">{value}</p>
-        </div>
-      </div>
-    </div>
   );
 } 
