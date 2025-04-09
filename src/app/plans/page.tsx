@@ -67,8 +67,11 @@ export default function PlansPage() {
       setIsProcessing(true);
       setError(null);
 
+      // Obter a origem da URL atual
+      const origin = window.location.origin;
+
       // Iniciar o processo de checkout
-      const sessionId = await createCheckoutSession(user.uid);
+      const sessionId = await createCheckoutSession(user.uid, origin);
       
       // Redirecionar para a API local que irá redirecionar para o Stripe
       window.location.href = `/api/checkout?session=${sessionId}`;

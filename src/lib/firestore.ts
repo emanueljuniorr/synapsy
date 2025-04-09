@@ -13,7 +13,8 @@ import {
   orderBy,
   limit,
   DocumentData,
-  QueryDocumentSnapshot
+  QueryDocumentSnapshot,
+  setDoc
 } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { User, Task, Note, Event, StudyTopic, Subject, Flashcard } from '@/types';
@@ -845,7 +846,7 @@ export async function checkSubscription(userId: string): Promise<{
 }
 
 // Função para criar uma sessão de checkout do Stripe
-export async function createCheckoutSession(userId: string): Promise<string> {
+export async function createCheckoutSession(userId: string, origin: string): Promise<string> {
   try {
     // Criar um documento de checkout na coleção 'checkouts'
     const checkoutRef = doc(collection(db, 'checkouts'));
@@ -856,12 +857,9 @@ export async function createCheckoutSession(userId: string): Promise<string> {
       status: 'pending',
       createdAt: serverTimestamp(),
       priceId: process.env.STRIPE_SUBSCRIPTION_ID,
-      success_url: `${window.location.origin}/profile?checkout_success=true`,
-      cancel_url: `${window.location.origin}/plans?checkout_canceled=true`
+      success_url: `${origin}/profile?checkout_success=true`,
+      cancel_url: `${origin}/plans?checkout_canceled=true`
     });
-    
-    // Esperar o Cloud Function processar e retornar a URL (simulação simplificada)
-    // Em uma implementação real, você usaria uma Cloud Function ou API endpoint
     
     // Como simplificação, vamos retornar um ID de sessão
     return checkoutRef.id;
