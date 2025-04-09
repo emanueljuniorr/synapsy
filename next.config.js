@@ -48,6 +48,20 @@ const nextConfig = {
       type: 'javascript/auto',
     });
 
+    // Regra específica para character-entities em react-syntax-highlighter
+    config.module.rules.push({
+      test: /node_modules\/react-syntax-highlighter\/node_modules\/character-entities\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
     // Regra geral para o grpc-js
     config.module.rules.push({
       test: /node_modules\/@grpc\/grpc-js\/.*\.json$/,
