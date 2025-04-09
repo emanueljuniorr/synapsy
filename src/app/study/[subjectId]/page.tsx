@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { ChevronLeft, Plus, Edit, BookOpen, Clock, Calendar, Layers, CalendarClock, RotateCcw, Trash } from 'lucide-react';
+import { ChevronLeft, Plus, Edit, BookOpen, Clock, Calendar, Layers, CalendarClock, RotateCcw, Trash, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import MainLayout from '@/components/layout/MainLayout';
@@ -58,6 +58,9 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const [newDifficulty, setNewDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [editingFlashcard, setEditingFlashcard] = useState<Flashcard | null>(null);
+  const [isSubmittingFlashcard, setIsSubmittingFlashcard] = useState(false);
 
   // Carregar dados da matéria
   useEffect(() => {
@@ -187,6 +190,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   const handleAddFlashcard = async () => {
     if (!auth.currentUser || !newQuestion.trim() || !newAnswer.trim()) return;
     
+    setIsSubmittingFlashcard(true);
+
     try {
       const flashcardData = {
         question: newQuestion,
@@ -195,7 +200,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         lastReviewed: null,
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // próxima revisão em 1 dia
         reviewCount: 0,
-        difficulty: 'medium',
+        difficulty: newDifficulty,
         repetitions: 0,
         easeFactor: 2.5,
         interval: 0,
@@ -210,7 +215,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       const newFlashcard = {
         id: docRef.id,
         ...flashcardData,
-        difficulty: 'medium' as 'easy' | 'medium' | 'hard'
+        difficulty: newDifficulty as 'easy' | 'medium' | 'hard'
       };
       
       setFlashcards([...flashcards, newFlashcard]);
@@ -231,6 +236,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       setNewQuestion('');
       setNewAnswer('');
+      setNewDifficulty('medium');
       setNewCardOpen(false);
       
       toast({
@@ -244,6 +250,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         description: "Não foi possível adicionar o flashcard",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmittingFlashcard(false);
     }
   };
 
@@ -251,6 +259,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   const handleEditFlashcard = async () => {
     if (!auth.currentUser || !currentFlashcard || !newQuestion.trim() || !newAnswer.trim()) return;
     
+    setIsSubmittingFlashcard(true);
+
     try {
       // Atualizar na coleção flashcards
       const flashcardRef = doc(db, "flashcards", currentFlashcard.id);
@@ -258,12 +268,13 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       await updateDoc(flashcardRef, {
         question: newQuestion,
         answer: newAnswer,
+        difficulty: newDifficulty,
         updatedAt: new Date()
       });
       
       const updatedFlashcards = flashcards.map(card => 
         card.id === currentFlashcard.id 
-          ? { ...card, question: newQuestion, answer: newAnswer }
+          ? { ...card, question: newQuestion, answer: newAnswer, difficulty: newDifficulty }
           : card
       );
       
@@ -272,6 +283,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       setCurrentFlashcard(null);
       setNewQuestion('');
       setNewAnswer('');
+      setNewDifficulty('medium');
       
       toast({
         title: "Sucesso",
@@ -284,6 +296,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         description: "Não foi possível atualizar o flashcard",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmittingFlashcard(false);
     }
   };
 
@@ -361,15 +375,12 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
 
   // Iniciar sessão de estudo
   const startStudySession = () => {
-    if (dueToday === 0) {
-      toast({
-        title: "Sem flashcards para revisar",
-        description: "Não há flashcards para revisar agora. Tente mais tarde ou adicione novos flashcards.",
-      });
-      return;
-    }
-    
-    router.push(`/study/${subjectId}/study`);
+    router.push(`/study/${subjectId}/study?mode=due`);
+  };
+
+  // Iniciar sessão com todos os flashcards
+  const startStudyAllSession = () => {
+    router.push(`/study/${subjectId}/study?mode=all`);
   };
 
   // Renderizar badge de dificuldade
@@ -456,7 +467,15 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                   <p className="text-foreground/60">{subject?.description}</p>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    onClick={() => setNewCardOpen(true)}
+                    className="bg-white/10 hover:bg-white/15 text-white flex items-center gap-2"
+                  >
+                    <Plus size={18} />
+                    Adicionar Flashcard
+                  </Button>
+                  
                   {dueToday > 0 && (
                     <Button 
                       onClick={startStudySession}
@@ -467,14 +486,28 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
                     </Button>
                   )}
-                  <Button 
-                    onClick={() => setNewCardOpen(true)}
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                  >
-                    <Plus size={18} />
-                    Novo Flashcard
-                  </Button>
+
+                  {flashcards.length > 0 && dueToday === 0 && (
+                    <Button 
+                      onClick={startStudyAllSession}
+                      className="group relative px-4 py-2 bg-accent/80 hover:bg-accent text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-accent/20 flex items-center gap-2"
+                    >
+                      <BookOpen size={18} />
+                      Revisar Todos
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                    </Button>
+                  )}
+
+                  {flashcards.length > 0 && dueToday > 0 && (
+                    <Button 
+                      onClick={startStudyAllSession}
+                      className="group relative px-4 py-2 bg-accent/80 hover:bg-accent text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-accent/20 flex items-center gap-2"
+                    >
+                      <Layers size={18} />
+                      Revisar Todos
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -593,6 +626,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                           setCurrentFlashcard(card);
                           setNewQuestion(card.question);
                           setNewAnswer(card.answer);
+                          setNewDifficulty(card.difficulty);
                           setEditCardOpen(true);
                         }}
                       >
@@ -614,14 +648,13 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           
           {/* Modal para adicionar flashcard */}
           <Dialog open={newCardOpen} onOpenChange={setNewCardOpen}>
-            <DialogContent className="bg-background/95 backdrop-blur-lg border border-white/10">
+            <DialogContent className="bg-background/95 backdrop-blur-lg border-white/20 text-white sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Novo Flashcard</DialogTitle>
                 <DialogDescription>
-                  Adicione um novo flashcard à matéria {subject.name}
+                  Adicione um novo flashcard à matéria {subject?.name}
                 </DialogDescription>
               </DialogHeader>
-              
               <div className="grid gap-4 py-4">
                 <div>
                   <Label htmlFor="question">Pergunta</Label>
@@ -645,25 +678,71 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                     rows={4}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="difficulty">Dificuldade</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'easy' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
+                      onClick={() => setNewDifficulty('easy')}
+                    >
+                      Fácil
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'medium' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
+                      onClick={() => setNewDifficulty('medium')}
+                    >
+                      Médio
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'hard' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
+                      onClick={() => setNewDifficulty('hard')}
+                    >
+                      Difícil
+                    </Button>
+                  </div>
+                </div>
               </div>
-              
               <DialogFooter>
-                <Button variant="outline" onClick={() => setNewCardOpen(false)}>Cancelar</Button>
-                <Button onClick={handleAddFlashcard}>Salvar</Button>
+                <Button type="button" variant="ghost" onClick={() => setNewCardOpen(false)} className="border border-white/20">
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  onClick={handleAddFlashcard} 
+                  disabled={isSubmittingFlashcard}
+                  className="bg-gradient-to-r from-primary to-accent text-white"
+                >
+                  {isSubmittingFlashcard ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando
+                    </>
+                  ) : (
+                    'Salvar'
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
           
           {/* Modal para editar flashcard */}
           <Dialog open={editCardOpen} onOpenChange={setEditCardOpen}>
-            <DialogContent className="bg-background/95 backdrop-blur-lg border border-white/10">
+            <DialogContent className="bg-background/95 backdrop-blur-lg border-white/20 text-white sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Editar Flashcard</DialogTitle>
                 <DialogDescription>
-                  Atualize as informações do flashcard
+                  Edite seu flashcard da matéria {subject?.name}
                 </DialogDescription>
               </DialogHeader>
-              
               <div className="grid gap-4 py-4">
                 <div>
                   <Label htmlFor="edit-question">Pergunta</Label>
@@ -687,11 +766,58 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                     rows={4}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="difficulty">Dificuldade</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'easy' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
+                      onClick={() => setNewDifficulty('easy')}
+                    >
+                      Fácil
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'medium' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
+                      onClick={() => setNewDifficulty('medium')}
+                    >
+                      Médio
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={newDifficulty === 'hard' ? 'default' : 'outline'}
+                      className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
+                      onClick={() => setNewDifficulty('hard')}
+                    >
+                      Difícil
+                    </Button>
+                  </div>
+                </div>
               </div>
-              
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditCardOpen(false)}>Cancelar</Button>
-                <Button onClick={handleEditFlashcard}>Atualizar</Button>
+                <Button type="button" variant="ghost" onClick={() => setEditCardOpen(false)} className="border border-white/20">
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  onClick={handleEditFlashcard} 
+                  disabled={isSubmittingFlashcard}
+                  className="bg-gradient-to-r from-primary to-accent text-white"
+                >
+                  {isSubmittingFlashcard ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando
+                    </>
+                  ) : (
+                    'Salvar'
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

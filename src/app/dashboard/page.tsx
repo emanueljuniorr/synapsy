@@ -201,13 +201,15 @@ export default function DashboardPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-foreground/50 text-center py-4">Nenhuma tarefa encontrada</p>
+                    <div className="text-center py-4 text-foreground/50">
+                      <p>Você ainda não tem tarefas.</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full" size="sm">
-                  <Link href="/tasks">Ver todas as tarefas</Link>
+                <Button variant="outline" className="w-full" onClick={() => router.push('/tasks')}>
+                  Ver todas as tarefas
                 </Button>
               </CardFooter>
             </Card>
@@ -225,67 +227,68 @@ export default function DashboardPage() {
                   {dashboardData?.notes && dashboardData.notes.length > 0 ? (
                     dashboardData.notes.map(note => (
                       <div key={note.id} className="pb-3 border-b border-white/5">
-                        <h4 className="font-medium line-clamp-1">{note.title}</h4>
-                        <p className="text-sm text-foreground/60 line-clamp-2">{note.content}</p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {note.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-              </div>
+                        <h4 className="font-medium">{note.title}</h4>
+                        <p className="text-xs text-foreground/50 mt-1">
+                          {note.updatedAt ? format(note.updatedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'Sem data'}
+                        </p>
+                        <p className="text-sm text-foreground/70 mt-1 line-clamp-2">
+                          {note.content}
+                        </p>
+                      </div>
                     ))
                   ) : (
-                    <p className="text-foreground/50 text-center py-4">Nenhuma nota encontrada</p>
+                    <div className="text-center py-4 text-foreground/50">
+                      <p>Você ainda não tem notas.</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full" size="sm">
-                  <Link href="/notes">Ver todas as notas</Link>
+                <Button variant="outline" className="w-full" onClick={() => router.push('/notes')}>
+                  Ver todas as notas
                 </Button>
               </CardFooter>
             </Card>
 
-            {/* Card de Tópicos de Estudo */}
+            {/* Card de Matérias para Revisar */}
             <Card className="bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 transition-colors">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-violet-500" />
+                  <BookOpen className="h-5 w-5 text-violet-500" />
                   <span>Matérias para Revisar</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData?.subjects && dashboardData.subjects.filter(subject => subject.dueFlashcards > 0).length > 0 ? (
+                  {dashboardData?.subjects && dashboardData.subjects.length > 0 ? (
                     dashboardData.subjects
                       .filter(subject => subject.dueFlashcards > 0)
-                      .slice(0, 5)
                       .map(subject => (
-                        <div key={subject.id} className="flex items-center justify-between pb-3 border-b border-white/5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-10 rounded-sm" style={{ backgroundColor: subject.color }} />
+                        <div key={subject.id} className="pb-3 border-b border-white/5">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-2 h-8 rounded-sm"
+                              style={{ backgroundColor: subject.color }}
+                            />
                             <div>
                               <h4 className="font-medium">{subject.name}</h4>
-                              <p className="text-xs text-foreground/50">
-                                {subject.dueFlashcards} flashcards para revisar
+                              <p className="text-sm text-foreground/70">
+                                <span className="font-medium text-primary">{subject.dueFlashcards}</span> flashcards para revisar
                               </p>
                             </div>
                           </div>
-                          <Button asChild variant="ghost" size="sm">
-                            <Link href={`/study/${subject.id}/study`}>Estudar</Link>
-                          </Button>
-              </div>
+                        </div>
                       ))
                   ) : (
-                    <p className="text-foreground/50 text-center py-4">Nenhuma matéria com flashcards para revisar</p>
+                    <div className="text-center py-4 text-foreground/50">
+                      <p>Nenhuma matéria para revisar.</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full" size="sm">
-                  <Link href="/study">Ver todas as matérias</Link>
+                <Button variant="outline" className="w-full" onClick={() => router.push('/study')}>
+                  Ver todas as matérias
                 </Button>
               </CardFooter>
             </Card>
