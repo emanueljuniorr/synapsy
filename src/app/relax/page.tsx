@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { RiMindMap, RiMoonClearLine, RiVolumeMuteLine, RiVolumeUpLine, RiFullscreenLine } from 'react-icons/ri';
+import { RiMindMap, RiMoonClearLine, RiVolumeMuteLine, RiVolumeUpLine, RiFullscreenLine, RiArrowLeftLine, RiHome4Line, RiCloseLine, RiSettings4Line } from 'react-icons/ri';
+import Link from 'next/link';
 
 // Sons relaxantes disponíveis
 const SOUNDS = {
@@ -415,8 +416,135 @@ export default function RelaxPage() {
     setShowFullscreen(!showFullscreen);
   };
 
+  // Modal para seleção de tempo de meditação
+  const [showMeditationTimerModal, setShowMeditationTimerModal] = useState(false);
+
+  // Modal para configurações de som
+  const [showSoundModal, setShowSoundModal] = useState(false);
+
   return (
-    <>
+    <MainLayout>
+      {/* Cabeçalho */}
+      <div className="flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center space-x-3">
+                <Link href="/dashboard" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-2">
+                  <RiHome4Line className="w-5 h-5 text-foreground/60" />
+                  <span className="text-foreground/60 hidden sm:block">Dashboard</span>
+                </Link>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                  Modo Relax
+                </h1>
+                <p className="text-foreground/60 mt-1">
+                  Ambiente imersivo para relaxamento e meditação
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Botão para abrir o modal de configurações de som */}
+              <button
+                onClick={() => setShowSoundModal(true)}
+                className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-foreground/60 hover:text-primary"
+              >
+                <RiSettings4Line className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal para seleção de tempo de meditação */}
+      {showMeditationTimerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMeditationTimerModal(false)}></div>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
+            <h3 className="text-xl font-semibold mb-4">Tempo de Meditação</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {[5, 10, 15, 20, 30, 45, 60].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => {
+                    setMeditationTimer(min * 60);
+                    setShowMeditationTimerModal(false);
+                  }}
+                  className="flex items-center justify-center p-3 rounded-lg hover:bg-white/5 border border-border"
+                >
+                  {min} min
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowMeditationTimerModal(false)}
+                className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para configurações de som */}
+      {showSoundModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowSoundModal(false)}></div>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Configurações de Som</h3>
+              <button
+                onClick={() => setShowSoundModal(false)}
+                className="p-1 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <RiCloseLine className="w-5 h-5 text-foreground/60" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-foreground/70 mb-2">Volume da Música</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={(e) => setVolume(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-foreground/70 mb-2">Volume dos Efeitos</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={(e) => setVolume(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setShowSoundModal(false)}
+                className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => setShowSoundModal(false)}
+                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showFullscreen ? (
         // Visualização em tela cheia
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
@@ -424,6 +552,14 @@ export default function RelaxPage() {
             ref={canvasRef} 
             className="absolute inset-0"
           />
+          
+          {/* Botão para retornar ao Dashboard */}
+          <div className="fixed top-8 left-8 z-10 opacity-50 hover:opacity-100 transition-opacity">
+            <Link href="/dashboard" className="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full py-2 px-4 text-white/80 hover:text-white transition-colors">
+              <RiHome4Line className="w-5 h-5" />
+              <span>Dashboard</span>
+            </Link>
+          </div>
           
           {/* Controles de tela cheia */}
           <div className="fixed bottom-8 left-0 right-0 flex justify-center z-10 opacity-50 hover:opacity-100 transition-opacity">
@@ -467,283 +603,269 @@ export default function RelaxPage() {
         </div>
       ) : (
         // Interface normal
-        <MainLayout>
-          <div className="min-h-screen bg-background relative overflow-hidden">
-            {/* Elementos decorativos espaciais */}
-            <div className="absolute inset-0 z-0">
-              <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
-              <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
-              <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
-            </div>
+        <div className="min-h-screen bg-background relative overflow-hidden">
+          {/* Elementos decorativos espaciais */}
+          <div className="absolute inset-0 z-0">
+            <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
+            <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
+            <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
+          </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {/* Cabeçalho */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                <div>
-                  <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                    Modo Relax
-                  </h1>
-                  <p className="text-foreground/60 mt-1">
-                    Desacelere, relaxe e encontre sua tranquilidade interior
-                  </p>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Container principal */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Seção principal com visualizações relaxantes */}
+              <div className="lg:col-span-8 space-y-8">
+                {/* Visualizações */}
+                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold">Ambientes Relaxantes</h2>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="p-2 text-foreground/60 hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center gap-2"
+                    >
+                      <RiFullscreenLine className="w-5 h-5" />
+                      <span className="text-sm">Tela Cheia</span>
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {scenes.map((scene) => (
+                      <div 
+                        key={scene.id}
+                        onClick={() => setActiveScene(scene.id)}
+                        className={`relative h-48 rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-[1.02] ${
+                          activeScene === scene.id ? 'ring-2 ring-primary' : 'ring-1 ring-white/10'
+                        }`}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${scene.color} opacity-70`}></div>
+                        <div className="absolute inset-0 flex flex-col justify-end p-4">
+                          <h3 className="text-lg font-medium text-white">{scene.name}</h3>
+                          <p className="text-sm text-white/80">{scene.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Controles de som */}
+                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                  <h2 className="text-xl font-semibold mb-4">Sons Relaxantes</h2>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                    <button 
+                      onClick={() => setAmbientSound('rain')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'rain' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Chuva
+                    </button>
+                    <button 
+                      onClick={() => setAmbientSound('forest')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'forest' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Floresta
+                    </button>
+                    <button 
+                      onClick={() => setAmbientSound('ocean')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'ocean' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Oceano
+                    </button>
+                    <button 
+                      onClick={() => setAmbientSound('fireplace')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'fireplace' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Lareira
+                    </button>
+                    <button 
+                      onClick={() => setAmbientSound('night')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'night' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Noite
+                    </button>
+                    <button 
+                      onClick={() => setAmbientSound('meditation')} 
+                      className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
+                        ambientSound === 'meditation' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
+                      }`}
+                    >
+                      Meditação
+                    </button>
+                  </div>
+                  
+                  {ambientSound && (
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <button 
+                        onClick={toggleSound}
+                        className="p-3 text-white rounded-xl bg-primary hover:bg-primary/90 transition-colors shadow-md shadow-primary/20 flex items-center justify-center"
+                      >
+                        {isPlaying ? (
+                          <RiVolumeMuteLine className="w-5 h-5 mr-2" />
+                        ) : (
+                          <RiVolumeUpLine className="w-5 h-5 mr-2" />
+                        )}
+                        {isPlaying ? 'Pausar' : 'Reproduzir'}
+                      </button>
+                      
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className="text-sm text-foreground/60">Volume:</span>
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="100" 
+                          value={volume} 
+                          onChange={(e) => setVolume(Number(e.target.value))}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Container principal */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Seção principal com visualizações relaxantes */}
-                <div className="lg:col-span-8 space-y-8">
-                  {/* Visualizações */}
-                  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-semibold">Ambientes Relaxantes</h2>
+              {/* Painel lateral - Meditações e técnicas de relaxamento */}
+              <div className="lg:col-span-4 space-y-8">
+                {/* Meditação Guiada */}
+                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                  <h2 className="text-xl font-semibold mb-4">Meditação Guiada</h2>
+                  
+                  {meditationType ? (
+                    // Interface de meditação ativa
+                    <div className="space-y-6">
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium text-white mb-1">
+                          {GUIDED_MEDITATIONS.find(m => m.id === meditationType)?.name}
+                        </h3>
+                        <p className="text-foreground/60 text-sm">
+                          Tempo restante: {formatTime(meditationTimer)}
+                        </p>
+                      </div>
+                      
+                      {/* Instruções específicas baseadas no tipo de meditação */}
+                      {meditationType === 'breathing' && (
+                        <div className="flex flex-col items-center">
+                          <div className={`w-32 h-32 rounded-full border-2 flex items-center justify-center transition-all duration-1000 ease-in-out ${
+                            breathingPhase === 'inhale' 
+                              ? 'border-primary/50 bg-primary/10 scale-90' 
+                              : breathingPhase === 'hold'
+                              ? 'border-primary border-opacity-70 bg-primary/20 scale-100' 
+                              : 'border-primary/30 bg-primary/5 scale-75'
+                          }`}>
+                            <span className="text-lg font-medium">
+                              {breathingPhase === 'inhale' 
+                                ? 'Inspire' 
+                                : breathingPhase === 'hold' 
+                                ? 'Segure' 
+                                : 'Expire'}
+                            </span>
+                          </div>
+                          <p className="mt-4 text-sm text-foreground/80">
+                            {breathingPhase === 'inhale' 
+                              ? 'Inspire lentamente pelo nariz por 4 segundos' 
+                              : breathingPhase === 'hold' 
+                              ? 'Segure o ar por 7 segundos' 
+                              : 'Expire completamente pela boca por 8 segundos'}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {meditationType === 'bodyscan' && (
+                        <p className="text-sm text-foreground/80">
+                          Relaxe cada parte do seu corpo, começando pelos pés e subindo lentamente até a cabeça.
+                          Sinta a tensão se dissolvendo em cada área.
+                        </p>
+                      )}
+                      
+                      {meditationType === 'gratitude' && (
+                        <p className="text-sm text-foreground/80">
+                          Pense em 3 coisas pelas quais você é grato hoje. Visualize cada uma e permita-se sentir a gratidão por completo.
+                        </p>
+                      )}
+                      
+                      {meditationType === 'mindfulness' && (
+                        <p className="text-sm text-foreground/80">
+                          Observe seus pensamentos sem julgamento. Quando sua mente divagar, gentilmente traga sua atenção de volta à respiração.
+                        </p>
+                      )}
+                      
+                      {meditationType === 'visualize' && (
+                        <p className="text-sm text-foreground/80">
+                          Visualize um lugar tranquilo e seguro. Explore os detalhes, as cores, os sons e sensações deste local especial.
+                        </p>
+                      )}
+                      
                       <button
-                        onClick={toggleFullscreen}
-                        className="p-2 text-foreground/60 hover:text-primary transition-colors rounded-lg hover:bg-white/5 flex items-center gap-2"
+                        onClick={() => {
+                          setMeditationType(null);
+                          setIsBreathingActive(false);
+                        }}
+                        className="w-full py-2 bg-white/10 hover:bg-white/15 rounded-lg text-sm font-medium transition-colors"
                       >
-                        <RiFullscreenLine className="w-5 h-5" />
-                        <span className="text-sm">Tela Cheia</span>
+                        Finalizar
                       </button>
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {scenes.map((scene) => (
-                        <div 
-                          key={scene.id}
-                          onClick={() => setActiveScene(scene.id)}
-                          className={`relative h-48 rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-[1.02] ${
-                            activeScene === scene.id ? 'ring-2 ring-primary' : 'ring-1 ring-white/10'
-                          }`}
+                  ) : (
+                    // Lista de meditações disponíveis
+                    <div className="space-y-3">
+                      {GUIDED_MEDITATIONS.map((meditation) => (
+                        <button
+                          key={meditation.id}
+                          onClick={() => startMeditation(meditation.id)}
+                          className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
                         >
-                          <div className={`absolute inset-0 bg-gradient-to-br ${scene.color} opacity-70`}></div>
-                          <div className="absolute inset-0 flex flex-col justify-end p-4">
-                            <h3 className="text-lg font-medium text-white">{scene.name}</h3>
-                            <p className="text-sm text-white/80">{scene.description}</p>
-                          </div>
-                        </div>
+                          <span className="font-medium">{meditation.name}</span>
+                          <span className="text-sm text-foreground/60">{meditation.duration} min</span>
+                        </button>
                       ))}
                     </div>
-                  </div>
-                  
-                  {/* Controles de som */}
-                  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4">Sons Relaxantes</h2>
-                    
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-                      <button 
-                        onClick={() => setAmbientSound('rain')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'rain' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Chuva
-                      </button>
-                      <button 
-                        onClick={() => setAmbientSound('forest')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'forest' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Floresta
-                      </button>
-                      <button 
-                        onClick={() => setAmbientSound('ocean')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'ocean' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Oceano
-                      </button>
-                      <button 
-                        onClick={() => setAmbientSound('fireplace')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'fireplace' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Lareira
-                      </button>
-                      <button 
-                        onClick={() => setAmbientSound('night')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'night' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Noite
-                      </button>
-                      <button 
-                        onClick={() => setAmbientSound('meditation')} 
-                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          ambientSound === 'meditation' ? 'bg-primary/20 border border-primary/50 text-white' : 'bg-white/5 border border-white/10 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        Meditação
-                      </button>
-                    </div>
-                    
-                    {ambientSound && (
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <button 
-                          onClick={toggleSound}
-                          className="p-3 text-white rounded-xl bg-primary hover:bg-primary/90 transition-colors shadow-md shadow-primary/20 flex items-center justify-center"
-                        >
-                          {isPlaying ? (
-                            <RiVolumeMuteLine className="w-5 h-5 mr-2" />
-                          ) : (
-                            <RiVolumeUpLine className="w-5 h-5 mr-2" />
-                          )}
-                          {isPlaying ? 'Pausar' : 'Reproduzir'}
-                        </button>
-                        
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="text-sm text-foreground/60">Volume:</span>
-                          <input 
-                            type="range" 
-                            min="0" 
-                            max="100" 
-                            value={volume} 
-                            onChange={(e) => setVolume(Number(e.target.value))}
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-
-                {/* Painel lateral - Meditações e técnicas de relaxamento */}
-                <div className="lg:col-span-4 space-y-8">
-                  {/* Meditação Guiada */}
-                  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4">Meditação Guiada</h2>
-                    
-                    {meditationType ? (
-                      // Interface de meditação ativa
-                      <div className="space-y-6">
-                        <div className="text-center">
-                          <h3 className="text-lg font-medium text-white mb-1">
-                            {GUIDED_MEDITATIONS.find(m => m.id === meditationType)?.name}
-                          </h3>
-                          <p className="text-foreground/60 text-sm">
-                            Tempo restante: {formatTime(meditationTimer)}
-                          </p>
-                        </div>
-                        
-                        {/* Instruções específicas baseadas no tipo de meditação */}
-                        {meditationType === 'breathing' && (
-                          <div className="flex flex-col items-center">
-                            <div className={`w-32 h-32 rounded-full border-2 flex items-center justify-center transition-all duration-1000 ease-in-out ${
-                              breathingPhase === 'inhale' 
-                                ? 'border-primary/50 bg-primary/10 scale-90' 
-                                : breathingPhase === 'hold'
-                                ? 'border-primary border-opacity-70 bg-primary/20 scale-100' 
-                                : 'border-primary/30 bg-primary/5 scale-75'
-                            }`}>
-                              <span className="text-lg font-medium">
-                                {breathingPhase === 'inhale' 
-                                  ? 'Inspire' 
-                                  : breathingPhase === 'hold' 
-                                  ? 'Segure' 
-                                  : 'Expire'}
-                              </span>
-                            </div>
-                            <p className="mt-4 text-sm text-foreground/80">
-                              {breathingPhase === 'inhale' 
-                                ? 'Inspire lentamente pelo nariz por 4 segundos' 
-                                : breathingPhase === 'hold' 
-                                ? 'Segure o ar por 7 segundos' 
-                                : 'Expire completamente pela boca por 8 segundos'}
-                            </p>
-                          </div>
-                        )}
-                        
-                        {meditationType === 'bodyscan' && (
-                          <p className="text-sm text-foreground/80">
-                            Relaxe cada parte do seu corpo, começando pelos pés e subindo lentamente até a cabeça.
-                            Sinta a tensão se dissolvendo em cada área.
-                          </p>
-                        )}
-                        
-                        {meditationType === 'gratitude' && (
-                          <p className="text-sm text-foreground/80">
-                            Pense em 3 coisas pelas quais você é grato hoje. Visualize cada uma e permita-se sentir a gratidão por completo.
-                          </p>
-                        )}
-                        
-                        {meditationType === 'mindfulness' && (
-                          <p className="text-sm text-foreground/80">
-                            Observe seus pensamentos sem julgamento. Quando sua mente divagar, gentilmente traga sua atenção de volta à respiração.
-                          </p>
-                        )}
-                        
-                        {meditationType === 'visualize' && (
-                          <p className="text-sm text-foreground/80">
-                            Visualize um lugar tranquilo e seguro. Explore os detalhes, as cores, os sons e sensações deste local especial.
-                          </p>
-                        )}
-                        
-                        <button
-                          onClick={() => {
-                            setMeditationType(null);
-                            setIsBreathingActive(false);
-                          }}
-                          className="w-full py-2 bg-white/10 hover:bg-white/15 rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Finalizar
-                        </button>
-                      </div>
-                    ) : (
-                      // Lista de meditações disponíveis
-                      <div className="space-y-3">
-                        {GUIDED_MEDITATIONS.map((meditation) => (
-                          <button
-                            key={meditation.id}
-                            onClick={() => startMeditation(meditation.id)}
-                            className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                          >
-                            <span className="font-medium">{meditation.name}</span>
-                            <span className="text-sm text-foreground/60">{meditation.duration} min</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                
+                {/* Dicas de Neurociência */}
+                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center gap-2 mb-4">
+                    <RiMindMap className="text-primary w-5 h-5" />
+                    <h2 className="text-xl font-semibold">Neurociência do Relaxamento</h2>
                   </div>
                   
-                  {/* Dicas de Neurociência */}
-                  <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center gap-2 mb-4">
-                      <RiMindMap className="text-primary w-5 h-5" />
-                      <h2 className="text-xl font-semibold">Neurociência do Relaxamento</h2>
-                    </div>
-                    
-                    <ul className="space-y-3 text-sm text-foreground/80">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p>A respiração lenta e profunda ativa o nervo vago, reduzindo a resposta ao estresse e ativando seu sistema nervoso parassimpático.</p>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p>Sons repetitivos e constantes como chuva ou ondas ajudam a sincronizar ondas cerebrais e estimular ondas alfa associadas ao relaxamento.</p>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p>Visualizações reduzem a atividade na amígdala, área do cérebro responsável pelo processamento do medo e ansiedade.</p>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p>Apenas 10 minutos diários de meditação podem aumentar a densidade da matéria cinzenta em áreas associadas ao foco e bem-estar.</p>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <p>As técnicas de relaxamento reduzem o cortisol (hormônio do estresse) no sangue e aumentam a produção de serotonina e dopamina.</p>
-                      </li>
-                    </ul>
-                  </div>
+                  <ul className="space-y-3 text-sm text-foreground/80">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p>A respiração lenta e profunda ativa o nervo vago, reduzindo a resposta ao estresse e ativando seu sistema nervoso parassimpático.</p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p>Sons repetitivos e constantes como chuva ou ondas ajudam a sincronizar ondas cerebrais e estimular ondas alfa associadas ao relaxamento.</p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p>Visualizações reduzem a atividade na amígdala, área do cérebro responsável pelo processamento do medo e ansiedade.</p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p>Apenas 10 minutos diários de meditação podem aumentar a densidade da matéria cinzenta em áreas associadas ao foco e bem-estar.</p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <p>As técnicas de relaxamento reduzem o cortisol (hormônio do estresse) no sangue e aumentam a produção de serotonina e dopamina.</p>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
-        </MainLayout>
+        </div>
       )}
-    </>
+    </MainLayout>
   );
 } 

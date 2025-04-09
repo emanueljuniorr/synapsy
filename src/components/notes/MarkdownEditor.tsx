@@ -26,8 +26,8 @@ interface ToolbarButton {
 }
 
 export default function SynapsyMarkdownEditor({ 
-  initialValue = '', 
-  onChange, 
+  initialValue = '',
+  onChange,
   placeholder,
   height = '500px'
 }: MarkdownEditorProps) {
@@ -153,7 +153,7 @@ export default function SynapsyMarkdownEditor({
           ))}
         </div>
 
-        <button
+      <button
           onClick={() => setIsPreview(!isPreview)}
           className={`px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors ${
             isPreview 
@@ -165,12 +165,12 @@ export default function SynapsyMarkdownEditor({
           <span className="text-sm font-medium">
             {isPreview ? 'Modo Edição' : 'Visualizar'}
           </span>
-        </button>
+      </button>
       </div>
 
       {/* Toolbar flutuante (apenas quando texto selecionado) */}
       {showFloatingToolbar && !isPreview && (
-        <div 
+        <div
           ref={toolbarRef}
           style={{
             transform: `translate(${cursorPosition.left}px, ${cursorPosition.top}px)`,
@@ -178,14 +178,14 @@ export default function SynapsyMarkdownEditor({
           className="absolute z-20 bg-neutral-900/95 backdrop-blur-lg rounded-lg shadow-lg border border-white/10 p-1.5 flex flex-wrap items-center gap-1"
         >
           {toolbarButtons.map((button, index) => (
-            <button
+          <button
               key={index}
               onClick={button.action}
               className="p-1.5 rounded hover:bg-white/10 text-white/80 hover:text-white transition-colors group relative"
               title={`${button.label}${button.shortcut ? ` (${button.shortcut})` : ''}`}
             >
               <button.icon size={18} />
-            </button>
+          </button>
           ))}
         </div>
       )}
@@ -194,7 +194,7 @@ export default function SynapsyMarkdownEditor({
       <div className="relative h-full" style={{ height: `calc(${height} - 56px)` }}>
         {!isPreview ? (
           <textarea
-            ref={editorRef}
+              ref={editorRef}
             value={content}
             onChange={(e) => handleChange(e.target.value)}
             onSelect={updateToolbarPosition}
@@ -311,4 +311,4 @@ export default function SynapsyMarkdownEditor({
       `}</style>
     </div>
   );
-} 
+}

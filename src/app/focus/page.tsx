@@ -2,7 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { RiTimeLine, RiPauseLine, RiPlayLine, RiRestartLine, RiSettings4Line } from 'react-icons/ri';
+import { 
+  RiTimeLine, 
+  RiPauseLine, 
+  RiPlayLine, 
+  RiRestartLine, 
+  RiSettings4Line,
+  RiArrowLeftLine,
+  RiVolumeUpLine,
+  RiVolumeMuteLine,
+  RiFullscreenLine,
+  RiCloseLine,
+  RiHome4Line
+} from 'react-icons/ri';
+import Link from 'next/link';
 
 // Sons para diferentes fases do Pomodoro
 const SOUNDS = {
@@ -263,34 +276,38 @@ export default function FocusPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Elementos decorativos espaciais */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
-          <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
-          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
+      <div className="min-h-screen bg-background">
+        {/* Cabeçalho */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center space-x-3">
+                <Link href="/dashboard" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-2">
+                  <RiHome4Line className="w-5 h-5 text-foreground/60" />
+                  <span className="text-foreground/60 hidden sm:block">Dashboard</span>
+                </Link>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                  Modo Focus
+                </h1>
+                <p className="text-foreground/60 mt-1">
+                  Temporizador Pomodoro para melhorar sua produtividade
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-foreground/60 hover:text-primary"
+              >
+                <RiSettings4Line className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Cabeçalho */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                Modo Focus
-              </h1>
-              <p className="text-foreground/60 mt-1">
-                Maximize sua concentração com a técnica Pomodoro
-              </p>
-            </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="group relative px-4 py-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
-            >
-              <RiSettings4Line className="w-5 h-5" />
-              <span>Configurações</span>
-            </button>
-          </div>
-
           {/* Container principal */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Seção do timer */}
@@ -448,16 +465,20 @@ export default function FocusPage() {
 
         {/* Modal de configurações */}
         {showSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div 
-              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setShowSettings(false)}></div>
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-white">Configurações do Pomodoro</h3>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-1 text-foreground/60 hover:text-foreground transition-colors rounded-full"
+                >
+                  <RiCloseLine className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="p-5 space-y-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground/80 mb-1">
                     Tempo de Foco (minutos)

@@ -7,12 +7,15 @@ import NoteCard from '@/components/notes/NoteCard';
 import { RiAddLine, RiSearchLine } from 'react-icons/ri';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import { useRouter } from 'next/navigation';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const router = useRouter();
+  
   useEffect(() => {
     loadNotes();
   }, []);
@@ -33,24 +36,52 @@ export default function NotesPage() {
 
     try {
       await deleteNote(id);
-      setNotes(notes.filter(note => note.id !== id));
+    setNotes(notes.filter(note => note.id !== id));
     } catch (error) {
       console.error('Erro ao excluir nota:', error);
     }
   }
 
+  const handleEditNote = (id: string) => {
+    router.push(`/notes/edit/${id}`);
+  };
+
+  const allTags = Array.from(new Set(notes.flatMap(note => note.tags)));
+
   const filteredNotes = notes.filter(note => {
     const query = searchQuery.toLowerCase();
-    return (
+    const matchesQuery =
       note.title.toLowerCase().includes(query) ||
       note.content.toLowerCase().includes(query) ||
-      note.tags.some(tag => tag.toLowerCase().includes(query))
-    );
+      note.tags.some(tag => tag.toLowerCase().includes(query));
+    const matchesTag = selectedTag ? note.tags.includes(selectedTag) : true;
+    return matchesQuery && matchesTag;
   });
 
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4">
+        {/* Seção de Tags */}
+        <div className="flex gap-2 mb-4">
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag)}
+              className={`px-3 py-1 rounded-full text-sm ${selectedTag === tag ? 'bg-primary text-white' : 'bg-white/10 text-white/70'} transition-colors`}
+            >
+              {tag}
+            </button>
+          ))}
+          {selectedTag && (
+          <button 
+              onClick={() => setSelectedTag(null)}
+              className="px-3 py-1 rounded-full text-sm bg-red-500 text-white transition-colors"
+          >
+              Limpar Filtro
+          </button>
+          )}
+        </div>
+        
         {/* Header com gradiente e efeito de vidro */}
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
@@ -66,7 +97,7 @@ export default function NotesPage() {
                 <RiAddLine size={20} />
                 <span>Nova Nota</span>
               </Link>
-            </div>
+              </div>
 
             <div className="relative mt-6">
               <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
@@ -80,7 +111,7 @@ export default function NotesPage() {
             </div>
           </div>
         </div>
-
+        
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -90,7 +121,13 @@ export default function NotesPage() {
             {filteredNotes.map((note) => (
               <NoteCard
                 key={note.id}
-                note={note}
+                id={note.id}
+                title={note.title}
+                content={note.content}
+                tags={note.tags}
+                createdAt={note.createdAt}
+                updatedAt={note.updatedAt}
+                onEdit={() => handleEditNote(note.id)}
                 onDelete={() => handleDeleteNote(note.id)}
               />
             ))}
@@ -106,8 +143,8 @@ export default function NotesPage() {
                   : 'Comece criando uma nova nota'}
               </p>
             </div>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </MainLayout>
   );
