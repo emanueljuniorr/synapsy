@@ -16,7 +16,7 @@ import {
   QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { User, Task, Note, Event, StudyTopic } from '@/types';
+import { User, Task, Note, Event, StudyTopic, Subject, Flashcard } from '@/types';
 
 // Função para converter Timestamp do Firestore para Date
 export const fromFirestore = (doc: QueryDocumentSnapshot<DocumentData>) => {
@@ -331,5 +331,334 @@ export const getUpcomingEvents = async (userId: string): Promise<Event[]> => {
   } catch (error) {
     console.error('Erro ao buscar eventos:', error);
     return [];
+  }
+};
+
+// Funções para matérias de estudo (subjects)
+export const getSubjects = async (userId: string): Promise<Subject[]> => {
+  try {
+    const subjectsQuery = query(
+      collection(db, 'subjects'),
+      where('userId', '==', userId),
+      orderBy('updatedAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(subjectsQuery);
+    return querySnapshot.docs.map(doc => fromFirestore(doc) as Subject);
+  } catch (error) {
+    console.error('Erro ao buscar matérias:', error);
+    return [];
+  }
+};
+
+export const getSubject = async (subjectId: string): Promise<Subject | null> => {
+  try {
+    const subjectDoc = await getDoc(doc(db, 'subjects', subjectId));
+    if (!subjectDoc.exists()) return null;
+    
+    return { ...fromFirestore(subjectDoc), id: subjectDoc.id } as Subject;
+  } catch (error) {
+    console.error('Erro ao buscar matéria:', error);
+    return null;
+  }
+};
+
+export const createSubject = async (subject: Omit<Subject, 'id' | 'createdAt' | 'updatedAt' | 'flashcardsCount'>): Promise<string | null> => {
+  try {
+    const subjectData = {
+      ...subject,
+      flashcardsCount: 0, // Inicialmente, não há flashcards
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    const subjectRef = await addDoc(collection(db, 'subjects'), subjectData);
+    return subjectRef.id;
+  } catch (error) {
+    console.error('Erro ao criar matéria:', error);
+    return null;
+  }
+};
+
+export const updateSubject = async (subjectId: string, subject: Partial<Subject>): Promise<boolean> => {
+  try {
+    await updateDoc(doc(db, 'subjects', subjectId), {
+      ...subject,
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao atualizar matéria:', error);
+    return false;
+  }
+};
+
+export const deleteSubject = async (subjectId: string): Promise<boolean> => {
+  try {
+    // Primeiro, excluir todos os flashcards associados à matéria
+    const flashcardsQuery = query(
+      collection(db, 'flashcards'),
+      where('subjectId', '==', subjectId)
+    );
+    
+    const flashcardsSnapshot = await getDocs(flashcardsQuery);
+    
+    // Excluir flashcards em paralelo
+    const deletePromises = flashcardsSnapshot.docs.map(doc => 
+      deleteDoc(doc.ref)
+    );
+    
+    await Promise.all(deletePromises);
+    
+    // Então, excluir a matéria
+    await deleteDoc(doc(db, 'subjects', subjectId));
+    return true;
+  } catch (error) {
+    console.error('Erro ao deletar matéria:', error);
+    return false;
+  }
+};
+
+// Funções para flashcards
+export const getFlashcards = async (subjectId: string): Promise<Flashcard[]> => {
+  try {
+    const flashcardsQuery = query(
+      collection(db, 'flashcards'),
+      where('subjectId', '==', subjectId),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(flashcardsQuery);
+    return querySnapshot.docs.map(doc => fromFirestore(doc) as Flashcard);
+  } catch (error) {
+    console.error('Erro ao buscar flashcards:', error);
+    return [];
+  }
+};
+
+export const getFlashcardsForReview = async (subjectId: string): Promise<Flashcard[]> => {
+  try {
+    const today = new Date();
+    
+    // Obter todos os flashcards da matéria
+    const flashcardsQuery = query(
+      collection(db, 'flashcards'),
+      where('subjectId', '==', subjectId)
+    );
+    
+    const querySnapshot = await getDocs(flashcardsQuery);
+    const flashcards = querySnapshot.docs.map(doc => fromFirestore(doc) as Flashcard);
+    
+    // Filtrar flashcards que precisam de revisão (próxima revisão <= hoje ou sem data de revisão)
+    return flashcards.filter(flashcard => 
+      !flashcard.nextReview || flashcard.nextReview <= today
+    );
+  } catch (error) {
+    console.error('Erro ao buscar flashcards para revisão:', error);
+    return [];
+  }
+};
+
+export const getFlashcard = async (flashcardId: string): Promise<Flashcard | null> => {
+  try {
+    const flashcardDoc = await getDoc(doc(db, 'flashcards', flashcardId));
+    if (!flashcardDoc.exists()) return null;
+    
+    return { ...fromFirestore(flashcardDoc), id: flashcardDoc.id } as Flashcard;
+  } catch (error) {
+    console.error('Erro ao buscar flashcard:', error);
+    return null;
+  }
+};
+
+export const createFlashcard = async (flashcard: Omit<Flashcard, 'id' | 'createdAt' | 'updatedAt' | 'reviewCount' | 'correctCount'>): Promise<string | null> => {
+  try {
+    // Obter a referência da matéria
+    const subjectRef = doc(db, 'subjects', flashcard.subjectId);
+    const subjectDoc = await getDoc(subjectRef);
+    
+    if (!subjectDoc.exists()) {
+      throw new Error('Matéria não encontrada');
+    }
+    
+    // Adicionar flashcard com contadores inicializados
+    const flashcardData = {
+      ...flashcard,
+      reviewCount: 0,
+      correctCount: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    const flashcardRef = await addDoc(collection(db, 'flashcards'), flashcardData);
+    
+    // Atualizar contador de flashcards na matéria
+    const subject = fromFirestore(subjectDoc) as Subject;
+    await updateDoc(subjectRef, {
+      flashcardsCount: (subject.flashcardsCount || 0) + 1,
+      updatedAt: serverTimestamp()
+    });
+    
+    return flashcardRef.id;
+  } catch (error) {
+    console.error('Erro ao criar flashcard:', error);
+    return null;
+  }
+};
+
+export const updateFlashcard = async (flashcardId: string, flashcard: Partial<Flashcard>): Promise<boolean> => {
+  try {
+    await updateDoc(doc(db, 'flashcards', flashcardId), {
+      ...flashcard,
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao atualizar flashcard:', error);
+    return false;
+  }
+};
+
+export const deleteFlashcard = async (flashcardId: string, subjectId: string): Promise<boolean> => {
+  try {
+    // Excluir o flashcard
+    await deleteDoc(doc(db, 'flashcards', flashcardId));
+    
+    // Atualizar o contador na matéria
+    const subjectRef = doc(db, 'subjects', subjectId);
+    const subjectDoc = await getDoc(subjectRef);
+    
+    if (subjectDoc.exists()) {
+      const subject = fromFirestore(subjectDoc) as Subject;
+      await updateDoc(subjectRef, {
+        flashcardsCount: Math.max(0, (subject.flashcardsCount || 0) - 1),
+        updatedAt: serverTimestamp()
+      });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao deletar flashcard:', error);
+    return false;
+  }
+};
+
+// Função para registrar uma sessão de estudo com flashcards
+export const recordFlashcardReview = async (flashcardId: string, isCorrect: boolean): Promise<boolean> => {
+  try {
+    const flashcardRef = doc(db, 'flashcards', flashcardId);
+    const flashcardDoc = await getDoc(flashcardRef);
+    
+    if (!flashcardDoc.exists()) {
+      return false;
+    }
+    
+    const flashcard = fromFirestore(flashcardDoc) as Flashcard;
+    const reviewCount = (flashcard.reviewCount || 0) + 1;
+    const correctCount = isCorrect ? (flashcard.correctCount || 0) + 1 : (flashcard.correctCount || 0);
+    
+    // Calcular próxima data de revisão usando o algoritmo de repetição espaçada
+    // Baseado em uma versão simplificada do algoritmo SM-2
+    const performanceRatio = correctCount / reviewCount;
+    let daysUntilNextReview = 1; // Padrão: revisar amanhã
+    
+    if (reviewCount > 1) {
+      if (performanceRatio >= 0.8) {
+        // Desempenho excelente: próxima revisão em período mais longo
+        daysUntilNextReview = Math.min(30, Math.round(reviewCount * 2));
+      } else if (performanceRatio >= 0.6) {
+        // Desempenho bom: próxima revisão em período médio
+        daysUntilNextReview = Math.min(14, Math.round(reviewCount * 1.5));
+      } else {
+        // Desempenho regular: próxima revisão em breve
+        daysUntilNextReview = Math.min(7, Math.max(1, Math.round(reviewCount * 0.5)));
+      }
+    }
+    
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + daysUntilNextReview);
+    
+    // Atualizar flashcard com os novos valores
+    await updateDoc(flashcardRef, {
+      reviewCount,
+      correctCount,
+      lastReviewed: new Date(),
+      nextReview,
+      updatedAt: serverTimestamp()
+    });
+    
+    // Atualizar matéria associada
+    await updateSubjectReviewStatus(flashcard.subjectId);
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao registrar revisão de flashcard:', error);
+    return false;
+  }
+};
+
+// Função auxiliar para atualizar o status de revisão de uma matéria
+export const updateSubjectReviewStatus = async (subjectId: string): Promise<boolean> => {
+  try {
+    const subjectRef = doc(db, 'subjects', subjectId);
+    const subjectDoc = await getDoc(subjectRef);
+    
+    if (!subjectDoc.exists()) {
+      return false;
+    }
+    
+    // Buscar todos os flashcards da matéria
+    const flashcardsQuery = query(
+      collection(db, 'flashcards'),
+      where('subjectId', '==', subjectId)
+    );
+    
+    const flashcardsSnapshot = await getDocs(flashcardsQuery);
+    const flashcards = flashcardsSnapshot.docs.map(doc => fromFirestore(doc) as Flashcard);
+    
+    // Se não há flashcards, não atualizar
+    if (flashcards.length === 0) {
+      return true;
+    }
+    
+    // Calcular a data da próxima revisão (a mais próxima dentre todos os flashcards)
+    let nextReviewDate: Date | null = null;
+    let latestReviewDate: Date | null = null;
+    
+    flashcards.forEach(flashcard => {
+      // Atualizar data da última revisão
+      if (flashcard.lastReviewed) {
+        if (!latestReviewDate || flashcard.lastReviewed > latestReviewDate) {
+          latestReviewDate = flashcard.lastReviewed;
+        }
+      }
+      
+      // Encontrar a próxima data de revisão mais próxima
+      if (flashcard.nextReview) {
+        if (!nextReviewDate || flashcard.nextReview < nextReviewDate) {
+          nextReviewDate = flashcard.nextReview;
+        }
+      }
+    });
+    
+    // Calcular o progresso com base no número de revisões corretas
+    const totalReviews = flashcards.reduce((sum, card) => sum + (card.reviewCount || 0), 0);
+    const totalCorrect = flashcards.reduce((sum, card) => sum + (card.correctCount || 0), 0);
+    const progress = totalReviews > 0 ? Math.round((totalCorrect / totalReviews) * 100) : 0;
+    
+    // Atualizar a matéria
+    await updateDoc(subjectRef, {
+      lastReviewed: latestReviewDate || null,
+      nextReview: nextReviewDate || null,
+      progress,
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao atualizar status de revisão da matéria:', error);
+    return false;
   }
 }; 

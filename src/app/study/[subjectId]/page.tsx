@@ -1,7 +1,9 @@
+'use client';
+
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, query, where, orderBy } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +12,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { ChevronLeft, Plus, Edit, Trash2, Play, RotateCcw } from 'lucide-react';
+import { ChevronLeft, Plus, Edit, Trash2, Play, RotateCcw, BookOpen, Clock, Calendar, Layers, CalendarClock, ArrowLeft, MoreVertical, Trash } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface Flashcard {
   id: string;
@@ -25,6 +37,9 @@ interface Flashcard {
   nextReview: Date | null;
   reviewCount: number;
   difficulty: 'easy' | 'medium' | 'hard';
+  repetitions: number;
+  easeFactor: number;
+  interval: number;
 }
 
 interface Subject {
@@ -50,6 +65,9 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   const [currentStudyIndex, setCurrentStudyIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
+  const [flashcardToDelete, setFlashcardToDelete] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
   // Carregar dados da matéria
   useEffect(() => {
@@ -86,7 +104,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
               lastReviewed: data.lastReviewed ? data.lastReviewed.toDate() : null,
               nextReview: data.nextReview ? data.nextReview.toDate() : null,
               reviewCount: data.reviewCount || 0,
-              difficulty: data.difficulty || 'medium'
+              difficulty: data.difficulty || 'medium',
+              repetitions: data.repetitions || 0,
+              easeFactor: data.easeFactor || 2.5,
+              interval: data.interval || 0,
             });
           });
           
@@ -125,7 +146,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         lastReviewed: null,
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // próxima revisão em 1 dia
         reviewCount: 0,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        repetitions: 0,
+        easeFactor: 2.5,
+        interval: 0,
       };
       
       const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards");
@@ -247,20 +271,42 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     }
   };
 
+  // Calcular quantos flashcards estão para revisão hoje
+  const calculateDueCards = () => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Fim do dia de hoje
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const dueToday = flashcards.filter(card => {
+      if (!card.nextReview) return true; // Nunca revisado
+      const reviewDate = new Date(card.nextReview);
+      return reviewDate <= today;
+    }).length;
+    
+    const dueTomorrow = flashcards.filter(card => {
+      if (!card.nextReview) return false;
+      const reviewDate = new Date(card.nextReview);
+      return reviewDate > today && reviewDate <= tomorrow;
+    }).length;
+    
+    return { dueToday, dueTomorrow };
+  };
+
+  const { dueToday, dueTomorrow } = calculateDueCards();
+
   // Iniciar sessão de estudo
   const startStudySession = () => {
-    const cardsForStudy = [...flashcards]
-      .sort((a, b) => {
-        if (!a.nextReview) return -1;
-        if (!b.nextReview) return 1;
-        return a.nextReview.getTime() - b.nextReview.getTime();
-      })
-      .slice(0, 10); // Limitar a 10 cards por sessão
+    if (dueToday === 0 && dueTomorrow === 0) {
+      toast({
+        title: "Sem flashcards para revisar",
+        description: "Não há flashcards para revisar agora. Tente mais tarde ou adicione novos flashcards.",
+      });
+      return;
+    }
     
-    setStudyCards(cardsForStudy);
-    setCurrentStudyIndex(0);
-    setShowAnswer(false);
-    setStudySessionOpen(true);
+    router.push(`/study/${params.subjectId}/study`);
   };
 
   // Atualizar progresso do flashcard após estudo
@@ -340,6 +386,38 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     }
   };
 
+  // Deletar flashcard
+  const confirmDeleteFlashcard = (flashcardId: string) => {
+    setFlashcardToDelete(flashcardId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteFlashcardConfirm = async () => {
+    if (!flashcardToDelete) return;
+    
+    try {
+      await deleteDoc(doc(db, 'subjects', params.subjectId, 'flashcards', flashcardToDelete));
+      
+      // Atualizar a lista removendo o flashcard deletado
+      setFlashcards(flashcards.filter(card => card.id !== flashcardToDelete));
+      
+      toast({
+        title: "Flashcard deletado",
+        description: "O flashcard foi removido com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao deletar flashcard:', error);
+      toast({
+        title: "Erro ao deletar",
+        description: "Não foi possível remover o flashcard",
+        variant: "destructive",
+      });
+    } finally {
+      setFlashcardToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container py-10 flex items-center justify-center h-[80vh]">
@@ -368,72 +446,88 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   }
 
   return (
-    <div className="container py-6">
-      <div className="mb-6 flex items-center">
-        <Link href="/study">
-          <Button variant="outline" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-        </Link>
-      </div>
-      
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12">
-                <AvatarFallback style={{ backgroundColor: subject.color }}>
-                  {subject.name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <CardTitle className="text-2xl">{subject.name}</CardTitle>
-                <CardDescription>{subject.description}</CardDescription>
-              </div>
-            </div>
-            <Button 
-              variant="default" 
-              onClick={startStudySession}
-              disabled={flashcards.length === 0}
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Header com informações da matéria */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <button 
+              onClick={() => router.push('/study')}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
             >
-              <Play className="h-4 w-4 mr-2" />
-              Iniciar Estudo
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="text-3xl font-bold">{subject?.name}</h1>
+          </div>
+          <p className="text-muted-foreground">{subject?.description}</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3">
+          {dueToday > 0 && (
+            <Button 
+              onClick={startStudySession}
+              className="flex items-center gap-2"
+            >
+              <BookOpen size={18} />
+              Iniciar Estudo ({dueToday})
             </Button>
+          )}
+          <Button 
+            onClick={() => setNewCardOpen(true)}
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Novo Flashcard
+          </Button>
+        </div>
+      </div>
+
+      {/* Estatísticas de estudo */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total de Flashcards</p>
+              <p className="text-2xl font-bold">{flashcards.length}</p>
+            </div>
+            <Layers className="h-8 w-8 text-muted-foreground" />
           </div>
-        </CardHeader>
-        <CardContent className="pb-3">
-          <div className="flex gap-4 flex-wrap">
-            <div className="bg-card border rounded-lg p-4 flex flex-col items-center">
-              <span className="text-muted-foreground text-sm">Total de Flashcards</span>
-              <span className="text-2xl font-bold">{subject.totalCards}</span>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Para revisar hoje</p>
+              <p className="text-2xl font-bold">{dueToday}</p>
             </div>
-            <div className="bg-card border rounded-lg p-4 flex flex-col items-center">
-              <span className="text-muted-foreground text-sm">Para revisar hoje</span>
-              <span className="text-2xl font-bold">
-                {flashcards.filter(card => card.nextReview && card.nextReview <= new Date()).length}
-              </span>
-            </div>
-            <div className="bg-card border rounded-lg p-4 flex flex-col items-center">
-              <span className="text-muted-foreground text-sm">Próximas 24h</span>
-              <span className="text-2xl font-bold">
-                {flashcards.filter(card => {
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  return card.nextReview && card.nextReview > new Date() && card.nextReview <= tomorrow;
-                }).length}
-              </span>
-            </div>
+            <Clock className="h-8 w-8 text-muted-foreground" />
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Próximas 24h</p>
+              <p className="text-2xl font-bold">{dueTomorrow}</p>
+            </div>
+            <CalendarClock className="h-8 w-8 text-muted-foreground" />
+          </div>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Criado em</p>
+              <p className="text-2xl font-bold">{subject?.createdAt ? format(new Date(subject.createdAt), 'dd/MM/yyyy') : '-'}</p>
+            </div>
+            <Calendar className="h-8 w-8 text-muted-foreground" />
+          </div>
+        </Card>
+      </div>
       
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Flashcards</h2>
-        <Button onClick={() => setNewCardOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Flashcard
-        </Button>
       </div>
       
       {flashcards.length === 0 ? (
@@ -489,9 +583,9 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    onClick={() => handleDeleteFlashcard(card.id)}
+                    onClick={() => confirmDeleteFlashcard(card.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </Button>
                 </div>
               </CardFooter>
@@ -655,6 +749,24 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
               Encerrar Sessão
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de confirmação para deletar flashcard */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+          </DialogHeader>
+          <p>Tem certeza que deseja excluir este flashcard? Esta ação não pode ser desfeita.</p>
+          <div className="flex justify-end gap-3 mt-4">
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleDeleteFlashcardConfirm}>
+              Excluir
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

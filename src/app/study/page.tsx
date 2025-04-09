@@ -1,27 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
-import { RiBookmarkLine, RiFileList3Line, RiMore2Fill, RiEdit2Line, RiDeleteBinLine, RiAddLine, RiTimeLine } from 'react-icons/ri';
-
-interface Subject {
-  id: string;
-  name: string;
-  progress: number;
-  topicsCount: number;
-  nextReview: string;
-  description?: string;
-}
-
-interface Flashcard {
-  id: string;
-  subjectId: string;
-  question: string;
-  answer: string;
-  lastReviewed?: Date;
-  nextReview?: Date;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
+import { RiBookmarkLine, RiFileList3Line, RiMore2Fill, RiEdit2Line, RiDeleteBinLine, RiAddLine, RiTimeLine, RiBarChart2Line } from 'react-icons/ri';
+import { format, formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { auth } from '@/lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { Subject, Flashcard } from '@/types';
+import { 
+  getSubjects, 
+  createSubject, 
+  updateSubject, 
+  deleteSubject, 
+  getFlashcards
+} from '@/lib/firestore';
 
 // Componente StatCard movido para antes do seu uso
 function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
@@ -41,50 +35,109 @@ function StatCard({ title, value, icon }: { title: string; value: string; icon: 
 }
 
 export default function StudyPage() {
+  const router = useRouter();
+  const [user, loading] = useAuthState(auth);
+  
   // Estados principais
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [totalStudyTime, setTotalStudyTime] = useState<string>("0h");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Estados para modais
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState<string | null>(null);
-  const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [subjectToDelete, setSubjectToDelete] = useState<string | null>(null);
   
   // Form states para matéria
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
-  
-  // Form states para flashcard
-  const [formQuestion, setFormQuestion] = useState('');
-  const [formAnswer, setFormAnswer] = useState('');
-  const [formDifficulty, setFormDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [formSubjectId, setFormSubjectId] = useState<string>('');
+
+  useEffect(() => {
+    if (!loading && !user) {
+      // Redirecionar para página de login se não estiver autenticado
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  // Carregar matérias do Firebase
+  useEffect(() => {
+    const loadSubjects = async () => {
+      if (user) {
+        setIsLoading(true);
+        try {
+          const loadedSubjects = await getSubjects(user.uid);
+          setSubjects(loadedSubjects);
+          
+          // Calcular tempo de estudo (simplificado como soma de todos os flashcards)
+          let totalFlashcards = 0;
+          
+          await Promise.all(
+            loadedSubjects.map(async (subject) => {
+              const subjectFlashcards = await getFlashcards(subject.id);
+              totalFlashcards += subjectFlashcards.length;
+            })
+          );
+          
+          // Estimativa simplificada: cada flashcard leva ~2min para estudar
+          const estimatedHours = Math.ceil((totalFlashcards * 2) / 60);
+          setTotalStudyTime(`${estimatedHours}h`);
+          
+        } catch (error) {
+          console.error('Erro ao carregar matérias:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadSubjects();
+  }, [user]);
 
   // Contadores para estatísticas
   const calculateNextReview = () => {
     if (subjects.length === 0) return "Nenhuma";
     
     const today = new Date();
-    const nearestSubjects = subjects
-      .filter(subject => {
-        if (subject.nextReview === "Hoje") return true;
-        if (subject.nextReview === "Amanhã") return true;
-        const days = parseInt(subject.nextReview.split(" ")[0]);
-        return !isNaN(days) && days <= 3; // próximos 3 dias
-      })
-      .sort((a, b) => {
-        if (a.nextReview === "Hoje") return -1;
-        if (b.nextReview === "Hoje") return 1;
-        if (a.nextReview === "Amanhã") return -1;
-        if (b.nextReview === "Amanhã") return 1;
-        return parseInt(a.nextReview.split(" ")[0]) - parseInt(b.nextReview.split(" ")[0]);
-      });
-      
-    return nearestSubjects.length > 0 ? nearestSubjects[0].nextReview : "Nenhuma";
+    const subjectsWithNextReview = subjects.filter(subject => subject.nextReview);
+    
+    if (subjectsWithNextReview.length === 0) return "Nenhuma";
+    
+    // Ordenar por data de próxima revisão
+    subjectsWithNextReview.sort((a, b) => {
+      const dateA = a.nextReview || new Date(9999, 0);
+      const dateB = b.nextReview || new Date(9999, 0);
+      return dateA.getTime() - dateB.getTime();
+    });
+    
+    const nextSubject = subjectsWithNextReview[0];
+    if (!nextSubject.nextReview) return "Nenhuma";
+    
+    const nextReviewDate = nextSubject.nextReview;
+    
+    // Se for hoje
+    if (nextReviewDate.getDate() === today.getDate() && 
+        nextReviewDate.getMonth() === today.getMonth() && 
+        nextReviewDate.getFullYear() === today.getFullYear()) {
+      return "Hoje";
+    }
+    
+    // Se for amanhã
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (nextReviewDate.getDate() === tomorrow.getDate() && 
+        nextReviewDate.getMonth() === tomorrow.getMonth() && 
+        nextReviewDate.getFullYear() === tomorrow.getFullYear()) {
+      return "Amanhã";
+    }
+    
+    // Para outras datas, mostrar em formato relativo
+    return formatDistanceToNow(nextReviewDate, { 
+      addSuffix: true,
+      locale: ptBR
+    });
   };
 
   // Funções para gerenciar matérias
@@ -106,40 +159,50 @@ export default function StudyPage() {
     setSelectedSubject(null);
   };
 
-  const handleSaveSubject = (e: React.FormEvent) => {
+  const handleSaveSubject = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const subjectData: Omit<Subject, 'id' | 'progress' | 'topicsCount' | 'nextReview'> = {
-      name: formName,
-      description: formDescription || undefined,
-    };
-
+    if (!user) {
+      // Redirecionar para página de login se não estiver autenticado
+      router.push('/login');
+      return;
+    }
+    
     if (selectedSubject) {
       // Atualizar matéria existente
-      setSubjects(subjects.map(subject => 
-        subject.id === selectedSubject.id 
-          ? { 
-              ...subject, 
-              name: subjectData.name, 
-              description: subjectData.description 
-            } 
-          : subject
-      ));
+      const success = await updateSubject(selectedSubject.id, {
+        name: formName,
+        description: formDescription || undefined,
+      });
+      
+      if (success) {
+        // Atualizar estado local
+        setSubjects(subjects.map(subject => 
+          subject.id === selectedSubject.id 
+            ? { 
+                ...subject, 
+                name: formName, 
+                description: formDescription || undefined 
+              } 
+            : subject
+        ));
+      }
     } else {
       // Criar nova matéria
-      const randomDays = Math.floor(Math.random() * 5) + 1;
-      const nextReview = randomDays === 1 ? "Hoje" : 
-                        randomDays === 2 ? "Amanhã" : 
-                        `${randomDays} dias`;
-      
-      const newSubject: Subject = {
-        ...subjectData,
-        id: Date.now().toString(),
+      const subjectData = {
+        userId: user.uid,
+        name: formName,
+        description: formDescription || undefined,
         progress: 0,
-        topicsCount: 0,
-        nextReview: nextReview
       };
-      setSubjects([...subjects, newSubject]);
+      
+      const newSubjectId = await createSubject(subjectData);
+      
+      if (newSubjectId) {
+        // Buscar a matéria criada para ter certeza de que temos todos os campos
+        const newSubjects = await getSubjects(user.uid);
+        setSubjects(newSubjects);
+      }
     }
 
     closeSubjectModal();
@@ -151,11 +214,15 @@ export default function StudyPage() {
     setIsMenuOpen(null);
   };
 
-  const handleDeleteSubject = () => {
+  const handleDeleteSubject = async () => {
     if (subjectToDelete) {
-      setSubjects(subjects.filter(subject => subject.id !== subjectToDelete));
-      // Remover flashcards associados à matéria
-      setFlashcards(flashcards.filter(flashcard => flashcard.subjectId !== subjectToDelete));
+      const success = await deleteSubject(subjectToDelete);
+      
+      if (success) {
+        // Atualizar estado local
+        setSubjects(subjects.filter(subject => subject.id !== subjectToDelete));
+      }
+      
       setIsDeleteModalOpen(false);
       setSubjectToDelete(null);
     }
@@ -170,50 +237,44 @@ export default function StudyPage() {
     setIsMenuOpen(isMenuOpen === id ? null : id);
   };
 
-  // Funções para gerenciar flashcards
-  const openFlashcardModal = (subjectId: string) => {
-    setFormSubjectId(subjectId);
-    setFormQuestion('');
-    setFormAnswer('');
-    setFormDifficulty('medium');
-    setIsFlashcardModalOpen(true);
-    setIsMenuOpen(null);
+  // Função para navegar para a página de detalhes da matéria
+  const goToSubjectDetail = (subjectId: string) => {
+    router.push(`/study/${subjectId}`);
   };
 
-  const closeFlashcardModal = () => {
-    setIsFlashcardModalOpen(false);
+  // Função para formatar data de maneira amigável
+  const formatNextReview = (date?: Date) => {
+    if (!date) return "Não agendado";
+    
+    const today = new Date();
+    
+    // Se for hoje
+    if (date.getDate() === today.getDate() && 
+        date.getMonth() === today.getMonth() && 
+        date.getFullYear() === today.getFullYear()) {
+      return "Hoje";
+    }
+    
+    // Se for amanhã
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (date.getDate() === tomorrow.getDate() && 
+        date.getMonth() === tomorrow.getMonth() && 
+        date.getFullYear() === tomorrow.getFullYear()) {
+      return "Amanhã";
+    }
+    
+    // Para outras datas próximas, mostrar em formato relativo
+    if (date < new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) {
+      return formatDistanceToNow(date, { 
+        addSuffix: true,
+        locale: ptBR
+      });
+    }
+    
+    // Para datas mais distantes, mostrar data formatada
+    return format(date, "d 'de' MMMM", { locale: ptBR });
   };
-
-  const handleSaveFlashcard = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newFlashcard: Flashcard = {
-      id: Date.now().toString(),
-      subjectId: formSubjectId,
-      question: formQuestion,
-      answer: formAnswer,
-      difficulty: formDifficulty,
-      lastReviewed: new Date(),
-      nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000) // Próxima revisão em 1 dia
-    };
-    
-    setFlashcards([...flashcards, newFlashcard]);
-    
-    // Atualizar contagem de tópicos da matéria
-    setSubjects(subjects.map(subject => 
-      subject.id === formSubjectId 
-        ? { ...subject, topicsCount: subject.topicsCount + 1 } 
-        : subject
-    ));
-    
-    closeFlashcardModal();
-  };
-
-  // Simular tempo de estudo total
-  useEffect(() => {
-    const totalHours = Math.floor(Math.random() * 30) + 1;
-    setTotalStudyTime(`${totalHours}h`);
-  }, []);
 
   return (
     <MainLayout>
@@ -236,17 +297,26 @@ export default function StudyPage() {
                 Gerencie seu aprendizado de forma eficiente
               </p>
             </div>
-            <button 
-              onClick={() => openSubjectModal()}
-              className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span>Nova Matéria</span>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => router.push('/study/stats')}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-all flex items-center gap-2"
+              >
+                <RiBarChart2Line className="w-5 h-5" />
+                <span>Estatísticas</span>
+              </button>
+              <button 
+                onClick={() => openSubjectModal()}
+                className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Nova Matéria</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+              </button>
+            </div>
           </div>
           
           {/* Dashboard */}
@@ -258,7 +328,7 @@ export default function StudyPage() {
             />
             <StatCard 
               title="Flashcards" 
-              value={flashcards.length.toString()} 
+              value={subjects.reduce((sum, subject) => sum + subject.flashcardsCount, 0).toString()} 
               icon={<RiFileList3Line className="w-6 h-6" />}
             />
             <StatCard 
@@ -282,24 +352,31 @@ export default function StudyPage() {
           <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-semibold mb-6">Suas Matérias</h2>
             
-            {subjects.length > 0 ? (
+            {isLoading ? (
+              <div className="py-8 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : subjects.length > 0 ? (
               <div className="divide-y divide-white/10">
                 {subjects.map(subject => (
                   <div key={subject.id} className="py-4 hover:bg-white/5 transition-all rounded-xl px-4 -mx-4">
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onClick={() => goToSubjectDetail(subject.id)}
+                      >
                         <h3 className="font-medium text-foreground/90">{subject.name}</h3>
                         <p className="text-sm text-foreground/60">
-                          {subject.topicsCount} tópicos • Próxima revisão: {subject.nextReview}
+                          {subject.flashcardsCount} flashcards • Próxima revisão: {formatNextReview(subject.nextReview)}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-end">
-                          <span className="text-sm font-medium text-foreground/90">{subject.progress}%</span>
+                          <span className="text-sm font-medium text-foreground/90">{subject.progress || 0}%</span>
                           <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-primary rounded-full" 
-                              style={{ width: `${subject.progress}%` }}
+                              style={{ width: `${subject.progress || 0}%` }}
                             ></div>
                           </div>
                         </div>
@@ -315,11 +392,11 @@ export default function StudyPage() {
                           {isMenuOpen === subject.id && (
                             <div className="absolute right-0 mt-2 w-48 bg-background/95 backdrop-blur-lg border border-white/10 rounded-xl shadow-lg z-10 py-1">
                               <button 
-                                onClick={() => openFlashcardModal(subject.id)}
+                                onClick={() => goToSubjectDetail(subject.id)}
                                 className="w-full text-left px-4 py-2 text-sm text-foreground/80 hover:bg-white/10 flex items-center gap-2"
                               >
-                                <RiAddLine className="w-4 h-4" />
-                                Adicionar Flashcard
+                                <RiFileList3Line className="w-4 h-4" />
+                                Ver Flashcards
                               </button>
                               <button 
                                 onClick={() => openSubjectModal(subject)}
@@ -354,7 +431,7 @@ export default function StudyPage() {
           
           <div className="mt-8 text-center">
             <p className="text-foreground/60">
-              Em breve: sistema avançado de repetição espaçada, cronogramas de estudo e mais!
+              Utilize flashcards para um aprendizado eficiente com repetição espaçada
             </p>
           </div>
         </div>
@@ -448,81 +525,6 @@ export default function StudyPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de Criar Flashcard */}
-        {isFlashcardModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div 
-              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
-                <h3 className="text-xl font-bold text-white">Novo Flashcard</h3>
-              </div>
-
-              <form onSubmit={handleSaveFlashcard} className="p-5 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Pergunta
-                  </label>
-                  <textarea
-                    value={formQuestion}
-                    onChange={(e) => setFormQuestion(e.target.value)}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                    placeholder="Qual a questão que deseja lembrar?"
-                    rows={2}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Resposta
-                  </label>
-                  <textarea
-                    value={formAnswer}
-                    onChange={(e) => setFormAnswer(e.target.value)}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                    placeholder="Qual a resposta a esta pergunta?"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground/80 mb-1">
-                    Dificuldade
-                  </label>
-                  <select
-                    value={formDifficulty}
-                    onChange={(e) => setFormDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="easy">Fácil</option>
-                    <option value="medium">Média</option>
-                    <option value="hard">Difícil</option>
-                  </select>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={closeFlashcardModal}
-                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
-                  >
-                    Criar
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         )}

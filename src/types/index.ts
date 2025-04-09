@@ -79,4 +79,34 @@ export interface StudyResource {
   noteId?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Tipo para matéria de estudo
+export interface Subject {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  progress: number;
+  flashcardsCount: number;
+  lastReviewed?: Date;
+  nextReview?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Tipo para flashcard
+export interface Flashcard {
+  id: string;
+  userId: string;
+  subjectId: string;
+  question: string;
+  answer: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  lastReviewed?: Date;
+  nextReview?: Date;
+  reviewCount: number;
+  correctCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 } 

@@ -16,6 +16,7 @@ export default function Sidebar() {
     { path: '/notes', label: 'Notas', icon: 'file-list-3-line' },
     { path: '/calendar', label: 'Calendário', icon: 'calendar-line' },
     { path: '/study', label: 'Estudos', icon: 'book-3-line' },
+    { path: '/study/stats', label: 'Estatísticas', icon: 'bar-chart-2-line' },
     { path: '/focus', label: 'Focus', icon: 'timer-line' },
     { path: '/relax', label: 'Relax', icon: 'mental-health-line' },
   ];
@@ -53,7 +54,7 @@ export default function Sidebar() {
         </div>
 
         {/* Projetos Recentes */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <h3 className="px-4 mb-3 text-sm font-medium text-foreground/40 uppercase tracking-wider">
             Projetos Recentes
           </h3>
@@ -71,7 +72,7 @@ export default function Sidebar() {
               </Link>
             ))}
           </div>
-        </div>
+        </div>*/}
 
         {/* Elementos Decorativos */}
         <div className="mt-auto pt-8 px-4 opacity-70">
