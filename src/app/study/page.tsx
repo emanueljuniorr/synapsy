@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { RiBookMarkLine, RiFileList3Line, RiMore2Fill, RiEdit2Line, RiDeleteBinLine, RiAddLine, RiTimeLine } from 'react-icons/ri';
+import { RiBookmarkLine, RiFileList3Line, RiMore2Fill, RiEdit2Line, RiDeleteBinLine, RiAddLine, RiTimeLine } from 'react-icons/ri';
 
 interface Subject {
   id: string;
@@ -254,7 +254,7 @@ export default function StudyPage() {
             <StatCard 
               title="Matérias" 
               value={subjects.length.toString()} 
-              icon={<RiBookMarkLine className="w-6 h-6" />}
+              icon={<RiBookmarkLine className="w-6 h-6" />}
             />
             <StatCard 
               title="Flashcards" 
