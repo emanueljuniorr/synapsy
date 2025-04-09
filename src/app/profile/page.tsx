@@ -7,7 +7,7 @@ import { User } from "firebase/auth";
 import Image from "next/image";
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit, Timestamp, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { CreditCard, Crown, User } from 'lucide-react';
+import { CreditCard, Crown, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 
 // Tipo para dados do perfil
@@ -483,7 +483,7 @@ export default function ProfilePage() {
                   {userProfile?.plan?.name === 'Pro' ? (
                     <Crown className="h-5 w-5" />
                   ) : (
-                    <User className="h-5 w-5" />
+                    <UserIcon className="h-5 w-5" />
                   )}
                 </div>
                 <div className="ml-4">
