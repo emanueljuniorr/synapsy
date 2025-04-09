@@ -37,15 +37,21 @@ export default function StudyPage() {
       }
       
       try {
-        const subjectsRef = collection(db, 'users', auth.currentUser.uid, 'subjects');
+        const subjectsRef = query(
+          collection(db, 'subjects'),
+          where('userId', '==', auth.currentUser.uid)
+        );
         const subjectsSnapshot = await getDocs(subjectsRef);
         
         const subjectsPromises = subjectsSnapshot.docs.map(async (docSnap) => {
           const subjectData = docSnap.data();
-          const flashcardsRef = collection(db, 'users', auth.currentUser.uid, 'subjects', docSnap.id, 'flashcards');
-          const flashcardsSnapshot = await getDocs(flashcardsRef);
+          const flashcardsRef = collection(db, 'flashcards');
+          const flashcardsQuery = query(
+            flashcardsRef,
+            where('subjectId', '==', docSnap.id)
+          );
+          const flashcardsSnapshot = await getDocs(flashcardsQuery);
           
-          // Contar flashcards com revisão para hoje
           const today = new Date();
           today.setHours(23, 59, 59, 999);
           
@@ -53,7 +59,7 @@ export default function StudyPage() {
           flashcardsSnapshot.docs.forEach(flashcardDoc => {
             const flashcard = flashcardDoc.data();
             if (!flashcard.nextReview) {
-              dueCount++; // Novo flashcard nunca revisado
+              dueCount++;
             } else {
               const nextReview = flashcard.nextReview.toDate ? 
                     flashcard.nextReview.toDate() : 
