@@ -440,6 +440,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
                     <button 
                       onClick={() => router.push('/study')}
                       className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                      aria-label="Voltar para a lista de matérias"
                     >
                       <ChevronLeft size={20} />
                     </button>

@@ -32,6 +32,12 @@ export default function StudyPage() {
   useEffect(() => {
     const fetchSubjects = async () => {
       if (!auth.currentUser) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para visualizar suas matérias",
+          variant: "destructive",
+        });
+        router.push('/auth/login');
         setLoading(false);
         return;
       }
@@ -103,7 +109,7 @@ export default function StudyPage() {
     };
     
     fetchSubjects();
-  }, [toast]);
+  }, [toast, router]);
 
   const filteredSubjects = subjects.filter(subject => {
     if (!searchQuery) return true;
@@ -181,49 +187,64 @@ export default function StudyPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSubjects.map(subject => (
-                <Link href={`/study/${subject.id}`} key={subject.id} className="block">
-                  <Card className="p-5 h-full cursor-pointer hover:shadow-md transition-shadow bg-white/5 border border-white/10 backdrop-blur-lg">
-                    <div className="flex items-center mb-4">
-                      <div 
-                        className={cn(
-                          "w-3 h-10 rounded-sm mr-3",
-                        )}
-                        style={{ backgroundColor: subject.color }}
-                      />
-                      <div>
-                        <h2 className="text-xl font-medium">{subject.name}</h2>
-                        {subject.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {subject.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="text-sm">
-                        <p>
-                          <span className="font-medium text-primary">{subject.dueFlashcards}</span>
-                          {' '}para revisar hoje
-                        </p>
-                        <p className="text-muted-foreground">
-                          Total: {subject.totalFlashcards} flashcards
-                        </p>
-        </div>
-
-                      {subject.dueFlashcards > 0 && (
-                        <Button variant="ghost" size="sm" className="flex items-center">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Estudar
-                        </Button>
+                <Card 
+                  key={subject.id}
+                  className="p-5 h-full cursor-pointer hover:shadow-md transition-shadow bg-white/5 border border-white/10 backdrop-blur-lg"
+                  onClick={(e) => {
+                    // Garantir que o clique no card não seja afetado pelo botão
+                    if (!(e.target as HTMLElement).closest('button')) {
+                      router.push(`/study/${subject.id}`);
+                    }
+                  }}
+                >
+                  <div className="flex items-center mb-4">
+                    <div 
+                      className={cn(
+                        "w-3 h-10 rounded-sm mr-3",
                       )}
-              </div>
-                  </Card>
-                </Link>
+                      style={{ backgroundColor: subject.color }}
+                    />
+                    <div>
+                      <h2 className="text-xl font-medium">{subject.name}</h2>
+                      {subject.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {subject.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm">
+                      <p>
+                        <span className="font-medium text-primary">{subject.dueFlashcards}</span>
+                        {' '}para revisar hoje
+                      </p>
+                      <p className="text-muted-foreground">
+                        Total: {subject.totalFlashcards} flashcards
+                      </p>
+                    </div>
+
+                    {subject.dueFlashcards > 0 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Previne o evento de clicar no card
+                          router.push(`/study/${subject.id}/study`);
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Estudar
+                      </Button>
+                    )}
+                  </div>
+                </Card>
               ))}
-          </div>
-        )}
-          </div>
+            </div>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
