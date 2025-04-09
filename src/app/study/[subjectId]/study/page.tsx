@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Frown, Meh, Smile, RotateCw } from 'lucide-react';
+import MainLayout from '@/components/layout/MainLayout';
 
 // Interface para os flashcards
 interface Flashcard {
@@ -243,124 +244,154 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-lg font-medium">Carregando detalhes da matéria...</p>
+      <MainLayout>
+        <div className="flex min-h-screen flex-col items-center justify-center p-4">
+          <div className="w-full max-w-md text-center">
+            <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-lg font-medium">Carregando detalhes da matéria...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col p-4">
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={handleBack} 
-          className="mr-2"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl font-bold">
-          {subject?.name}: Revisão
-        </h1>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex justify-between text-sm mb-1">
-          <span>Progresso</span>
-          <span>{currentCardIndex + 1} de {totalCards}</span>
+    <MainLayout>
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Elementos decorativos espaciais */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
+          <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
+          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
         </div>
-        <Progress value={progress} className="h-2" />
-      </div>
-
-      {!sessionCompleted ? (
-        <>
-          {flashcards.length > 0 && (
-            <Card className="flex-1 flex flex-col p-6 mb-4">
-              <div className="flex-1 flex flex-col">
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-2">Pergunta:</h3>
-                  <div className="text-xl">
-                    {flashcards[currentCardIndex].question}
-                  </div>
-                </div>
-
-                {showAnswer ? (
-                  <div className="mt-auto">
-                    <h3 className="text-lg font-medium mb-2">Resposta:</h3>
-                    <div className="text-xl whitespace-pre-wrap">
-                      {flashcards[currentCardIndex].answer}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-auto pt-4 border-t">
-                    <Button 
-                      onClick={() => setShowAnswer(true)} 
-                      className="w-full"
-                    >
-                      Mostrar Resposta
-                    </Button>
-                  </div>
-                )}
+        
+        <div className="relative z-10 max-w-5xl mx-auto px-4 py-8">
+          {/* Cabeçalho */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
+            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center mb-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleBack} 
+                  className="mr-2"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                  {subject?.name}: Revisão
+                </h1>
               </div>
-            </Card>
-          )}
 
-          {showAnswer && (
-            <div className="space-y-4">
-              <h3 className="text-center font-medium">Como você se saiu?</h3>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <Button 
-                  onClick={() => handleGrade(1)} 
-                  variant="outline" 
-                  className="flex flex-col items-center py-4"
-                >
-                  <Frown className="h-8 w-8 mb-2 text-red-500" />
-                  <span>Esqueci</span>
-                </Button>
-                
-                <Button 
-                  onClick={() => handleGrade(3)} 
-                  variant="outline" 
-                  className="flex flex-col items-center py-4"
-                >
-                  <Meh className="h-8 w-8 mb-2 text-yellow-500" />
-                  <span>Difícil</span>
-                </Button>
-                
-                <Button 
-                  onClick={() => handleGrade(5)} 
-                  variant="outline" 
-                  className="flex flex-col items-center py-4"
-                >
-                  <Smile className="h-8 w-8 mb-2 text-green-500" />
-                  <span>Fácil</span>
-                </Button>
+              <div className="mb-2">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Progresso</span>
+                  <span>{currentCardIndex + 1} de {totalCards}</span>
+                </div>
+                <Progress value={progress} className="h-2" />
               </div>
             </div>
-          )}
-        </>
-      ) : (
-        <Card className="flex flex-col items-center justify-center p-6 mt-4">
-          <h2 className="text-2xl font-bold mb-4">Sessão Concluída!</h2>
-          <p className="text-center mb-6">
-            Você revisou todos os {totalCards} flashcards programados para hoje.
-          </p>
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={handleBack}>
-              Voltar
-            </Button>
-            <Button onClick={handleRestart} className="flex items-center">
-              <RotateCw className="w-4 h-4 mr-2" />
-              Revisar Novamente
-            </Button>
           </div>
-        </Card>
-      )}
-    </div>
+
+          {!sessionCompleted ? (
+            <div className="space-y-8">
+              {flashcards.length > 0 && (
+                <Card className="relative overflow-hidden flex-1 flex flex-col p-8 mb-4 bg-white/5 border border-white/10 backdrop-blur-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-20"></div>
+                  <div className="relative flex-1 flex flex-col">
+                    <div className="mb-8">
+                      <h3 className="text-lg font-medium mb-3 text-white/80">Pergunta:</h3>
+                      <div className="text-2xl font-medium">
+                        {flashcards[currentCardIndex].question}
+                      </div>
+                    </div>
+
+                    {showAnswer ? (
+                      <div className="mt-auto">
+                        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-6"></div>
+                        <h3 className="text-lg font-medium mb-3 text-white/80">Resposta:</h3>
+                        <div className="text-xl whitespace-pre-wrap">
+                          {flashcards[currentCardIndex].answer}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-auto pt-6 flex justify-center">
+                        <Button 
+                          onClick={() => setShowAnswer(true)} 
+                          className="bg-primary/80 hover:bg-primary text-white px-6 py-2 rounded-xl font-medium transition-all hover:shadow-lg hover:shadow-primary/20"
+                        >
+                          Mostrar Resposta
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {showAnswer && (
+                <div className="space-y-6">
+                  <h3 className="text-center font-medium text-lg">Como você se saiu?</h3>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <Button 
+                      onClick={() => handleGrade(1)} 
+                      variant="outline" 
+                      className="flex flex-col items-center py-6 bg-white/5 border border-white/10 backdrop-blur-lg hover:bg-red-500/10 hover:border-red-500/30 transition-all"
+                    >
+                      <Frown className="h-10 w-10 mb-3 text-red-500" />
+                      <span>Esqueci</span>
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handleGrade(3)} 
+                      variant="outline" 
+                      className="flex flex-col items-center py-6 bg-white/5 border border-white/10 backdrop-blur-lg hover:bg-yellow-500/10 hover:border-yellow-500/30 transition-all"
+                    >
+                      <Meh className="h-10 w-10 mb-3 text-yellow-500" />
+                      <span>Difícil</span>
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => handleGrade(5)} 
+                      variant="outline" 
+                      className="flex flex-col items-center py-6 bg-white/5 border border-white/10 backdrop-blur-lg hover:bg-green-500/10 hover:border-green-500/30 transition-all"
+                    >
+                      <Smile className="h-10 w-10 mb-3 text-green-500" />
+                      <span>Fácil</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl"></div>
+              <Card className="relative bg-background/30 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center p-10 mt-4 text-center">
+                <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Sessão Concluída!</h2>
+                <p className="text-foreground/70 mb-8 max-w-md">
+                  Você revisou todos os {totalCards} flashcards programados para hoje. Continue estudando regularmente para melhores resultados.
+                </p>
+                <div className="flex gap-4">
+                  <Button variant="outline" onClick={handleBack} className="border-white/10 hover:bg-white/10">
+                    Voltar
+                  </Button>
+                  <Button onClick={handleRestart} className="flex items-center bg-primary/80 hover:bg-primary transition-all">
+                    <RotateCw className="w-4 h-4 mr-2" />
+                    Revisar Novamente
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
+      </div>
+    </MainLayout>
   );
 } 

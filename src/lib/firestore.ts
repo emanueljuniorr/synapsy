@@ -15,7 +15,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from '@/lib/firebase';
 import { User, Task, Note, Event, StudyTopic, Subject, Flashcard } from '@/types';
 
 // Função para converter Timestamp do Firestore para Date
@@ -170,111 +170,191 @@ export const deleteNote = async (noteId: string): Promise<boolean> => {
 };
 
 // Função para buscar os dados da página inicial do usuário
-export const getDashboardData = async (userId: string) => {
+export const getDashboardData = async (): Promise<DashboardData> => {
+  if (!auth.currentUser) {
+    throw new Error('Usuário não autenticado');
+  }
+
+  const userId = auth.currentUser.uid;
+  
   try {
     // Buscar tarefas recentes
+    const tasksRef = collection(db, 'users', userId, 'tasks');
     const tasksQuery = query(
-      collection(db, 'tasks'),
-      where('userId', '==', userId),
-      where('isDone', '==', false),
+      tasksRef,
       orderBy('dueDate', 'asc'),
       limit(5)
     );
+    const tasksSnapshot = await getDocs(tasksQuery);
     
-    // Buscar anotações recentes
+    const tasks: Task[] = [];
+    let pendingTasks = 0;
+    let completedTasks = 0;
+
+    tasksSnapshot.forEach(doc => {
+      const data = doc.data();
+      const task: Task = {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        dueDate: data.dueDate ? data.dueDate.toDate() : undefined,
+        completed: data.completed || false,
+        priority: data.priority || 'medium',
+        category: data.category
+      };
+      
+      tasks.push(task);
+      
+      if (task.completed) {
+        completedTasks++;
+      } else {
+        pendingTasks++;
+      }
+    });
+
+    // Buscar o total de tarefas pendentes
+    const allTasksQuery = query(tasksRef, where('completed', '==', false));
+    const allTasksSnapshot = await getDocs(allTasksQuery);
+    pendingTasks = allTasksSnapshot.size;
+
+    // Buscar tarefas completadas
+    const completedTasksQuery = query(tasksRef, where('completed', '==', true));
+    const completedTasksSnapshot = await getDocs(completedTasksQuery);
+    completedTasks = completedTasksSnapshot.size;
+    
+    // Buscar notas recentes
+    const notesRef = collection(db, 'users', userId, 'notes');
     const notesQuery = query(
-      collection(db, 'notes'),
-      where('userId', '==', userId),
+      notesRef,
       orderBy('updatedAt', 'desc'),
-      limit(3)
-    );
-    
-    // Buscar eventos próximos
-    // Nota: É necessário criar um índice composto no Firebase para esta consulta:
-    // Coleção: events, Campos: userId ASC, startDate ASC, __name__ ASC
-    // Link: https://console.firebase.google.com/v1/r/project/synapsy-app/firestore/indexes?create_composite=Ckpwcm9qZWN0cy9zeW5hcHN5LWFwcC9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZXZlbnRzL2luZGV4ZXMvXxABGgoKBnVzZXJJZBABGg0KCXN0YXJ0RGF0ZRABGgwKCF9fbmFtZV9fEAE
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Versão temporária da consulta sem ordenação para evitar o erro de índice
-    const eventsQuery = query(
-      collection(db, 'events'),
-      where('userId', '==', userId),
-      where('startDate', '>=', today),
       limit(5)
     );
+    const notesSnapshot = await getDocs(notesQuery);
     
-    // Versão original da consulta (requer índice):
-    // const eventsQuery = query(
-    //   collection(db, 'events'),
-    //   where('userId', '==', userId),
-    //   where('startDate', '>=', today),
-    //   orderBy('startDate', 'asc'),
-    //   limit(3)
-    // );
+    const notes: Note[] = [];
+    notesSnapshot.forEach(doc => {
+      const data = doc.data();
+      notes.push({
+        id: doc.id,
+        title: data.title,
+        content: data.content,
+        tags: data.tags || [],
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined
+      });
+    });
+
+    // Contar o total de notas
+    const allNotesSnapshot = await getDocs(notesRef);
+    const totalNotes = allNotesSnapshot.size;
     
-    // Buscar tópicos de estudo
-    const studyQuery = query(
-      collection(db, 'studyTopics'),
-      where('userId', '==', userId),
-      orderBy('progress', 'desc'),
-      limit(3)
+    // Buscar matérias de estudo
+    const subjectsRef = collection(db, 'users', userId, 'subjects');
+    const subjectsSnapshot = await getDocs(subjectsRef);
+    
+    const subjects: StudyTopic[] = [];
+    let dueFlashcards = 0;
+    
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    
+    // Buscar dados de flashcards para cada matéria
+    const subjectsPromises = subjectsSnapshot.docs.map(async (docSnap) => {
+      const subjectData = docSnap.data();
+      const flashcardsRef = collection(db, 'users', userId, 'subjects', docSnap.id, 'flashcards');
+      const flashcardsSnapshot = await getDocs(flashcardsRef);
+      
+      // Contar flashcards para revisão hoje
+      let subjectDueCount = 0;
+      flashcardsSnapshot.docs.forEach(flashcardDoc => {
+        const flashcard = flashcardDoc.data();
+        if (!flashcard.nextReview) {
+          subjectDueCount++;
+        } else {
+          const nextReview = flashcard.nextReview.toDate ? 
+                flashcard.nextReview.toDate() : 
+                new Date(flashcard.nextReview);
+          if (nextReview <= today) {
+            subjectDueCount++;
+          }
+        }
+      });
+      
+      dueFlashcards += subjectDueCount;
+      
+      return {
+        id: docSnap.id,
+        name: subjectData.name,
+        color: subjectData.color || '#4F46E5',
+        totalFlashcards: flashcardsSnapshot.size,
+        dueFlashcards: subjectDueCount
+      };
+    });
+    
+    const subjectsData = await Promise.all(subjectsPromises);
+    subjects.push(...subjectsData);
+    
+    // Buscar dados de sessões de foco (últimos 7 dias)
+    const focusSessionsRef = collection(db, 'users', userId, 'focusSessions');
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const focusSessionsQuery = query(
+      focusSessionsRef,
+      where('endTime', '>=', sevenDaysAgo),
+      orderBy('endTime', 'asc')
     );
     
-    // Executar todas as consultas em paralelo
-    const [tasksSnapshot, notesSnapshot, eventsSnapshot, studySnapshot] = await Promise.all([
-      getDocs(tasksQuery),
-      getDocs(notesQuery),
-      getDocs(eventsQuery),
-      getDocs(studyQuery)
-    ]);
+    const focusSessionsSnapshot = await getDocs(focusSessionsQuery);
     
-    // Processar resultados
-    const tasks = tasksSnapshot.docs.map(doc => fromFirestore(doc) as Task);
-    const notes = notesSnapshot.docs.map(doc => fromFirestore(doc) as Note);
-    const events = eventsSnapshot.docs.map(doc => fromFirestore(doc) as Event);
+    // Organizar os dados por dia
+    const sessionsByDay = new Map<string, number>();
     
-    // Ordenar eventos manualmente (já que removemos o orderBy da consulta)
-    const sortedEvents = [...events].sort((a, b) => {
-      const dateA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
-      const dateB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
-      return dateA.getTime() - dateB.getTime();
-    }).slice(0, 3); // Limitar a 3 eventos como na consulta original
+    focusSessionsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const date = data.endTime.toDate();
+      const dateStr = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      
+      const durationMinutes = Math.floor((data.endTime.toDate() - data.startTime.toDate()) / (1000 * 60));
+      
+      const existingMinutes = sessionsByDay.get(dateStr) || 0;
+      sessionsByDay.set(dateStr, existingMinutes + durationMinutes);
+    });
     
-    const studyTopics = studySnapshot.docs.map(doc => fromFirestore(doc) as StudyTopic);
+    const focusSessions = Array.from(sessionsByDay.entries()).map(([date, minutes]) => ({
+      date,
+      minutes
+    }));
     
-    // Contagens
-    const pendingTasksCount = tasks.length;
-    const totalNotesCount = (await getDocs(query(
-      collection(db, 'notes'),
-      where('userId', '==', userId)
-    ))).docs.length;
-    const upcomingEventsCount = events.length;
+    // Preencher dias que faltam nos últimos 7 dias
+    const allDays: { date: string, minutes: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      allDays.push({
+        date: dateStr,
+        minutes: sessionsByDay.get(dateStr) || 0
+      });
+    }
     
     return {
       tasks,
       notes,
-      events: sortedEvents,
-      studyTopics,
+      subjects,
       counts: {
-        pendingTasks: pendingTasksCount,
-        totalNotes: totalNotesCount,
-        upcomingEvents: upcomingEventsCount,
-      }
+        pendingTasks,
+        completedTasks,
+        totalNotes,
+        totalSubjects: subjects.length,
+        dueFlashcards
+      },
+      focusSessions: allDays
     };
   } catch (error) {
     console.error('Erro ao buscar dados do dashboard:', error);
-    return {
-      tasks: [],
-      notes: [],
-      events: [],
-      studyTopics: [],
-      counts: {
-        pendingTasks: 0,
-        totalNotes: 0,
-        upcomingEvents: 0,
-      }
-    };
+    throw error;
   }
 };
 
