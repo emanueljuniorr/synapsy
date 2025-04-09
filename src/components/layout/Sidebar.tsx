@@ -6,20 +6,24 @@ import Link from 'next/link';
 export default function Sidebar() {
   const pathname = usePathname();
   
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
   
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: 'grid-2' },
-    { path: '/tasks', label: 'Tarefas', icon: 'list-check' },
-    { path: '/notes', label: 'Anotações', icon: 'note' },
-    { path: '/calendar', label: 'Calendário', icon: 'calendar' },
-    { path: '/study', label: 'Estudos', icon: 'book' }
+    { path: '/dashboard', label: 'Dashboard', icon: 'dashboard-3-line' },
+    { path: '/tasks', label: 'Tarefas', icon: 'task-line' },
+    { path: '/notes', label: 'Notas', icon: 'file-list-3-line' },
+    { path: '/calendar', label: 'Calendário', icon: 'calendar-line' },
+    { path: '/study', label: 'Estudos', icon: 'book-3-line' },
+    { path: '/focus', label: 'Focus', icon: 'timer-line' },
+    { path: '/relax', label: 'Relax', icon: 'mental-health-line' },
   ];
 
   const recentProjects = [
-    { id: '1', name: 'Estudos para prova', color: 'bg-green-500' },
-    { id: '2', name: 'Projeto de pesquisa', color: 'bg-blue-500' },
-    { id: '3', name: 'Trabalho de faculdade', color: 'bg-purple-500' }
+    { id: '1', name: 'Projeto de Graduação', color: 'bg-blue-500' },
+    { id: '2', name: 'Aprendizado de IA', color: 'bg-green-500' },
+    { id: '3', name: 'Desenvolvimento Web', color: 'bg-purple-500' },
   ];
 
   return (
@@ -70,9 +74,14 @@ export default function Sidebar() {
         </div>
 
         {/* Elementos Decorativos */}
-        <div className="mt-auto relative">
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-            <div className="w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
+        <div className="mt-auto pt-8 px-4 opacity-70">
+          <div className="w-full h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center relative overflow-hidden border border-white/5">
+            <div className="absolute w-20 h-20 bg-primary/20 rounded-full filter blur-xl animate-pulse top-5 -left-10"></div>
+            <div className="absolute w-16 h-16 bg-accent/20 rounded-full filter blur-xl animate-pulse delay-1000 bottom-2 right-2"></div>
+            <div className="text-center z-10">
+              <div className="text-xs text-foreground/60 mb-1">Synapsy v1.0</div>
+              <div className="text-xs text-foreground/40">Explore. Aprenda. Evolua.</div>
+            </div>
           </div>
         </div>
       </nav>
