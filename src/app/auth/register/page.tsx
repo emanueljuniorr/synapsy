@@ -112,11 +112,10 @@ export default function RegisterPage() {
           )}
 
           <div className="mb-6">
-            <Button
+            <button
               type="button"
-              variant="outline"
               disabled={isGoogleLoading}
-              className="w-full flex items-center justify-center gap-2"
+              className="group relative w-full px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleGoogleLogin}
             >
               <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
@@ -126,7 +125,8 @@ export default function RegisterPage() {
                 <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
               </svg>
               {isGoogleLoading ? 'Processando...' : 'Continuar com Google'}
-            </Button>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+            </button>
 
             <div className="relative flex items-center justify-center my-4">
               <div className="absolute border-t border-neutral/30 w-full"></div>
@@ -182,13 +182,14 @@ export default function RegisterPage() {
                 </label>
               </div>
               
-              <Button
+              <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-6"
+                className="group relative w-full mt-6 px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Criando conta...' : 'Criar conta'}
-              </Button>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+              </button>
             </div>
           </form>
         </div>
