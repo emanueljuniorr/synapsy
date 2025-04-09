@@ -170,10 +170,16 @@ export default function StudyPage() {
     
     if (selectedSubject) {
       // Atualizar matéria existente
-      const success = await updateSubject(selectedSubject.id, {
-        name: formName,
-        description: formDescription || undefined,
-      });
+      const subjectData: Record<string, any> = {
+        name: formName
+      };
+      
+      // Apenas incluir description se não for vazio
+      if (formDescription.trim() !== '') {
+        subjectData.description = formDescription;
+      }
+      
+      const success = await updateSubject(selectedSubject.id, subjectData);
       
       if (success) {
         // Atualizar estado local
@@ -182,19 +188,23 @@ export default function StudyPage() {
             ? { 
                 ...subject, 
                 name: formName, 
-                description: formDescription || undefined 
+                description: formDescription.trim() !== '' ? formDescription : '' 
               } 
             : subject
         ));
       }
     } else {
       // Criar nova matéria
-      const subjectData = {
+      const subjectData: Record<string, any> = {
         userId: user.uid,
         name: formName,
-        description: formDescription || undefined,
         progress: 0,
       };
+      
+      // Apenas incluir description se não for vazio
+      if (formDescription.trim() !== '') {
+        subjectData.description = formDescription;
+      }
       
       const newSubjectId = await createSubject(subjectData);
       
