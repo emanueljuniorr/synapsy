@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, query, where, orderBy } from 'firebase/firestore';
@@ -52,6 +52,9 @@ interface Subject {
 }
 
 export default function SubjectDetailsPage({ params }: { params: { subjectId: string } }) {
+  const unwrappedParams = use(params);
+  const subjectId = unwrappedParams.subjectId;
+  
   const { toast } = useToast();
   const [subject, setSubject] = useState<Subject | null>(null);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -76,7 +79,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       try {
         setLoading(true);
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId);
+        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
         const subjectDoc = await getDoc(subjectRef);
         
         if (subjectDoc.exists()) {
@@ -91,7 +94,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           });
           
           // Buscar flashcards
-          const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards");
+          const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards");
           const flashcardsSnap = await getDocs(flashcardsRef);
           
           const loadedFlashcards: Flashcard[] = [];
@@ -132,7 +135,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     };
     
     fetchSubjectDetails();
-  }, [params.subjectId, toast]);
+  }, [subjectId, toast]);
 
   // Adicionar novo flashcard
   const handleAddFlashcard = async () => {
@@ -152,7 +155,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         interval: 0,
       };
       
-      const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards");
+      const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards");
       const docRef = await addDoc(flashcardsRef, flashcardData);
       
       const newFlashcard = {
@@ -165,7 +168,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       // Atualizar contador de cards na matéria
       if (subject) {
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId);
+        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
         await updateDoc(subjectRef, {
           totalCards: (subject.totalCards || 0) + 1
         });
@@ -199,7 +202,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!auth.currentUser || !currentFlashcard || !newQuestion.trim() || !newAnswer.trim()) return;
     
     try {
-      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards", currentFlashcard.id);
+      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards", currentFlashcard.id);
       
       await updateDoc(flashcardRef, {
         question: newQuestion,
@@ -238,7 +241,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!auth.currentUser) return;
     
     try {
-      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards", id);
+      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards", id);
       await deleteDoc(flashcardRef);
       
       const updatedFlashcards = flashcards.filter(card => card.id !== id);
@@ -246,7 +249,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       // Atualizar contador de cards na matéria
       if (subject) {
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId);
+        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
         await updateDoc(subjectRef, {
           totalCards: Math.max((subject.totalCards || 0) - 1, 0)
         });
@@ -306,7 +309,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       return;
     }
     
-    router.push(`/study/${params.subjectId}/study`);
+    router.push(`/study/${subjectId}/study`);
   };
 
   // Atualizar progresso do flashcard após estudo
@@ -326,7 +329,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     nextReviewDate.setDate(today.getDate() + Math.max(1, Math.floor(daysToAdd)));
     
     try {
-      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", params.subjectId, "flashcards", card.id);
+      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards", card.id);
       
       await updateDoc(flashcardRef, {
         lastReviewed: today,
@@ -396,7 +399,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!flashcardToDelete) return;
     
     try {
-      await deleteDoc(doc(db, 'subjects', params.subjectId, 'flashcards', flashcardToDelete));
+      await deleteDoc(doc(db, 'subjects', subjectId, 'flashcards', flashcardToDelete));
       
       // Atualizar a lista removendo o flashcard deletado
       setFlashcards(flashcards.filter(card => card.id !== flashcardToDelete));

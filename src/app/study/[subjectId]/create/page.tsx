@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, addDoc } from 'firebase/firestore';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,9 @@ interface Subject {
 export default function CreateFlashcardPage({ params }: { params: { subjectId: string } }) {
   const router = useRouter();
   const { toast } = useToast();
+  const unwrappedParams = use(params);
+  const subjectId = unwrappedParams.subjectId;
+  
   const [subject, setSubject] = useState<Subject | null>(null);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -26,10 +29,12 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
   const [cards, setCards] = useState<{ question: string; answer: string }[]>([]);
 
   // Carregar dados da matéria
-  useState(() => {
+  useEffect(() => {
     const fetchSubject = async () => {
+      if (!auth.currentUser) return;
+      
       try {
-        const subjectDoc = await getDoc(doc(db, 'subjects', params.subjectId));
+        const subjectDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId));
         if (!subjectDoc.exists()) {
           toast({
             title: "Erro",
@@ -57,7 +62,7 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
     };
     
     fetchSubject();
-  });
+  }, [subjectId, toast, router]);
 
   // Adicionar card à lista temporária
   const addCardToList = () => {
@@ -77,6 +82,8 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
 
   // Salvar todos os flashcards
   const saveFlashcards = async () => {
+    if (!auth.currentUser) return;
+    
     if (cards.length === 0 && (!question.trim() || !answer.trim())) {
       toast({
         title: "Nenhum flashcard para salvar",
@@ -95,7 +102,7 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
     setIsSubmitting(true);
     
     try {
-      const flashcardsRef = collection(db, 'subjects', params.subjectId, 'flashcards');
+      const flashcardsRef = collection(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards');
       
       // Adicionar cada flashcard ao Firestore
       const promises = cardsToSave.map(card => 
@@ -106,7 +113,7 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
           repetitions: 0,
           easeFactor: 2.5,
           interval: 0,
-          nextReview: null
+          nextReview: new Date()
         })
       );
       
@@ -118,7 +125,7 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
       });
       
       // Redirecionar para a página da matéria
-      router.push(`/study/${params.subjectId}`);
+      router.push(`/study/${subjectId}`);
     } catch (error) {
       console.error('Erro ao salvar flashcards:', error);
       toast({
@@ -132,7 +139,7 @@ export default function CreateFlashcardPage({ params }: { params: { subjectId: s
   };
 
   const handleBack = () => {
-    router.push(`/study/${params.subjectId}`);
+    router.push(`/study/${subjectId}`);
   };
 
   return (

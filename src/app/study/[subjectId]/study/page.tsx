@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, updateDoc, query, where, Timestamp } from 'firebase/firestore';
@@ -79,6 +79,8 @@ function calculateNextReview(grade: number, card: Flashcard) {
 export default function StudySessionPage({ params }: { params: { subjectId: string } }) {
   const router = useRouter();
   const { toast } = useToast();
+  const unwrappedParams = use(params);
+  const subjectId = unwrappedParams.subjectId;
   const [subject, setSubject] = useState<Subject | null>(null);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -93,7 +95,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
     const fetchData = async () => {
       try {
         // Buscar dados da matéria
-        const subjectDoc = await getDoc(doc(db, 'subjects', params.subjectId));
+        const subjectDoc = await getDoc(doc(db, 'subjects', subjectId));
         if (!subjectDoc.exists()) {
           toast({
             title: "Erro",
@@ -116,7 +118,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
         today.setHours(0, 0, 0, 0);
         
         const flashcardsQuery = query(
-          collection(db, 'subjects', params.subjectId, 'flashcards')
+          collection(db, 'subjects', subjectId, 'flashcards')
         );
         
         const flashcardsSnapshot = await getDocs(flashcardsQuery);
@@ -145,7 +147,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
             title: "Sem flashcards para revisar",
             description: "Não há flashcards para revisar hoje. Volte mais tarde!",
           });
-          router.push(`/study/${params.subjectId}`);
+          router.push(`/study/${subjectId}`);
           return;
         }
         
@@ -161,14 +163,14 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
           description: "Não foi possível carregar os dados para estudo",
           variant: "destructive",
         });
-        router.push(`/study/${params.subjectId}`);
+        router.push(`/study/${subjectId}`);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-  }, [params.subjectId, router, toast]);
+  }, [subjectId, router, toast]);
 
   // Lidar com a avaliação do flashcard
   const handleGrade = async (grade: number) => {
@@ -177,7 +179,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
       const updatedCard = calculateNextReview(grade, currentCard);
       
       // Atualizar no Firestore
-      await updateDoc(doc(db, 'subjects', params.subjectId, 'flashcards', currentCard.id), {
+      await updateDoc(doc(db, 'subjects', subjectId, 'flashcards', currentCard.id), {
         repetitions: updatedCard.repetitions,
         easeFactor: updatedCard.easeFactor,
         interval: updatedCard.interval,
@@ -199,156 +201,156 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
         setSessionCompleted(true);
         setProgress(100);
         toast({
-          title: "Sessão concluída!",
-          description: "Você completou a revisão de todos os flashcards.",
+          title: "Sessão concluída",
+          description: "Você revisou todos os flashcards para hoje!",
         });
       }
     } catch (error) {
       console.error('Erro ao atualizar flashcard:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível salvar sua avaliação",
+        description: "Não foi possível atualizar o flashcard",
         variant: "destructive",
       });
     }
   };
 
+  // Voltar para a tela da matéria
   const handleBack = () => {
-    router.push(`/study/${params.subjectId}`);
+    router.push(`/study/${subjectId}`);
   };
 
+  // Reiniciar sessão
   const handleRestart = () => {
-    router.refresh();
+    setSessionCompleted(false);
+    setCurrentCardIndex(0);
+    setShowAnswer(false);
+    setProgress(0);
+    
+    // Embaralhar novamente
+    const shuffledCards = [...flashcards].sort(() => Math.random() - 0.5);
+    setFlashcards(shuffledCards);
   };
 
-  // Mostrar página de carregamento
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary mb-4"></div>
-        <p className="text-muted-foreground">Preparando seus flashcards...</p>
-      </div>
-    );
-  }
-
-  // Mostrar página de conclusão da sessão
-  if (sessionCompleted) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-6">Sessão Concluída!</h1>
-          <Card className="p-8 mb-8">
-            <div className="mb-6">
-              <p className="text-xl mb-4">Você revisou todos os {totalCards} flashcards programados para hoje!</p>
-              <p className="text-muted-foreground">Volte amanhã para continuar aprendendo e revisando seu conhecimento.</p>
-            </div>
-            
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <Button onClick={handleBack} variant="outline" className="flex-1">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar para a matéria
-              </Button>
-              
-              <Button onClick={handleRestart} className="flex-1">
-                <RotateCw className="mr-2 h-4 w-4" />
-                Iniciar outra sessão
-              </Button>
-            </div>
-          </Card>
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <p className="text-lg font-medium">Carregando sessão de estudo...</p>
         </div>
       </div>
     );
   }
-
-  // Mostrar página de estudo
-  const currentCard = flashcards[currentCardIndex];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Cabeçalho */}
-      <div className="flex items-center gap-3 mb-6">
-        <button 
-          onClick={handleBack}
-          className="p-2 rounded-full hover:bg-muted transition-colors"
+    <div className="flex min-h-screen flex-col p-4">
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleBack} 
+          className="mr-2"
         >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold">{subject?.name}</h1>
-          <p className="text-muted-foreground">Sessão de estudo</p>
-        </div>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-xl font-bold">
+          {subject?.name}: Revisão
+        </h1>
       </div>
-      
-      {/* Progresso */}
-      <div className="mb-6">
-        <div className="flex justify-between mb-2 text-sm">
+
+      <div className="mb-4">
+        <div className="flex justify-between text-sm mb-1">
           <span>Progresso</span>
           <span>{currentCardIndex + 1} de {totalCards}</span>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
-      
-      {/* Cartão atual */}
-      <Card className="p-8 mb-8 min-h-[300px] flex flex-col">
-        <div className="flex-1 flex flex-col">
-          <div className="mb-8 flex-1 flex flex-col justify-center">
-            <h2 className="text-xl font-medium mb-2">Pergunta:</h2>
-            <p className="text-xl">{currentCard.question}</p>
-          </div>
-          
+
+      {!sessionCompleted ? (
+        <>
+          {flashcards.length > 0 && (
+            <Card className="flex-1 flex flex-col p-6 mb-4">
+              <div className="flex-1 flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium mb-2">Pergunta:</h3>
+                  <div className="text-xl">
+                    {flashcards[currentCardIndex].question}
+                  </div>
+                </div>
+
+                {showAnswer ? (
+                  <div className="mt-auto">
+                    <h3 className="text-lg font-medium mb-2">Resposta:</h3>
+                    <div className="text-xl whitespace-pre-wrap">
+                      {flashcards[currentCardIndex].answer}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-auto pt-4 border-t">
+                    <Button 
+                      onClick={() => setShowAnswer(true)} 
+                      className="w-full"
+                    >
+                      Mostrar Resposta
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {showAnswer && (
-            <div className="mt-4 border-t pt-6">
-              <h2 className="text-xl font-medium mb-2">Resposta:</h2>
-              <p className="text-xl">{currentCard.answer}</p>
+            <div className="space-y-4">
+              <h3 className="text-center font-medium">Como você se saiu?</h3>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <Button 
+                  onClick={() => handleGrade(1)} 
+                  variant="outline" 
+                  className="flex flex-col items-center py-4"
+                >
+                  <Frown className="h-8 w-8 mb-2 text-red-500" />
+                  <span>Esqueci</span>
+                </Button>
+                
+                <Button 
+                  onClick={() => handleGrade(3)} 
+                  variant="outline" 
+                  className="flex flex-col items-center py-4"
+                >
+                  <Meh className="h-8 w-8 mb-2 text-yellow-500" />
+                  <span>Difícil</span>
+                </Button>
+                
+                <Button 
+                  onClick={() => handleGrade(5)} 
+                  variant="outline" 
+                  className="flex flex-col items-center py-4"
+                >
+                  <Smile className="h-8 w-8 mb-2 text-green-500" />
+                  <span>Fácil</span>
+                </Button>
+              </div>
             </div>
           )}
-        </div>
-        
-        {!showAnswer ? (
-          <Button 
-            onClick={() => setShowAnswer(true)} 
-            size="lg" 
-            className="w-full mt-4"
-          >
-            Mostrar Resposta
-          </Button>
-        ) : (
-          <div className="mt-6 border-t pt-6">
-            <h3 className="mb-3 text-center">Como você avalia sua resposta?</h3>
-            <div className="flex flex-col sm:flex-row gap-2 justify-between">
-              <Button 
-                onClick={() => handleGrade(1)} 
-                variant="outline" 
-                className="flex-1 flex flex-col items-center py-6"
-              >
-                <Frown className="h-8 w-8 mb-2 text-destructive" />
-                <span>Difícil</span>
-                <span className="text-xs text-muted-foreground">Não lembrei</span>
-              </Button>
-              
-              <Button 
-                onClick={() => handleGrade(3)} 
-                variant="outline" 
-                className="flex-1 flex flex-col items-center py-6"
-              >
-                <Meh className="h-8 w-8 mb-2 text-amber-500" />
-                <span>Médio</span>
-                <span className="text-xs text-muted-foreground">Lembrei com esforço</span>
-              </Button>
-              
-              <Button 
-                onClick={() => handleGrade(5)} 
-                variant="outline" 
-                className="flex-1 flex flex-col items-center py-6"
-              >
-                <Smile className="h-8 w-8 mb-2 text-green-500" />
-                <span>Fácil</span>
-                <span className="text-xs text-muted-foreground">Lembrei facilmente</span>
-              </Button>
-            </div>
+        </>
+      ) : (
+        <Card className="flex flex-col items-center justify-center p-6 mt-4">
+          <h2 className="text-2xl font-bold mb-4">Sessão Concluída!</h2>
+          <p className="text-center mb-6">
+            Você revisou todos os {totalCards} flashcards programados para hoje.
+          </p>
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={handleBack}>
+              Voltar
+            </Button>
+            <Button onClick={handleRestart} className="flex items-center">
+              <RotateCw className="w-4 h-4 mr-2" />
+              Revisar Novamente
+            </Button>
           </div>
-        )}
-      </Card>
+        </Card>
+      )}
     </div>
   );
 } 
