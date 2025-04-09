@@ -396,10 +396,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
   };
 
   const handleDeleteFlashcardConfirm = async () => {
-    if (!flashcardToDelete) return;
+    if (!flashcardToDelete || !auth.currentUser) return;
     
     try {
-      await deleteDoc(doc(db, 'subjects', subjectId, 'flashcards', flashcardToDelete));
+      await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', flashcardToDelete));
       
       // Atualizar a lista removendo o flashcard deletado
       setFlashcards(flashcards.filter(card => card.id !== flashcardToDelete));

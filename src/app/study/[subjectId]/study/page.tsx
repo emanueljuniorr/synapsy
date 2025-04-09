@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, updateDoc, query, where, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -93,9 +93,19 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
   // Carregar dados da matéria e flashcards
   useEffect(() => {
     const fetchData = async () => {
+      if (!auth.currentUser) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para acessar esta página",
+          variant: "destructive",
+        });
+        router.push('/login');
+        return;
+      }
+      
       try {
         // Buscar dados da matéria
-        const subjectDoc = await getDoc(doc(db, 'subjects', subjectId));
+        const subjectDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId));
         if (!subjectDoc.exists()) {
           toast({
             title: "Erro",
@@ -115,13 +125,10 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
 
         // Buscar flashcards para revisão
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        today.setHours(23, 59, 59, 999); // Fim do dia de hoje
         
-        const flashcardsQuery = query(
-          collection(db, 'subjects', subjectId, 'flashcards')
-        );
-        
-        const flashcardsSnapshot = await getDocs(flashcardsQuery);
+        const flashcardsRef = collection(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards');
+        const flashcardsSnapshot = await getDocs(flashcardsRef);
         
         const allCards = flashcardsSnapshot.docs.map(doc => {
           const data = doc.data();
@@ -129,7 +136,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
             id: doc.id,
             question: data.question,
             answer: data.answer,
-            nextReview: data.nextReview ? new Date(data.nextReview.toDate()) : null,
+            nextReview: data.nextReview ? data.nextReview.toDate?.() || new Date(data.nextReview) : null,
             repetitions: data.repetitions || 0,
             easeFactor: data.easeFactor || 2.5,
             interval: data.interval || 0,
@@ -174,12 +181,14 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
 
   // Lidar com a avaliação do flashcard
   const handleGrade = async (grade: number) => {
+    if (!auth.currentUser) return;
+    
     try {
       const currentCard = flashcards[currentCardIndex];
       const updatedCard = calculateNextReview(grade, currentCard);
       
       // Atualizar no Firestore
-      await updateDoc(doc(db, 'subjects', subjectId, 'flashcards', currentCard.id), {
+      await updateDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', currentCard.id), {
         repetitions: updatedCard.repetitions,
         easeFactor: updatedCard.easeFactor,
         interval: updatedCard.interval,
@@ -236,7 +245,8 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <p className="text-lg font-medium">Carregando sessão de estudo...</p>
+          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-lg font-medium">Carregando detalhes da matéria...</p>
         </div>
       </div>
     );
