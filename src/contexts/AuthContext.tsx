@@ -23,6 +23,7 @@ import { auth, db } from '@/lib/firebase';
 // Interface para usuário
 interface User {
   id: string;
+  uid?: string;
   name: string;
   email: string | null;
   avatar?: string;
@@ -57,12 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       try {
         if (firebaseUser) {
+          console.log('Firebase User detectado:', firebaseUser.uid);
+          
           // Buscar dados extras do usuário no Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           const userData = userDoc.data();
           
           const authUser: User = {
             id: firebaseUser.uid,
+            uid: firebaseUser.uid,
             name: firebaseUser.displayName || userData?.name || 'Usuário',
             email: firebaseUser.email,
             avatar: firebaseUser.photoURL || userData?.avatar,
@@ -70,9 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             updatedAt: userData?.updatedAt ? new Date(userData.updatedAt.toDate()) : undefined,
           };
           
+          console.log('Autenticação concluída. Objeto user:', { 
+            id: authUser.id,
+            name: authUser.name,
+            email: authUser.email 
+          });
+          
           setUser(authUser);
           setIsAuthenticated(true);
         } else {
+          console.log('Nenhum usuário autenticado');
           setUser(null);
           setIsAuthenticated(false);
         }

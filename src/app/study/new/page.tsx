@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -41,14 +41,20 @@ export default function NewSubjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Verifica se o usuário está logado através do contexto
     if (!user) {
-      toast({
-        title: "Erro",
-        description: "Você precisa estar logado para criar uma matéria",
-        variant: "destructive",
-      });
-      router.push('/login');
-      return;
+      console.log("Usuário não encontrado no contexto. Tentando verificar auth.currentUser...");
+      
+      // Verifica se existe um usuário logado diretamente pelo auth do Firebase
+      if (!auth.currentUser) {
+        toast({
+          title: "Erro",
+          description: "Você precisa estar logado para criar uma matéria",
+          variant: "destructive",
+        });
+        router.push('/login');
+        return;
+      }
     }
     
     if (!name.trim()) {
@@ -63,10 +69,22 @@ export default function NewSubjectPage() {
     try {
       setIsSubmitting(true);
       
-      // Garantir que o usuário existe e tem um uid válido
-      const userId = user?.uid;
+      // Tentar obter o ID por todas as formas possíveis
+      const userId = user?.uid || user?.id || auth.currentUser?.uid;
+      
+      console.log("Dados do usuário:", {
+        userFromContext: user ? { id: user.id, uid: user.uid } : null,
+        userFromAuth: auth.currentUser ? { uid: auth.currentUser.uid } : null,
+        resolvedUserId: userId
+      });
+      
+      // Se ainda assim não tiver o ID, exibir um erro mais detalhado
       if (!userId) {
-        throw new Error("ID de usuário não disponível");
+        console.error("Falha ao obter ID do usuário:", { 
+          contextUser: user, 
+          firebaseUser: auth.currentUser 
+        });
+        throw new Error("ID de usuário não disponível. Verifique se você está corretamente logado.");
       }
       
       // Criar nova matéria
@@ -79,6 +97,8 @@ export default function NewSubjectPage() {
         updatedAt: serverTimestamp(),
         flashcardsCount: 0,
       };
+      
+      console.log("Criando matéria com dados:", subjectData);
       
       const docRef = await addDoc(collection(db, 'subjects'), subjectData);
       
