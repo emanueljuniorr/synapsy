@@ -105,6 +105,10 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
       }
       
       try {
+        // Obter parâmetros da URL
+        const searchParams = new URLSearchParams(window.location.search);
+        const mode = searchParams.get('mode');
+        
         // Buscar dados da matéria
         const subjectDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId));
         if (!subjectDoc.exists()) {
@@ -144,23 +148,31 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
           };
         });
         
-        // Filtrar apenas os flashcards que devem ser revisados hoje ou novos
-        const cardsForReview = allCards.filter(card => {
-          if (!card.nextReview) return true; // Nunca revisado
-          return card.nextReview <= today;
-        });
+        // Determinar quais cartões mostrar com base no modo
+        let cardsToShow = [];
         
-        if (cardsForReview.length === 0) {
+        if (mode === 'all') {
+          // Mostrar todos os cartões no modo 'all'
+          cardsToShow = allCards;
+        } else {
+          // Filtrar apenas os flashcards que devem ser revisados hoje ou novos
+          cardsToShow = allCards.filter(card => {
+            if (!card.nextReview) return true; // Nunca revisado
+            return card.nextReview <= today;
+          });
+        }
+        
+        if (cardsToShow.length === 0) {
           toast({
             title: "Sem flashcards para revisar",
-            description: "Não há flashcards para revisar hoje. Volte mais tarde!",
+            description: "Não há flashcards para revisar. Adicione alguns ou volte mais tarde!",
           });
           router.push(`/study/${subjectId}`);
           return;
         }
         
         // Embaralhar os flashcards para estudo
-        const shuffledCards = cardsForReview.sort(() => Math.random() - 0.5);
+        const shuffledCards = cardsToShow.sort(() => Math.random() - 0.5);
         setFlashcards(shuffledCards);
         setTotalCards(shuffledCards.length);
         
