@@ -473,23 +473,21 @@ export default function FocusPage() {
 
         {/* Modal de configurações */}
         {showSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="fixed inset-0 bg-black/50" onClick={() => setShowSettings(false)}></div>
-            <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">Configurações do Pomodoro</h3>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                >
-                  <RiCloseLine className="w-5 h-5 text-foreground/60" />
-                </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div 
+              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+                <h3 className="text-xl font-bold text-white">
+                  Configurações do Pomodoro
+                </h3>
               </div>
               
-              <div className="space-y-4">
+              <div className="p-5 space-y-4">
                 <div className="grid gap-4">
                   <div>
-                    <label htmlFor="focusTime" className="block text-sm text-foreground/70 mb-1">
+                    <label htmlFor="focusTime" className="block text-sm font-medium text-foreground/80 mb-1">
                       Tempo de Foco (min)
                     </label>
                     <input
@@ -497,12 +495,12 @@ export default function FocusPage() {
                       id="focusTime"
                       value={settings.focusTime}
                       onChange={(e) => setSettings({...settings, focusTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
                   
                   <div>
-                    <label htmlFor="shortBreakTime" className="block text-sm text-foreground/70 mb-1">
+                    <label htmlFor="shortBreakTime" className="block text-sm font-medium text-foreground/80 mb-1">
                       Pausa Curta (min)
                     </label>
                     <input
@@ -510,12 +508,12 @@ export default function FocusPage() {
                       id="shortBreakTime"
                       value={settings.shortBreakTime}
                       onChange={(e) => setSettings({...settings, shortBreakTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
                   
                   <div>
-                    <label htmlFor="longBreakTime" className="block text-sm text-foreground/70 mb-1">
+                    <label htmlFor="longBreakTime" className="block text-sm font-medium text-foreground/80 mb-1">
                       Pausa Longa (min)
                     </label>
                     <input
@@ -523,7 +521,7 @@ export default function FocusPage() {
                       id="longBreakTime"
                       value={settings.longBreakTime}
                       onChange={(e) => setSettings({...settings, longBreakTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
                 </div>
@@ -557,7 +555,7 @@ export default function FocusPage() {
                 </div>
                 
                 <div className="mt-4">
-                  <label htmlFor="volume" className="block text-sm text-foreground/70 mb-1">
+                  <label htmlFor="volume" className="block text-sm font-medium text-foreground/80 mb-1">
                     Volume do Alarme
                   </label>
                   <div className="flex items-center gap-3">
@@ -580,24 +578,24 @@ export default function FocusPage() {
                     <span className="text-sm text-foreground/60 w-8">{settings.volume}%</span>
                   </div>
                 </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end gap-2">
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSettings(false);
-                    saveSettings(settings);
-                  }}
-                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors shadow-md shadow-primary/20"
-                >
-                  Salvar
-                </button>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => setShowSettings(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowSettings(false);
+                      saveSettings(settings);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
+                  >
+                    Salvar
+                  </button>
+                </div>
               </div>
             </div>
           </div>

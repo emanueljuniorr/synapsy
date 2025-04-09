@@ -487,31 +487,39 @@ export default function RelaxPage() {
 
       {/* Modal para seleção de tempo de meditação */}
       {showMeditationTimerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMeditationTimerModal(false)}></div>
-          <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
-            <h3 className="text-xl font-semibold mb-4">Tempo de Meditação</h3>
-            <div className="grid grid-cols-3 gap-3">
-              {[5, 10, 15, 20, 30, 45, 60].map((min) => (
-                <button
-                  key={min}
-                  onClick={() => {
-                    setMeditationTimer(min * 60);
-                    setShowMeditationTimerModal(false);
-                  }}
-                  className="flex items-center justify-center p-3 rounded-lg hover:bg-[#13131A] bg-[#13131A]/80 border border-border"
-                >
-                  {min} min
-                </button>
-              ))}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div 
+            className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+              <h3 className="text-xl font-bold text-white">Tempo de Meditação</h3>
             </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setShowMeditationTimerModal(false)}
-                className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
-              >
-                Cancelar
-              </button>
+
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                {[5, 10, 15, 20, 30, 45, 60].map((min) => (
+                  <button
+                    key={min}
+                    onClick={() => {
+                      setMeditationTimer(min * 60);
+                      setShowMeditationTimerModal(false);
+                    }}
+                    className="flex items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                  >
+                    {min} min
+                  </button>
+                ))}
+              </div>
+            
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setShowMeditationTimerModal(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -519,23 +527,19 @@ export default function RelaxPage() {
 
       {/* Modal de configurações de som */}
       {showSoundSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowSoundSettings(false)}></div>
-          <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">Configurações de Som</h3>
-              <button
-                onClick={() => setShowSoundSettings(false)}
-                className="p-1 rounded-full hover:bg-white/10 transition-colors"
-              >
-                <RiCloseLine className="w-5 h-5 text-foreground/60" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div 
+            className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+              <h3 className="text-xl font-bold text-white">Configurações de Som</h3>
             </div>
             
-            <div className="space-y-4">
+            <div className="p-5 space-y-4">
               {Object.keys(volumes).map((sound, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <span className="text-foreground/80">{soundNames[sound]}</span>
+                  <span className="text-sm font-medium text-foreground/80">{soundNames[sound]}</span>
                   <div className="flex items-center gap-3">
                     <input
                       type="range"
@@ -556,21 +560,21 @@ export default function RelaxPage() {
                   </div>
                 </div>
               ))}
-            </div>
             
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                onClick={() => setShowSoundSettings(false)}
-                className="px-4 py-2 text-foreground/60 hover:text-foreground transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={saveVolumes}
-                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors shadow-md shadow-primary/20"
-              >
-                Salvar
-              </button>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setShowSoundSettings(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={saveVolumes}
+                  className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
+                >
+                  Salvar
+                </button>
+              </div>
             </div>
           </div>
         </div>
