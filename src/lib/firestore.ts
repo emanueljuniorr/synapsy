@@ -851,12 +851,15 @@ export async function createCheckoutSession(userId: string, origin: string): Pro
     // Criar um documento de checkout na coleção 'checkouts'
     const checkoutRef = doc(collection(db, 'checkouts'));
     
+    // Usar a variável de ambiente pública para o ID do preço
+    const priceId = process.env.NEXT_PUBLIC_STRIPE_SUBSCRIPTION_ID || "price_1RC6h0I1nDwEIRblgGnj685D";
+    
     // Dados para o checkout
     await setDoc(checkoutRef, {
       userId,
       status: 'pending',
       createdAt: serverTimestamp(),
-      priceId: process.env.STRIPE_SUBSCRIPTION_ID,
+      priceId: priceId,
       success_url: `${origin}/profile?checkout_success=true`,
       cancel_url: `${origin}/plans?checkout_canceled=true`
     });
