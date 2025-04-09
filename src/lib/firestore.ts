@@ -764,4 +764,16 @@ export const updateSubjectReviewStatus = async (subjectId: string): Promise<bool
     console.error('Erro ao atualizar status de revisão da matéria:', error);
     return false;
   }
-}; 
+};
+
+// 4. Streak (dias consecutivos de atividade)
+// Uma implementação simples baseada nas sessões de foco dos últimos 30 dias
+const thirtyDaysAgo = new Date();
+thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+const recentFocusQuery = query(
+  collection(db, "focusSessions"),
+  where("userId", "==", userId),
+  where("startTime", ">=", thirtyDaysAgo),
+  orderBy("startTime", "desc")
+); 

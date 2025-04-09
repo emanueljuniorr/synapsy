@@ -9,7 +9,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { 
   CheckCircle, Clock, CalendarDays, BookOpen, ListTodo, FileText, 
   PieChart as PieChartIcon, BarChart2, Brain, Timer 
@@ -31,20 +31,21 @@ export default function DashboardPage() {
     return `${hours}h${min > 0 ? ` ${min}min` : ''}`;
   };
 
-  // Buscar dados do dashboard
+  // Verificar autenticação e buscar dados do dashboard
   useEffect(() => {
-    const fetchData = async () => {
-      if (!auth.currentUser) {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        console.log('Usuário não autenticado, redirecionando para login');
         router.push('/auth/login');
         return;
       }
-    
+      
       try {
         setIsLoading(true);
         setError(null);
         
-        console.log('Buscando dados do dashboard para:', auth.currentUser.uid);
-        const data = await getDashboardData(auth.currentUser.uid);
+        console.log('Usuário autenticado, buscando dados do dashboard para:', user.uid);
+        const data = await getDashboardData(user.uid);
         
         if (!data) {
           console.error('Nenhum dado retornado da função getDashboardData');
@@ -72,9 +73,10 @@ export default function DashboardPage() {
       } finally {
         setIsLoading(false);
       }
-    };
-      
-    fetchData();
+    });
+    
+    // Limpar o observador quando o componente for desmontado
+    return () => unsubscribe();
   }, [router]);
 
   // Se estiver carregando, mostrar um indicador
@@ -192,17 +194,27 @@ export default function DashboardPage() {
                           data={taskCompletionData}
                           cx="50%"
                           cy="50%"
-                          labelLine={false}
-                          outerRadius={70}
+                          labelLine
+                          outerRadius={60}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {taskCompletionData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip formatter={(value) => [`${value} tarefas`, '']} />
+                        <Legend 
+                          layout="horizontal" 
+                          verticalAlign="bottom" 
+                          align="center"
+                          formatter={(value, entry, index) => (
+                            <span style={{ color: COLORS[index % COLORS.length] }}>
+                              {value} {((taskCompletionData[index].value / 
+                                (taskCompletionData[0].value + taskCompletionData[1].value)) * 100).toFixed(0)}%
+                            </span>
+                          )}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -343,7 +355,7 @@ export default function DashboardPage() {
                   )}
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="pt-2">
                 <button
                   onClick={() => router.push('/study')}
                   className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"

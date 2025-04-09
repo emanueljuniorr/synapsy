@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { User } from "firebase/auth";
 import Image from "next/image";
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit, Timestamp, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 // Tipo para dados do perfil
 interface UserProfile {
@@ -37,11 +38,13 @@ export default function ProfilePage() {
   const [occupation, setOccupation] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Observa mudanças no estado de autenticação
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        console.log('Usuário autenticado no perfil:', user.uid);
         setUser(user);
         
         // Formatar data de criação
@@ -55,7 +58,9 @@ export default function ProfilePage() {
         // Buscar dados do perfil
         await fetchUserProfile(user.uid);
       } else {
+        console.log('Usuário não autenticado, redirecionando para login');
         setLoading(false);
+        router.push('/auth/login');
       }
     });
 
@@ -92,6 +97,7 @@ export default function ProfilePage() {
       // Se o documento do usuário existir, obter informações de lá
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
+        console.log('Dados do perfil encontrados:', userData);
         profileData = {
           ...profileData,
           location: userData.location,
@@ -99,81 +105,137 @@ export default function ProfilePage() {
           plan: userData.plan || profileData.plan,
           createdAt: userData.createdAt || null
         };
-      }
-      
-      // Buscar estatísticas das coleções
-      // 1. Tarefas completadas
-      const tasksQuery = query(
-        collection(db, "tasks"),
-        where("userId", "==", userId),
-        where("completed", "==", true)
-      );
-      const tasksSnapshot = await getDocs(tasksQuery);
-      profileData.stats.completedTasks = tasksSnapshot.size;
-      
-      // 2. Notas criadas
-      const notesQuery = query(
-        collection(db, "notes"),
-        where("userId", "==", userId)
-      );
-      const notesSnapshot = await getDocs(notesQuery);
-      profileData.stats.createdNotes = notesSnapshot.size;
-      
-      // 3. Tempo de estudo (soma de todas as sessões de foco)
-      const focusQuery = query(
-        collection(db, "focusSessions"),
-        where("userId", "==", userId)
-      );
-      const focusSnapshot = await getDocs(focusQuery);
-      profileData.stats.studyTime = focusSnapshot.docs.reduce(
-        (total, doc) => total + (doc.data().minutes || 0), 
-        0
-      );
-      
-      // 4. Streak (dias consecutivos de atividade)
-      // Uma implementação simples baseada nas sessões de foco dos últimos 30 dias
-      const recentFocusQuery = query(
-        collection(db, "focusSessions"),
-        where("userId", "==", userId),
-        where("date", ">=", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
-        orderBy("date", "desc")
-      );
-      const recentFocusSnapshot = await getDocs(recentFocusQuery);
-      
-      // Agrupar sessões por dia (formato YYYY-MM-DD)
-      const activeDays = new Set<string>();
-      recentFocusSnapshot.forEach(doc => {
-        const date = doc.data().date.toDate();
-        const dayStr = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-        activeDays.add(dayStr);
-      });
-      
-      // Calcular streak baseado nos dias consecutivos
-      let streak = 0;
-      const today = new Date();
-      let currentDay = new Date(today);
-      
-      // Verificar dias consecutivos retroativos
-      while (true) {
-        const dayStr = `${currentDay.getFullYear()}-${currentDay.getMonth()+1}-${currentDay.getDate()}`;
-        if (activeDays.has(dayStr)) {
-          streak++;
-          // Subtrair um dia
-          currentDay.setDate(currentDay.getDate() - 1);
-        } else {
-          break;
+      } else {
+        console.log('Perfil não encontrado, criando novo documento');
+        // Criar o documento do usuário se não existir
+        try {
+          await setDoc(userDocRef, {
+            name: user?.displayName,
+            email: user?.email,
+            photoURL: user?.photoURL,
+            plan: { name: "Free", color: "neutral" },
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) {
+          console.error('Erro ao criar perfil:', e);
         }
       }
       
-      profileData.stats.streak = streak;
+      try {
+        // Buscar estatísticas das coleções
+        // 1. Tarefas completadas
+        console.log('Buscando tarefas completadas para:', userId);
+        const tasksQuery = query(
+          collection(db, "tasks"),
+          where("userId", "==", userId),
+          where("completed", "==", true)
+        );
+        const tasksSnapshot = await getDocs(tasksQuery);
+        profileData.stats.completedTasks = tasksSnapshot.size;
+        console.log(`Encontradas ${tasksSnapshot.size} tarefas completadas`);
+        
+        // 2. Notas criadas
+        console.log('Buscando notas para:', userId);
+        const notesQuery = query(
+          collection(db, "notes"),
+          where("userId", "==", userId)
+        );
+        const notesSnapshot = await getDocs(notesQuery);
+        profileData.stats.createdNotes = notesSnapshot.size;
+        console.log(`Encontradas ${notesSnapshot.size} notas`);
+        
+        // 3. Tempo de estudo (soma de todas as sessões de foco)
+        console.log('Buscando sessões de foco para:', userId);
+        const focusQuery = query(
+          collection(db, "focusSessions"),
+          where("userId", "==", userId)
+        );
+        const focusSnapshot = await getDocs(focusQuery);
+        profileData.stats.studyTime = focusSnapshot.docs.reduce(
+          (total, doc) => {
+            const minutes = doc.data().minutes || 0;
+            return total + minutes;
+          }, 
+          0
+        );
+        console.log(`Tempo total de estudo: ${profileData.stats.studyTime} minutos`);
+        
+        // 4. Streak (dias consecutivos de atividade)
+        console.log('Calculando streak para:', userId);
+        try {
+          // Uma implementação simples baseada nas sessões de foco dos últimos 30 dias
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          
+          const recentFocusQuery = query(
+            collection(db, "focusSessions"),
+            where("userId", "==", userId),
+            where("startTime", ">=", thirtyDaysAgo)
+          );
+          const recentFocusSnapshot = await getDocs(recentFocusQuery);
+          console.log(`Encontradas ${recentFocusSnapshot.size} sessões recentes`);
+          
+          // Agrupar sessões por dia (formato YYYY-MM-DD)
+          const activeDays = new Set<string>();
+          recentFocusSnapshot.forEach(doc => {
+            if (doc.data().startTime) {
+              const date = doc.data().startTime.toDate ? doc.data().startTime.toDate() : new Date(doc.data().startTime);
+              const dayStr = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+              activeDays.add(dayStr);
+            }
+          });
+          
+          // Calcular streak baseado nos dias consecutivos
+          let streak = 0;
+          const today = new Date();
+          let currentDay = new Date(today);
+          
+          // Verificar dias consecutivos retroativos
+          while (true) {
+            const dayStr = `${currentDay.getFullYear()}-${currentDay.getMonth()+1}-${currentDay.getDate()}`;
+            if (activeDays.has(dayStr)) {
+              streak++;
+              // Subtrair um dia
+              currentDay.setDate(currentDay.getDate() - 1);
+            } else {
+              break;
+            }
+          }
+          
+          profileData.stats.streak = streak;
+          console.log(`Streak calculado: ${streak} dias`);
+        } catch (streakError) {
+          console.error('Erro ao calcular streak:', streakError);
+          // Em caso de erro, não quebrar todo o carregamento
+          profileData.stats.streak = 0;
+        }
+      } catch (statsError) {
+        console.error('Erro ao buscar estatísticas:', statsError);
+        // Não falhar completamente se as estatísticas não puderem ser carregadas
+      }
       
       // Atualizar estado com os dados coletados
       setUserProfile(profileData);
-      console.log('Perfil carregado:', profileData);
+      console.log('Perfil carregado com sucesso:', profileData);
       
     } catch (err) {
       console.error('Erro ao buscar perfil:', err);
       setError('Não foi possível carregar os dados do perfil');
+      // Mesmo com erro, definir um perfil padrão para exibição
+      setUserProfile({
+        name: user?.displayName || 'Usuário',
+        email: user?.email || '',
+        photoURL: user?.photoURL,
+        plan: { name: "Free", color: "neutral" },
+        stats: {
+          completedTasks: 0,
+          createdNotes: 0,
+          studyTime: 0,
+          streak: 0
+        },
+        createdAt: null
+      });
     } finally {
       setLoading(false);
     }
