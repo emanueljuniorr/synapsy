@@ -64,11 +64,14 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     let isComponentMounted = true;
     
     const fetchSubjectDetails = async () => {
+      // Definir safetyTimer fora do bloco try para estar acessível no finally
+      let safetyTimer: NodeJS.Timeout;
+      
       try {
         setLoading(true);
         
         // Timer de segurança para evitar carregamento infinito
-        const safetyTimer = setTimeout(() => {
+        safetyTimer = setTimeout(() => {
           if (isComponentMounted) {
             console.log("Timer de segurança acionado: carregamento excedeu tempo limite");
             setLoading(false);
@@ -90,7 +93,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
             description: "Você precisa estar logado para acessar esta página",
             variant: "destructive"
           });
-          router.push('/login');
+          router.push('/auth/login');
           return;
         }
         

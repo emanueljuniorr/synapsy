@@ -52,7 +52,7 @@ export default function NewSubjectPage() {
           description: "Você precisa estar logado para criar uma matéria",
           variant: "destructive",
         });
-        router.push('/login');
+        router.push('auth/login');
         return;
       }
     }

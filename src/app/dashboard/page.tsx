@@ -34,7 +34,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!auth.currentUser) {
-        router.push('/login');
+        router.push('auth/login');
       return;
     }
     

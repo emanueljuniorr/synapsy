@@ -100,7 +100,7 @@ export default function StudySessionPage({ params }: { params: { subjectId: stri
           description: "Você precisa estar logado para acessar esta página",
           variant: "destructive",
         });
-        router.push('/login');
+        router.push('auth/login');
         return;
       }
       
