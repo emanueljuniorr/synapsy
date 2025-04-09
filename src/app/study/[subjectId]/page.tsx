@@ -3,7 +3,7 @@
 import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, query, where } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,23 +66,42 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       try {
         setLoading(true);
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        
+        // Buscar a matéria diretamente da coleção 'subjects'
+        const subjectRef = doc(db, "subjects", subjectId);
         const subjectDoc = await getDoc(subjectRef);
         
         if (subjectDoc.exists()) {
           const subjectData = subjectDoc.data();
+          
+          // Verificar se a matéria pertence ao usuário atual
+          if (subjectData.userId !== auth.currentUser.uid) {
+            toast({
+              title: "Erro",
+              description: "Você não tem permissão para acessar esta matéria",
+              variant: "destructive"
+            });
+            router.push('/study');
+            return;
+          }
+          
           setSubject({
             id: subjectDoc.id,
             name: subjectData.name,
             description: subjectData.description || '',
             createdAt: subjectData.createdAt.toDate(),
-            totalCards: subjectData.totalCards || 0,
+            totalCards: subjectData.flashcardsCount || 0,
             color: subjectData.color || "#4f46e5"
           });
           
-          // Buscar flashcards
-          const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards");
-          const flashcardsSnap = await getDocs(flashcardsRef);
+          // Buscar flashcards relacionados a esta matéria
+          const flashcardsRef = collection(db, "flashcards");
+          const flashcardsQuery = query(
+            flashcardsRef,
+            where('subjectId', '==', subjectId),
+            where('userId', '==', auth.currentUser.uid)
+          );
+          const flashcardsSnap = await getDocs(flashcardsQuery);
           
           const loadedFlashcards: Flashcard[] = [];
           flashcardsSnap.forEach((doc) => {
@@ -108,6 +127,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
             description: "Matéria não encontrada",
             variant: "destructive"
           });
+          router.push('/study');
         }
       } catch (error) {
         console.error("Erro ao carregar detalhes da matéria:", error);
@@ -122,7 +142,7 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     };
     
     fetchSubjectDetails();
-  }, [subjectId, toast]);
+  }, [subjectId, toast, router]);
 
   // Adicionar novo flashcard
   const handleAddFlashcard = async () => {
@@ -140,9 +160,12 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
         repetitions: 0,
         easeFactor: 2.5,
         interval: 0,
+        subjectId: subjectId,
+        userId: auth.currentUser.uid
       };
       
-      const flashcardsRef = collection(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards");
+      // Adicionar à coleção 'flashcards'
+      const flashcardsRef = collection(db, "flashcards");
       const docRef = await addDoc(flashcardsRef, flashcardData);
       
       const newFlashcard = {
@@ -155,9 +178,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       // Atualizar contador de cards na matéria
       if (subject) {
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        // Atualizar a matéria na coleção 'subjects'
+        const subjectRef = doc(db, "subjects", subjectId);
         await updateDoc(subjectRef, {
-          totalCards: (subject.totalCards || 0) + 1
+          flashcardsCount: (subject.totalCards || 0) + 1
         });
         
         setSubject({
@@ -189,7 +213,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!auth.currentUser || !currentFlashcard || !newQuestion.trim() || !newAnswer.trim()) return;
     
     try {
-      const flashcardRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId, "flashcards", currentFlashcard.id);
+      // Atualizar na coleção flashcards
+      const flashcardRef = doc(db, "flashcards", currentFlashcard.id);
       
       await updateDoc(flashcardRef, {
         question: newQuestion,
@@ -233,7 +258,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     if (!flashcardToDelete || !auth.currentUser) return;
     
     try {
-      await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'subjects', subjectId, 'flashcards', flashcardToDelete));
+      // Excluir da coleção flashcards
+      await deleteDoc(doc(db, 'flashcards', flashcardToDelete));
       
       // Atualizar a lista removendo o flashcard deletado
       setFlashcards(flashcards.filter(card => card.id !== flashcardToDelete));
@@ -245,9 +271,10 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
       
       // Atualizar contador de cards na matéria
       if (subject) {
-        const subjectRef = doc(db, "users", auth.currentUser.uid, "subjects", subjectId);
+        // Atualizar na coleção subjects
+        const subjectRef = doc(db, "subjects", subjectId);
         await updateDoc(subjectRef, {
-          totalCards: Math.max((subject.totalCards || 0) - 1, 0)
+          flashcardsCount: Math.max((subject.totalCards || 0) - 1, 0)
         });
         
         setSubject({
