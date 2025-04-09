@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { db, auth } from '@/lib/firebase';
-import { getDashboardData, Task, Note, StudyTopic, DashboardData } from '@/lib/firestore';
+import { getDashboardData, Task, Note, StudyTopic, DashboardData, checkSubscription } from '@/lib/firestore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { 
   CheckCircle, Clock, CalendarDays, BookOpen, ListTodo, FileText, 
-  PieChart as PieChartIcon, BarChart2, Brain, Timer 
+  PieChart as PieChartIcon, BarChart2, Brain, Timer, Crown 
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasProPlan, setHasProPlan] = useState(false);
   const router = useRouter();
 
   // Função para formatar segundos em formato legível
@@ -66,6 +67,7 @@ export default function DashboardPage() {
         } else {
           console.log('Dados do dashboard recebidos:', data);
           setDashboardData(data);
+          await checkUserSubscription(user.uid);
         }
       } catch (error) {
         console.error('Erro ao buscar dados do dashboard:', error);
@@ -78,6 +80,17 @@ export default function DashboardPage() {
     // Limpar o observador quando o componente for desmontado
     return () => unsubscribe();
   }, [router]);
+
+  // Verificar se o usuário tem assinatura Pro
+  const checkUserSubscription = async (userId: string) => {
+    try {
+      const subscription = await checkSubscription(userId);
+      setHasProPlan(subscription.isActive && subscription.plan === 'Pro');
+    } catch (error) {
+      console.error('Erro ao verificar assinatura:', error);
+      setHasProPlan(false);
+    }
+  };
 
   // Se estiver carregando, mostrar um indicador
   if (isLoading) {
@@ -222,6 +235,32 @@ export default function DashboardPage() {
               </div>
             </div>
               </div>
+
+            {/* Verificar se o usuário tem assinatura Pro */}
+            {!hasProPlan && (
+              <div className="mb-8 relative overflow-hidden rounded-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 backdrop-blur-xl"></div>
+                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2">Atualize para o Plano Pro</h3>
+                    <p className="text-foreground/70 mb-4">
+                      Desbloqueie recursos avançados, notas ilimitadas e muito mais para maximizar sua produtividade.
+                    </p>
+                    <Link href="/plans">
+                      <button className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2">
+                        <Crown className="h-4 w-4 mr-1" />
+                        <span>Conheça o Plano Pro</span>
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                      </button>
+                    </Link>
+                  </div>
+                  <div className="hidden md:flex items-center justify-center w-40 h-40 rounded-full bg-primary/10 relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/30 to-accent/30 animate-pulse blur-xl"></div>
+                    <Crown className="w-16 h-16 text-white" />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Grid de Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

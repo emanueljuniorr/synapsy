@@ -783,3 +783,90 @@ export const updateSubjectReviewStatus = async (subjectId: string): Promise<bool
     return false;
   }
 };
+
+// Função para verificar se o usuário tem assinatura ativa
+export async function checkSubscription(userId: string): Promise<{
+  isActive: boolean;
+  plan: string;
+  expirationDate: Date | null;
+}> {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      
+      // Verificar se o usuário tem um plano
+      if (userData.plan) {
+        const plan = userData.plan;
+        
+        // Se o plano for Free, retornar imediatamente
+        if (plan.name === 'Free') {
+          return {
+            isActive: false,
+            plan: 'Free',
+            expirationDate: null
+          };
+        }
+        
+        // Verificar se há uma data de expiração
+        if (plan.expirationDate) {
+          const expirationDate = plan.expirationDate.toDate ? 
+            plan.expirationDate.toDate() : new Date(plan.expirationDate);
+          
+          const isActive = expirationDate > new Date() && plan.active === true;
+          
+          return {
+            isActive,
+            plan: plan.name,
+            expirationDate
+          };
+        }
+      }
+    }
+    
+    // Padrão: não tem assinatura ativa
+    return {
+      isActive: false,
+      plan: 'Free',
+      expirationDate: null
+    };
+  } catch (error) {
+    console.error('Erro ao verificar assinatura:', error);
+    
+    // Em caso de erro, assumir que não há assinatura ativa
+    return {
+      isActive: false,
+      plan: 'Free',
+      expirationDate: null
+    };
+  }
+}
+
+// Função para criar uma sessão de checkout do Stripe
+export async function createCheckoutSession(userId: string): Promise<string> {
+  try {
+    // Criar um documento de checkout na coleção 'checkouts'
+    const checkoutRef = doc(collection(db, 'checkouts'));
+    
+    // Dados para o checkout
+    await setDoc(checkoutRef, {
+      userId,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      priceId: process.env.STRIPE_SUBSCRIPTION_ID,
+      success_url: `${window.location.origin}/profile?checkout_success=true`,
+      cancel_url: `${window.location.origin}/plans?checkout_canceled=true`
+    });
+    
+    // Esperar o Cloud Function processar e retornar a URL (simulação simplificada)
+    // Em uma implementação real, você usaria uma Cloud Function ou API endpoint
+    
+    // Como simplificação, vamos retornar um ID de sessão
+    return checkoutRef.id;
+  } catch (error) {
+    console.error('Erro ao criar sessão de checkout:', error);
+    throw new Error('Não foi possível iniciar o processo de pagamento');
+  }
+}

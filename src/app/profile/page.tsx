@@ -7,6 +7,8 @@ import { User } from "firebase/auth";
 import Image from "next/image";
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit, Timestamp, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { CreditCard, Crown, User } from 'lucide-react';
+import Link from 'next/link';
 
 // Tipo para dados do perfil
 interface UserProfile {
@@ -463,6 +465,89 @@ export default function ProfilePage() {
               </div>
             </div>
           </section>
+
+          {/* Seção de Plano */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Plano e Assinatura
+            </h2>
+            
+            <div className="bg-background/20 backdrop-blur-lg border border-white/10 rounded-xl p-6">
+              <div className="flex items-center mb-4">
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                  userProfile?.plan?.name === 'Pro' 
+                    ? 'bg-amber-500/20 text-amber-500' 
+                    : 'bg-neutral-500/20 text-neutral-500'
+                }`}>
+                  {userProfile?.plan?.name === 'Pro' ? (
+                    <Crown className="h-5 w-5" />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </div>
+                <div className="ml-4">
+                  <div className="flex items-center">
+                    <span className="font-medium text-lg">{userProfile?.plan?.name || 'Free'}</span>
+                    {userProfile?.plan?.name === 'Pro' && (
+                      <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-500 text-xs rounded-full">
+                        Ativo
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-foreground/60">
+                    {userProfile?.plan?.name === 'Pro' 
+                      ? 'Acesso completo a todos os recursos'
+                      : 'Acesso limitado aos recursos básicos'}
+                  </p>
+                </div>
+              </div>
+
+              {userProfile?.plan?.name === 'Pro' && userProfile?.plan?.expirationDate && (
+                <div className="mb-4 p-3 bg-background/30 rounded-lg border border-white/5">
+                  <p className="text-sm text-foreground/70">
+                    Sua assinatura é válida até <span className="font-medium">{
+                      new Date(userProfile.plan.expirationDate.seconds * 1000).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })
+                    }</span>
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {userProfile?.plan?.name === 'Pro' ? (
+                  <button 
+                    className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
+                  >
+                    Gerenciar assinatura
+                  </button>
+                ) : (
+                  <Link href="/plans">
+                    <button 
+                      className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                    >
+                      <Crown className="h-4 w-4 mr-1" />
+                      <span>Upgrade para Pro</span>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                    </button>
+                  </Link>
+                )}
+                
+                {userProfile?.plan?.name === 'Pro' && (
+                  <Link href="/plans">
+                    <button 
+                      className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
+                    >
+                      Ver detalhes do plano
+                    </button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Preferências */}
           <section className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
