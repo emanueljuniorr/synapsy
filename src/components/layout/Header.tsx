@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+// Removendo a importação não utilizada
+// import { useAuth } from '@/contexts/AuthContext';
 import UserMenu from "./UserMenu";
 
 function Header() {
