@@ -61,11 +61,38 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
 
   // Carregar dados da matéria
   useEffect(() => {
+    let isComponentMounted = true;
+    
     const fetchSubjectDetails = async () => {
-      if (!auth.currentUser) return;
-      
       try {
         setLoading(true);
+        
+        // Timer de segurança para evitar carregamento infinito
+        const safetyTimer = setTimeout(() => {
+          if (isComponentMounted) {
+            console.log("Timer de segurança acionado: carregamento excedeu tempo limite");
+            setLoading(false);
+            toast({
+              title: "Erro de tempo limite",
+              description: "O carregamento demorou muito. Tente novamente.",
+              variant: "destructive"
+            });
+            router.push('/study');
+          }
+        }, 10000); // 10 segundos
+        
+        // Verificar se o usuário está autenticado
+        if (!auth.currentUser) {
+          clearTimeout(safetyTimer);
+          console.log("Usuário não autenticado ao tentar acessar matéria");
+          toast({
+            title: "Acesso negado",
+            description: "Você precisa estar logado para acessar esta página",
+            variant: "destructive"
+          });
+          router.push('/login');
+          return;
+        }
         
         // Buscar a matéria diretamente da coleção 'subjects'
         const subjectRef = doc(db, "subjects", subjectId);
@@ -136,12 +163,21 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
           description: "Não foi possível carregar os detalhes da matéria",
           variant: "destructive"
         });
+        router.push('/study');
       } finally {
-        setLoading(false);
+        clearTimeout(safetyTimer);
+        if (isComponentMounted) {
+          setLoading(false);
+        }
       }
     };
     
     fetchSubjectDetails();
+    
+    // Cleanup
+    return () => {
+      isComponentMounted = false;
+    };
   }, [subjectId, toast, router]);
 
   // Adicionar novo flashcard
