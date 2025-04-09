@@ -17,44 +17,8 @@ interface Task {
 }
 
 export default function TasksPage() {
-  // Dados de exemplo para o MVP
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'Desenvolver componente de calendário',
-      description: 'Criar um componente de calendário que integre com tarefas e eventos.',
-      dueDate: new Date(2023, 9, 15),
-      priority: 'high',
-      completed: false,
-      category: 'Desenvolvimento',
-    },
-    {
-      id: '2',
-      title: 'Estudar APIs do Next.js',
-      description: 'Revisar documentação e exemplos de rotas de API no Next.js 14.',
-      dueDate: new Date(2023, 9, 12),
-      priority: 'medium',
-      completed: false,
-      category: 'Estudo',
-    },
-    {
-      id: '3',
-      title: 'Criar wireframes para o módulo de anotações',
-      dueDate: new Date(2023, 9, 10),
-      priority: 'medium',
-      completed: true,
-      category: 'Design',
-    },
-    {
-      id: '4',
-      title: 'Reunião com stakeholders',
-      description: 'Discutir próximos passos do projeto e coletar feedback.',
-      dueDate: new Date(2023, 9, 18),
-      priority: 'low',
-      completed: false,
-      category: 'Reunião',
-    },
-  ]);
+  // Estado de tarefas inicializado vazio
+  const [tasks, setTasks] = useState<Task[]>([]);
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -272,7 +236,7 @@ export default function TasksPage() {
         {isTaskModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div 
-              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
@@ -380,7 +344,7 @@ export default function TasksPage() {
         {/* Modal de Confirmação de Exclusão */}
         {isDeleteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md">
               <div className="p-5 bg-gradient-to-r from-red-500/20 to-red-600/20">
                 <h3 className="text-xl font-bold text-white">Confirmar Exclusão</h3>
               </div>
