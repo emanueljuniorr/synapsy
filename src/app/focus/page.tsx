@@ -475,7 +475,7 @@ export default function FocusPage() {
         {showSettings && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/50" onClick={() => setShowSettings(false)}></div>
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
+            <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold">Configurações do Pomodoro</h3>
                 <button
@@ -497,7 +497,7 @@ export default function FocusPage() {
                       id="focusTime"
                       value={settings.focusTime}
                       onChange={(e) => setSettings({...settings, focusTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   
@@ -510,7 +510,7 @@ export default function FocusPage() {
                       id="shortBreakTime"
                       value={settings.shortBreakTime}
                       onChange={(e) => setSettings({...settings, shortBreakTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   
@@ -523,7 +523,7 @@ export default function FocusPage() {
                       id="longBreakTime"
                       value={settings.longBreakTime}
                       onChange={(e) => setSettings({...settings, longBreakTime: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full px-3 py-2 bg-[#13131A] border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>

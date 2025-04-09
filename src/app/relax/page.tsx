@@ -489,7 +489,7 @@ export default function RelaxPage() {
       {showMeditationTimerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowMeditationTimerModal(false)}></div>
-          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10">
+          <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
             <h3 className="text-xl font-semibold mb-4">Tempo de Meditação</h3>
             <div className="grid grid-cols-3 gap-3">
               {[5, 10, 15, 20, 30, 45, 60].map((min) => (
@@ -499,7 +499,7 @@ export default function RelaxPage() {
                     setMeditationTimer(min * 60);
                     setShowMeditationTimerModal(false);
                   }}
-                  className="flex items-center justify-center p-3 rounded-lg hover:bg-white/5 border border-border"
+                  className="flex items-center justify-center p-3 rounded-lg hover:bg-[#13131A] bg-[#13131A]/80 border border-border"
                 >
                   {min} min
                 </button>
@@ -521,7 +521,7 @@ export default function RelaxPage() {
       {showSoundSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowSoundSettings(false)}></div>
-          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
+          <div className="bg-[#1E1E2A] border border-border rounded-xl p-6 max-w-md w-full z-10 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Configurações de Som</h3>
               <button
