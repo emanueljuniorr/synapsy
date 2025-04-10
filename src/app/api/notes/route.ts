@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const userId = decodedToken.uid;
     
     // Verificar se o usuário atingiu o limite de notas no plano Free
-    const { reachedLimit } = await hasReachedNotesLimit(userId);
+    const reachedLimit = await hasReachedNotesLimit(userId);
     if (reachedLimit) {
       return NextResponse.json({
         error: 'Limite de notas atingido',
