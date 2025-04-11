@@ -1,12 +1,12 @@
 'use client';
 
-import React, { use } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, query, where, setDoc } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import Input from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -41,9 +41,14 @@ interface Subject {
   color: string;
 }
 
-export default function SubjectDetailsPage({ params }: { params: { subjectId: string } }) {
-  const unwrappedParams = use(params);
-  const subjectId = unwrappedParams.subjectId;
+interface SubjectDetailsPageProps {
+  params: {
+    subjectId: string;
+  };
+}
+
+export default function SubjectDetailsPage({ params }: SubjectDetailsPageProps) {
+  const subjectId = params.subjectId;
   
   const { toast } = useToast();
   const [subject, setSubject] = useState<Subject | null>(null);
@@ -67,8 +72,8 @@ export default function SubjectDetailsPage({ params }: { params: { subjectId: st
     let isComponentMounted = true;
     
     const fetchSubjectDetails = async () => {
-      // Definir safetyTimer fora do bloco try para estar acessível no finally
-      let safetyTimer: NodeJS.Timeout;
+      // Inicializar safetyTimer com um valor para evitar o erro do linter
+      let safetyTimer: NodeJS.Timeout | undefined = undefined;
       
       try {
         setLoading(true);
