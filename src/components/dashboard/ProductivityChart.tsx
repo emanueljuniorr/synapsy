@@ -27,7 +27,7 @@ export default function ProductivityChart({ data }: ProductivityChartProps) {
 
     // Calcular métricas de produtividade
     const totalTasks = data.tasks.length;
-    const completedTasks = data.tasks.filter(task => task.completed).length;
+    const completedTasks = data.tasks.filter(task => task.isDone).length;
     const pendingTasks = totalTasks - completedTasks;
 
     // Criar gráfico
