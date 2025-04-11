@@ -2,6 +2,10 @@
 export const runtime = 'nodejs';
 
 import * as admin from 'firebase-admin';
+// Importar as credenciais usando require para evitar problemas de compilação
+// Isso funciona porque estamos em um ambiente NodeJS neste módulo
+// @ts-ignore
+const serviceAccount = require('./synapsy-app-firebase-adminsdk-fbsvc-10a6ee3adc.json');
 
 // Verificar se o Firebase Admin já foi inicializado
 let firebaseApp: admin.app.App;
@@ -10,30 +14,9 @@ let firebaseApp: admin.app.App;
 export function initAdmin() {
   if (admin.apps.length === 0) {
     try {
-      const projectId = process.env.FIREBASE_PROJECT_ID;
-      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      
-      // Verificar se as variáveis de ambiente necessárias estão definidas
-      if (!projectId) {
-        throw new Error("Variável de ambiente FIREBASE_PROJECT_ID não está definida");
-      }
-      
-      if (!clientEmail) {
-        throw new Error("Variável de ambiente FIREBASE_CLIENT_EMAIL não está definida");
-      }
-      
-      if (!privateKey) {
-        throw new Error("Variável de ambiente FIREBASE_PRIVATE_KEY não está definida");
-      }
-      
       firebaseApp = admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
       });
       
       console.log('Firebase Admin inicializado com sucesso');
