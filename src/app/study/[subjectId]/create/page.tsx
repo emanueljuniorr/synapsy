@@ -16,11 +16,13 @@ interface Subject {
   color: string;
 }
 
-export default async function CreateFlashcardPage({
-  params,
-}: {
-  params: { subjectId: string };
-}) {
+interface CreateFlashcardPageProps {
+  params: {
+    subjectId: string;
+  };
+}
+
+export default function CreateFlashcardPage({ params }: CreateFlashcardPageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const subjectId = params.subjectId;
