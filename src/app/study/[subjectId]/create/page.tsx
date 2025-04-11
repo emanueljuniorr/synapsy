@@ -16,14 +16,11 @@ interface Subject {
   color: string;
 }
 
-type PageProps = {
-  params: {
-    subjectId: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export default function CreateFlashcardPage({ params }: PageProps) {
+export default async function CreateFlashcardPage({
+  params,
+}: {
+  params: { subjectId: string };
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const subjectId = params.subjectId;
