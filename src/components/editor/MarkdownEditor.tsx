@@ -28,7 +28,7 @@ type CodeProps = {
   node?: any;
   inline?: boolean;
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   [key: string]: any;
 }
 
