@@ -52,8 +52,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/workflow" className="hover:text-primary transition-colors">
-                  Fluxos de Trabalho
+                <Link href="/focus" className="hover:text-primary transition-colors">
+                  Ambiente de Foco
                 </Link>
               </li>
               <li>

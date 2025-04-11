@@ -7,16 +7,9 @@ import SynapsyMarkdownEditor from '@/components/notes/MarkdownEditor';
 import { RiSaveLine, RiCloseLine } from 'react-icons/ri';
 import MainLayout from '@/components/layout/MainLayout';
 
-interface EditNotePageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function EditNotePage({ params }: EditNotePageProps) {
+export default function EditNotePage({ params }: { params: any }) {
   const router = useRouter();
-  const unwrappedParams = React.use(params);
-  const id = unwrappedParams.id;
+  const id = params.id;
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

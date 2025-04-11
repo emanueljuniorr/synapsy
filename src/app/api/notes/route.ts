@@ -1,3 +1,6 @@
+// API que utiliza Firebase Admin, só pode ser executada em Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import { hasReachedNotesLimit } from '@/lib/subscription';
 import { getAuth } from 'firebase-admin/auth';
@@ -34,6 +37,11 @@ export async function POST(request: Request) {
         { error: 'Título e conteúdo são obrigatórios' },
         { status: 400 }
       );
+    }
+
+    // Verificar se o db foi inicializado corretamente
+    if (!db) {
+      throw new Error('Firestore não foi inicializado corretamente');
     }
 
     // Criar nova nota no Firestore

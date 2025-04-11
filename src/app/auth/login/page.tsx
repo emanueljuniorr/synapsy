@@ -20,7 +20,14 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   const router = useRouter();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  // Redirecionar para o dashboard se já estiver autenticado
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, router]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +46,8 @@ export default function LoginPage() {
       const success = await login(email, password);
       
       if (success) {
-        // Redireciona para workflow se for o primeiro login, ou para o dashboard se não for
-        router.push('/workflow');
+        // Redireciona diretamente para o dashboard
+        router.push('/dashboard');
       } else {
         setError('Credenciais inválidas. Por favor, tente novamente.');
       }
@@ -60,7 +67,7 @@ export default function LoginPage() {
       const success = await loginWithGoogle();
       
       if (success) {
-        router.push('/workflow');
+        router.push('/dashboard');
       } else {
         setError('Falha ao fazer login com Google. Por favor, tente novamente.');
       }
@@ -71,6 +78,20 @@ export default function LoginPage() {
       setIsGoogleLoading(false);
     }
   };
+  
+  // Mostrar loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-background">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Se já estiver autenticado, não mostrar o formulário (será redirecionado pelo useEffect)
+  if (isAuthenticated) {
+    return null;
+  }
   
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-background p-4">

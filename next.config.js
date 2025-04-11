@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -8,8 +10,15 @@ const nextConfig = {
       },
     ],
   },
+  // Pacotes externos para componentes de servidor
+  serverExternalPackages: ['firebase-admin'],
   // Configuração para resolver problemas com arquivos JSON nas dependências
   webpack: (config, { isServer }) => {
+    // Adicionar polyfills para módulos Node.js nativos
+    if (!isServer) {
+      config.plugins.push(new NodePolyfillPlugin());
+    }
+    
     // Desativar o parser de JSON padrão para todos os arquivos JSON
     // e usar um parser personalizado que é mais tolerante
     config.module.rules.forEach((rule) => {

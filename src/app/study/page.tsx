@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
-import { Input } from '@/components/ui/input';
+import Input from '@/components/ui/Input';
 
 interface Subject {
   id: string;

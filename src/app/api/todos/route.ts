@@ -1,3 +1,6 @@
+// API que utiliza Firebase Admin, só pode ser executada em Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import { hasReachedTodosLimit } from '@/lib/subscription';
 import { getAuth } from 'firebase-admin/auth';
@@ -16,7 +19,7 @@ export async function POST(request: Request) {
     const userId = decodedToken.uid;
     
     // Verificar se o usuário atingiu o limite de tarefas no plano Free
-    const { reachedLimit } = await hasReachedTodosLimit(userId);
+    const reachedLimit = await hasReachedTodosLimit(userId);
     if (reachedLimit) {
       return NextResponse.json({
         error: 'Limite de tarefas atingido',
@@ -34,6 +37,11 @@ export async function POST(request: Request) {
         { error: 'Título é obrigatório' },
         { status: 400 }
       );
+    }
+    
+    // Verificar se o db foi inicializado corretamente
+    if (!db) {
+      throw new Error('Firestore não foi inicializado corretamente');
     }
 
     // Criar nova tarefa no Firestore

@@ -9,10 +9,18 @@ const NO_FOOTER_ROUTES = [
   '/notes',
   '/study',
   '/tasks',
-  '/workflow',
   '/auth',
   '/settings',
   '/profile'
+];
+
+// Rotas que não devem usar o layout padrão
+const noLayoutRoutes = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/reset-password',
+  '/dashboard',
+  '/notes',
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

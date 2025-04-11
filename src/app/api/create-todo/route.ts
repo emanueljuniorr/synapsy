@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    const userId = session.user.id as string;
+    // Use um valor alternativo se session.user.id não existir
+    const userId = (session.user as any).id || session.user.email;
     
     // Verifica se o usuário atingiu o limite de tarefas do plano Free
     const reachedLimit = await hasReachedTodosLimit(userId);

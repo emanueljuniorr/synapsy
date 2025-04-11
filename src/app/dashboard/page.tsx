@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { db, auth } from '@/lib/firebase';
-import { getDashboardData, Task, Note, StudyTopic, DashboardData, checkSubscription } from '@/lib/firestore';
+import { getDashboardData, checkSubscription } from '@/lib/firestore';
+import { Task, Note, StudyTopic } from '@/types';
+import { DashboardData } from '@/lib/firestore';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
@@ -278,18 +280,18 @@ export default function DashboardPage() {
                     dashboardData.tasks.map(task => (
                       <div key={task.id} className="flex items-start gap-3 pb-3 border-b border-white/5">
                         <div className={`mt-1 rounded-full p-1 ${
-                          task.completed 
+                          task.isDone 
                             ? 'text-green-500 bg-green-500/10' 
                             : 'text-blue-500 bg-blue-500/10'
                         }`}>
-                          {task.completed ? (
+                          {task.isDone ? (
                             <CheckCircle className="h-4 w-4" />
                           ) : (
                             <Clock className="h-4 w-4" />
                           )}
                         </div>
                         <div>
-                          <h4 className={`font-medium ${task.completed ? 'line-through text-foreground/50' : ''}`}>
+                          <h4 className={`font-medium ${task.isDone ? 'line-through text-foreground/50' : ''}`}>
                             {task.title}
                           </h4>
                           {task.dueDate && (
@@ -370,18 +372,16 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {dashboardData?.subjects && dashboardData.subjects.length > 0 ? (
                     dashboardData.subjects
-                      .filter(subject => subject.dueFlashcards > 0)
                       .map(subject => (
                         <div key={subject.id} className="pb-3 border-b border-white/5">
                           <div className="flex items-center gap-2">
                             <div
-                              className="w-2 h-8 rounded-sm"
-                              style={{ backgroundColor: subject.color }}
+                              className="w-2 h-8 rounded-sm bg-primary/50"
                             />
                             <div>
-                              <h4 className="font-medium">{subject.name}</h4>
+                              <h4 className="font-medium">{subject.title}</h4>
                               <p className="text-sm text-foreground/70">
-                                <span className="font-medium text-primary">{subject.dueFlashcards}</span> flashcards para revisar
+                                {subject.progress}% completo
                               </p>
                             </div>
                           </div>

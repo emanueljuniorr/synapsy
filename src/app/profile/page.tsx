@@ -21,6 +21,7 @@ interface UserProfile {
     name: string;
     color: string;
   };
+  expirationDate?: Date | any; // Data de expiração da assinatura
   stats: {
     completedTasks: number;
     createdNotes: number;
@@ -82,10 +83,11 @@ export default function ProfilePage() {
       const userDocSnap = await getDoc(userDocRef);
       
       // Inicializar dados básicos do perfil
-      let profileData: UserProfile = {
+      const userData = {
+        id: user?.uid || '',
         name: user?.displayName || 'Usuário',
         email: user?.email || '',
-        photoURL: user?.photoURL,
+        photoURL: user?.photoURL || null,
         plan: { name: "Free", color: "neutral" },
         stats: {
           completedTasks: 0,
@@ -100,13 +102,7 @@ export default function ProfilePage() {
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         console.log('Dados do perfil encontrados:', userData);
-        profileData = {
-          ...profileData,
-          location: userData.location,
-          occupation: userData.occupation,
-          plan: userData.plan || profileData.plan,
-          createdAt: userData.createdAt || null
-        };
+        userData.createdAt = userData.createdAt || null;
       } else {
         console.log('Perfil não encontrado, criando novo documento');
         // Criar o documento do usuário se não existir
@@ -134,7 +130,12 @@ export default function ProfilePage() {
           where("completed", "==", true)
         );
         const tasksSnapshot = await getDocs(tasksQuery);
-        profileData.stats.completedTasks = tasksSnapshot.size;
+        userData.stats = {
+          completedTasks: tasksSnapshot.size,
+          createdNotes: 0,
+          studyTime: 0,
+          streak: 0
+        };
         console.log(`Encontradas ${tasksSnapshot.size} tarefas completadas`);
         
         // 2. Notas criadas
@@ -144,7 +145,7 @@ export default function ProfilePage() {
           where("userId", "==", userId)
         );
         const notesSnapshot = await getDocs(notesQuery);
-        profileData.stats.createdNotes = notesSnapshot.size;
+        userData.stats.createdNotes = notesSnapshot.size;
         console.log(`Encontradas ${notesSnapshot.size} notas`);
         
         // 3. Tempo de estudo (soma de todas as sessões de foco)
@@ -154,14 +155,14 @@ export default function ProfilePage() {
           where("userId", "==", userId)
         );
         const focusSnapshot = await getDocs(focusQuery);
-        profileData.stats.studyTime = focusSnapshot.docs.reduce(
+        userData.stats.studyTime = focusSnapshot.docs.reduce(
           (total, doc) => {
             const minutes = doc.data().minutes || 0;
             return total + minutes;
           }, 
           0
         );
-        console.log(`Tempo total de estudo: ${profileData.stats.studyTime} minutos`);
+        console.log(`Tempo total de estudo: ${userData.stats.studyTime} minutos`);
         
         // 4. Streak (dias consecutivos de atividade)
         console.log('Calculando streak para:', userId);
@@ -205,12 +206,12 @@ export default function ProfilePage() {
             }
           }
           
-          profileData.stats.streak = streak;
+          userData.stats.streak = streak;
           console.log(`Streak calculado: ${streak} dias`);
         } catch (streakError) {
           console.error('Erro ao calcular streak:', streakError);
           // Em caso de erro, não quebrar todo o carregamento
-          profileData.stats.streak = 0;
+          userData.stats.streak = 0;
         }
       } catch (statsError) {
         console.error('Erro ao buscar estatísticas:', statsError);
@@ -218,8 +219,8 @@ export default function ProfilePage() {
       }
       
       // Atualizar estado com os dados coletados
-      setUserProfile(profileData);
-      console.log('Perfil carregado com sucesso:', profileData);
+      setUserProfile(userData);
+      console.log('Perfil carregado com sucesso:', userData);
       
     } catch (err) {
       console.error('Erro ao buscar perfil:', err);
@@ -228,7 +229,7 @@ export default function ProfilePage() {
       setUserProfile({
         name: user?.displayName || 'Usuário',
         email: user?.email || '',
-        photoURL: user?.photoURL,
+        photoURL: user?.photoURL || null,
         plan: { name: "Free", color: "neutral" },
         stats: {
           completedTasks: 0,
@@ -503,16 +504,10 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {userProfile?.plan?.name === 'Pro' && userProfile?.plan?.expirationDate && (
+              {userProfile?.plan?.name === 'Pro' && userProfile?.expirationDate && (
                 <div className="mb-4 p-3 bg-background/30 rounded-lg border border-white/5">
                   <p className="text-sm text-foreground/70">
-                    Sua assinatura é válida até <span className="font-medium">{
-                      new Date(userProfile.plan.expirationDate.seconds * 1000).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })
-                    }</span>
+                    Sua assinatura é válida até <span className="font-medium">{formatDate(userProfile.expirationDate)}</span>
                   </p>
                 </div>
               )}
@@ -613,4 +608,21 @@ function StatCard({ title, value, subtitle }: { title: string; value: string; su
       </div>
     </div>
   );
+}
+
+// Função para formatar data
+function formatDate(date: Date | any): string {
+  if (!date) return '';
+  
+  try {
+    const dateObj = date instanceof Date ? date : new Date(date.seconds * 1000);
+    return dateObj.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch (e) {
+    console.error('Erro ao formatar data:', e);
+    return '';
+  }
 } 
