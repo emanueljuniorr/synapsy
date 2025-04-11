@@ -213,7 +213,7 @@ export const getDashboardData = async (userId: string): Promise<DashboardData> =
         title: data.title,
         description: data.description,
         dueDate: data.dueDate ? data.dueDate.toDate() : undefined,
-        completed: data.completed || false,
+        isDone: data.completed || false,
         priority: data.priority || 'medium',
         category: data.category
       };

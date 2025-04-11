@@ -21,7 +21,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 // Interface para usuário
-interface User {
+export interface User {
   id: string;
   uid?: string;
   name: string;
@@ -32,7 +32,7 @@ interface User {
 }
 
 // Interface para o contexto de autenticação
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -43,7 +43,7 @@ interface AuthContextType {
 }
 
 // Criação do contexto
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Provider do contexto
 export function AuthProvider({ children }: { children: ReactNode }) {
