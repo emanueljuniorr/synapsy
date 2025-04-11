@@ -15,7 +15,9 @@ import {
   User as FirebaseUser,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -50,15 +52,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Configurar persistência da autenticação ao montar
+  useEffect(() => {
+    const configurePersistence = async () => {
+      try {
+        // Configurar persistência local para manter a sessão mesmo após fechar o navegador
+        await setPersistence(auth, browserLocalPersistence);
+        console.log('Persistência da autenticação configurada');
+      } catch (error) {
+        console.error('Erro ao configurar persistência:', error);
+      }
+    };
+    
+    configurePersistence();
+  }, []);
 
   // Verificar se o usuário está autenticado ao carregar a página
   useEffect(() => {
+    let isMounted = true;
+    console.log('Iniciando verificação de autenticação...');
+    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!isMounted) return;
+      
       setIsLoading(true);
       
       try {
         if (firebaseUser) {
           console.log('Firebase User detectado:', firebaseUser.uid);
+          
+          // Verificar se o token está atualizado
+          const idTokenResult = await firebaseUser.getIdTokenResult(true);
           
           // Buscar dados extras do usuário no Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
@@ -80,30 +105,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: authUser.email 
           });
           
-          setUser(authUser);
-          setIsAuthenticated(true);
+          if (isMounted) {
+            setUser(authUser);
+            setIsAuthenticated(true);
+          }
         } else {
           console.log('Nenhum usuário autenticado');
-          setUser(null);
-          setIsAuthenticated(false);
+          if (isMounted) {
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
-        setUser(null);
-        setIsAuthenticated(false);
+        if (isMounted) {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     });
 
     // Limpar o listener quando o componente for desmontado
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // Função de login
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Configurar persistência local antes do login
+      await setPersistence(auth, browserLocalPersistence);
       
       // Autenticar com o Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -120,6 +159,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
+      } else {
+        // Atualizar timestamp de último login
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          updatedAt: serverTimestamp(),
+          lastLogin: serverTimestamp()
+        }, { merge: true });
       }
       
       return true;
@@ -135,6 +180,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Configurar persistência local antes do login
+      await setPersistence(auth, browserLocalPersistence);
       
       // Criar provider do Google
       const googleProvider = new GoogleAuthProvider();
@@ -155,12 +203,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatar: firebaseUser.photoURL,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
+          lastLogin: serverTimestamp()
         });
       } else {
         // Atualizar informações do usuário
         await setDoc(doc(db, 'users', firebaseUser.uid), {
           updatedAt: serverTimestamp(),
           avatar: firebaseUser.photoURL, // Atualizar avatar caso tenha mudado
+          lastLogin: serverTimestamp()
         }, { merge: true });
       }
       
@@ -178,6 +228,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       
+      // Configurar persistência local antes do login
+      await setPersistence(auth, browserLocalPersistence);
+      
       // Criar usuário no Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
@@ -191,6 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: firebaseUser.email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        lastLogin: serverTimestamp()
       });
       
       return true;
@@ -206,6 +260,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
+      // Limpar token e estado antes do logout
+      setUser(null);
+      setIsAuthenticated(false);
       await signOut(auth);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);

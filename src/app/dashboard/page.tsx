@@ -36,10 +36,25 @@ export default function DashboardPage() {
 
   // Verificar autenticação e buscar dados do dashboard
   useEffect(() => {
+    let authCheckTimeout: NodeJS.Timeout;
+    let isSubscribed = true;
+    
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      // Limpar qualquer timeout existente
+      if (authCheckTimeout) {
+        clearTimeout(authCheckTimeout);
+      }
+      
       if (!user) {
-        console.log('Usuário não autenticado, redirecionando para login');
-        router.push('/auth/login');
+        console.log('Aguardando verificação de autenticação...');
+        // Adicionar um atraso antes de redirecionar para dar tempo ao Firebase carregar o estado da autenticação
+        authCheckTimeout = setTimeout(() => {
+          // Verificar se o componente ainda está montado
+          if (isSubscribed) {
+            console.log('Usuário não autenticado após tempo de espera, redirecionando para login');
+            router.push('/auth/login');
+          }
+        }, 1500); // Esperar 1.5 segundos antes de redirecionar
         return;
       }
       
@@ -49,6 +64,9 @@ export default function DashboardPage() {
         
         console.log('Usuário autenticado, buscando dados do dashboard para:', user.uid);
         const data = await getDashboardData(user.uid);
+        
+        // Verificar se o componente ainda está montado antes de atualizar o estado
+        if (!isSubscribed) return;
         
         if (!data) {
           console.error('Nenhum dado retornado da função getDashboardData');
@@ -72,15 +90,27 @@ export default function DashboardPage() {
           await checkUserSubscription(user.uid);
         }
       } catch (error) {
+        // Verificar se o componente ainda está montado antes de atualizar o estado
+        if (!isSubscribed) return;
+        
         console.error('Erro ao buscar dados do dashboard:', error);
         setError('Erro ao carregar os dados: ' + (error instanceof Error ? error.message : String(error)));
       } finally {
-        setIsLoading(false);
+        // Verificar se o componente ainda está montado antes de atualizar o estado
+        if (isSubscribed) {
+          setIsLoading(false);
+        }
       }
     });
     
-    // Limpar o observador quando o componente for desmontado
-    return () => unsubscribe();
+    // Limpar o observador e timeouts quando o componente for desmontado
+    return () => {
+      isSubscribed = false;
+      unsubscribe();
+      if (authCheckTimeout) {
+        clearTimeout(authCheckTimeout);
+      }
+    };
   }, [router]);
 
   // Verificar se o usuário tem assinatura Pro

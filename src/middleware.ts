@@ -18,7 +18,8 @@ const PUBLIC_ROUTES = [
   '/plans',
   '/pricing',
   '/terms',
-  '/privacy'
+  '/privacy',
+  '/dashboard',
 ];
 
 export function middleware(request: NextRequest) {
@@ -34,20 +35,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
-  // Se for uma rota pública ou o usuário estiver autenticado, continuar
-  if (PUBLIC_ROUTES.some(route => pathname === route) || isAuthenticated) {
-    // Verificar se é uma rota que exige plano Pro
-    if (PRO_ONLY_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
-      if (!isAuthenticated) {
-        // Redirecionar para login se não estiver autenticado
-        return NextResponse.redirect(new URL('/auth/login', request.url));
-      }
-      
-      // Redirecionar para API de verificação de plano
-      return NextResponse.redirect(new URL(`/api/verify-plan?redirectTo=${encodeURIComponent(pathname)}`, request.url));
+  // Se for uma rota pública, permitir acesso independente da autenticação
+  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
+    return NextResponse.next();
+  }
+  
+  // Verificar se é uma rota que exige plano Pro
+  if (PRO_ONLY_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
+    if (!isAuthenticated) {
+      // Redirecionar para login se não estiver autenticado
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
     
-    return NextResponse.next();
+    // Redirecionar para API de verificação de plano
+    return NextResponse.redirect(new URL(`/api/verify-plan?redirectTo=${encodeURIComponent(pathname)}`, request.url));
   }
   
   // Redirecionar para login se não estiver autenticado e tentar acessar rota protegida
