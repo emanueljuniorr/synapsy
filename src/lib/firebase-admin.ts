@@ -48,7 +48,7 @@ export function initAdmin() {
 }
 
 // Inicializar o app se ainda não foi inicializado
-let app;
+let app: admin.app.App | undefined;
 try {
   app = initAdmin();
 } catch (error) {
@@ -57,8 +57,8 @@ try {
 }
 
 // Exportar as instâncias do Firestore e Auth
-export const db = app ? admin.firestore() : null;
-export const getAuth = () => app ? admin.auth() : null;
+export const db = app ? app.firestore() : null;
+export const getAuth = () => app ? app.auth() : null;
 
 // Funções utilitárias para o Firebase Admin
 export async function verifyToken(token: string) {
@@ -67,7 +67,7 @@ export async function verifyToken(token: string) {
   }
   
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await app.auth().verifyIdToken(token);
     return decodedToken;
   } catch (error) {
     console.error('Erro ao verificar token:', error);
@@ -81,7 +81,7 @@ export async function getUserById(uid: string) {
   }
   
   try {
-    const userRecord = await admin.auth().getUser(uid);
+    const userRecord = await app.auth().getUser(uid);
     return userRecord;
   } catch (error) {
     console.error('Erro ao buscar usuário por ID:', error);
