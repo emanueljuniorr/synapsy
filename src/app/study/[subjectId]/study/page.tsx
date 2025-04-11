@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, updateDoc, query, where, Timestamp } from 'firebase/firestore';
@@ -27,6 +27,13 @@ interface Subject {
   id: string;
   name: string;
   color: string;
+}
+
+// Interface para os props do componente
+interface StudySessionPageProps {
+  params: {
+    subjectId: string;
+  };
 }
 
 // Algoritmo SM-2 para repetição espaçada
@@ -77,11 +84,10 @@ function calculateNextReview(grade: number, card: Flashcard) {
   };
 }
 
-export default function StudySessionPage({ params }: { params: { subjectId: string } }) {
+export default function StudySessionPage({ params }: StudySessionPageProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const unwrappedParams = use(params);
-  const subjectId = unwrappedParams.subjectId;
+  const subjectId = params.subjectId;
   const [subject, setSubject] = useState<Subject | null>(null);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
