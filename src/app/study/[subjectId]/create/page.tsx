@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, auth } from '@/lib/firebase';
 import { collection, doc, getDoc, addDoc } from 'firebase/firestore';
@@ -10,17 +10,20 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Plus, Save } from 'lucide-react';
 
+interface PageParams {
+  subjectId: string;
+}
+
 interface Subject {
   id: string;
   name: string;
   color: string;
 }
 
-export default function CreateFlashcardPage({ params }: { params: { subjectId: string } }) {
+export default function CreateFlashcardPage({ params }: { params: PageParams }) {
   const router = useRouter();
   const { toast } = useToast();
-  const unwrappedParams = use(params);
-  const subjectId = unwrappedParams.subjectId;
+  const subjectId = params.subjectId;
   
   const [subject, setSubject] = useState<Subject | null>(null);
   const [question, setQuestion] = useState('');
