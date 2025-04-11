@@ -47,6 +47,9 @@ export interface Event {
   startDate: Date;
   endDate: Date;
   location?: string;
+  color?: string;
+  isFullDay?: boolean;
+  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
   isRecurring: boolean;
   recurrencePattern?: {
     frequency: 'daily' | 'weekly' | 'monthly';
@@ -66,6 +69,7 @@ export interface StudyTopic {
   progress: number;
   totalHours: number;
   completedHours: number;
+  dueDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
