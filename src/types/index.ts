@@ -109,4 +109,13 @@ export interface Flashcard {
   correctCount: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Tipo para dados do dashboard
+export interface DashboardData {
+  tasks: Task[];
+  notes: Note[];
+  events?: Event[];
+  studyTopics?: StudyTopic[];
+  subjects?: Subject[];
 } 
