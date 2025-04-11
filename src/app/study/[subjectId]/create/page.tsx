@@ -10,17 +10,20 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Plus, Save } from 'lucide-react';
 
-interface PageParams {
-  subjectId: string;
-}
-
 interface Subject {
   id: string;
   name: string;
   color: string;
 }
 
-export default function CreateFlashcardPage({ params }: { params: PageParams }) {
+type PageProps = {
+  params: {
+    subjectId: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export default function CreateFlashcardPage({ params }: PageProps) {
   const router = useRouter();
   const { toast } = useToast();
   const subjectId = params.subjectId;
