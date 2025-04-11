@@ -31,6 +31,7 @@ export interface Note {
   title: string;
   content: string;
   categories?: string[];
+  tags?: string[];
   isPinned?: boolean;
   createdAt: Date;
   updatedAt: Date;
