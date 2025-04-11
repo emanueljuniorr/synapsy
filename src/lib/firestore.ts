@@ -215,7 +215,10 @@ export const getDashboardData = async (userId: string): Promise<DashboardData> =
         dueDate: data.dueDate ? data.dueDate.toDate() : undefined,
         isDone: data.completed || false,
         priority: data.priority || 'medium',
-        category: data.category
+        category: data.category,
+        createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
+        updatedAt: data.updatedAt ? data.updatedAt.toDate() : new Date(),
+        userId: data.userId,
       };
       
       tasks.push(task);
@@ -320,7 +323,19 @@ export const getDashboardData = async (userId: string): Promise<DashboardData> =
     });
     
     const subjectsData = await Promise.all(subjectsPromises);
-    subjects.push(...subjectsData);
+    // Converter os objetos para o formato StudyTopic correto antes de adicionar ao array
+    const convertedSubjects = subjectsData.map(data => ({
+      id: data.id,
+      userId: userId,
+      title: data.name || '',
+      description: '',
+      progress: 0,
+      totalHours: 0,
+      completedHours: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+    subjects.push(...convertedSubjects);
     
     // Buscar dados de sessões de foco (últimos 7 dias)
     const focusSessionsRef = collection(db, 'focusSessions');

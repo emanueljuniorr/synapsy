@@ -7,7 +7,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { 
   RiBold, RiItalic, RiStrikethrough, RiCodeLine, 
   RiH1, RiH2, RiH3, RiListUnordered, RiListOrdered,
-  RiLink, RiImage, RiSeparator, RiMore2Fill
+  RiLink, RiImageLine, RiSeparator, RiMore2Fill
 } from 'react-icons/ri';
 
 interface MarkdownEditorProps {
@@ -21,6 +21,15 @@ interface ToolbarButton {
   label: string;
   action: () => void;
   shortcut?: string;
+}
+
+// Adicionar tipo para os parâmetros do componente "code"
+type CodeProps = {
+  node?: any;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+  [key: string]: any;
 }
 
 export default function MarkdownEditor({ initialValue = '', onChange, placeholder }: MarkdownEditorProps) {
@@ -70,7 +79,7 @@ export default function MarkdownEditor({ initialValue = '', onChange, placeholde
     { icon: RiListUnordered, label: 'Lista', action: () => insertText('- ') },
     { icon: RiListOrdered, label: 'Lista Numerada', action: () => insertText('1. ') },
     { icon: RiLink, label: 'Link', action: () => insertText('[', '](url)') },
-    { icon: RiImage, label: 'Imagem', action: () => insertText('![', '](url)') },
+    { icon: RiImageLine, label: 'Imagem', action: () => insertText('![', '](url)') },
     { icon: RiSeparator, label: 'Separador', action: () => insertText('\\n---\\n') },
   ];
 
@@ -127,11 +136,11 @@ export default function MarkdownEditor({ initialValue = '', onChange, placeholde
           <div className="w-full h-full p-6 overflow-auto prose prose-invert prose-purple max-w-none">
             <ReactMarkdown
               components={{
-                code({ node, inline, className, children, ...props }) {
+                code({ node, inline, className, children, ...props }: CodeProps) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
                     <SyntaxHighlighter
-                      style={atomDark}
+                      style={atomDark as any}
                       language={match[1]}
                       PreTag="div"
                       {...props}

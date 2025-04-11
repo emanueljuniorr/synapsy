@@ -25,6 +25,15 @@ interface ToolbarButton {
   shortcut?: string;
 }
 
+// Adicionar tipo para os parâmetros do componente "code"
+type CodeProps = {
+  node?: any;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+  [key: string]: any;
+}
+
 export default function SynapsyMarkdownEditor({ 
   initialValue = '',
   onChange,
@@ -208,11 +217,11 @@ export default function SynapsyMarkdownEditor({
           <div className="w-full h-full p-6 overflow-auto prose prose-invert prose-purple max-w-none">
             <ReactMarkdown
               components={{
-                code({ node, inline, className, children, ...props }) {
+                code({ node, inline, className, children, ...props }: CodeProps) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
                     <SyntaxHighlighter
-                      style={atomDark}
+                      style={atomDark as any}
                       language={match[1]}
                       PreTag="div"
                       {...props}

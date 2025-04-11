@@ -20,6 +20,7 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   dueDate?: Date;
   tags?: string[];
+  category?: string;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
