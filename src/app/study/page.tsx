@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, BookOpen, BrainCircuit, Search } from 'lucide-react';
+import { Plus, BookOpen, BrainCircuit, Search, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
 import Input from '@/components/ui/Input';
+import ConfirmationDialog from '@/components/ui/confirmationDialog';
 
 interface Subject {
   id: string;
@@ -28,88 +29,144 @@ export default function StudyPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const fetchSubjects = async () => {
-      if (!auth.currentUser) {
-        toast({
-          title: "Erro de autenticação",
-          description: "Você precisa estar logado para visualizar suas matérias",
-          variant: "destructive",
-        });
-        router.push('/auth/login');
+    fetchSubjects();
+  }, [toast, router]);
+
+  const fetchSubjects = async () => {
+    if (!auth.currentUser) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Você precisa estar logado para visualizar suas matérias",
+        variant: "destructive",
+      });
+      router.push('/auth/login');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        console.error("ID de usuário não disponível");
         setLoading(false);
         return;
       }
       
-      try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-          console.error("ID de usuário não disponível");
-          setLoading(false);
-          return;
-        }
-        
-        const subjectsRef = query(
-          collection(db, 'subjects'),
-          where('userId', '==', userId)
+      const subjectsRef = query(
+        collection(db, 'subjects'),
+        where('userId', '==', userId)
+      );
+      const subjectsSnapshot = await getDocs(subjectsRef);
+      
+      const subjectsPromises = subjectsSnapshot.docs.map(async (docSnap) => {
+        const subjectData = docSnap.data();
+        const flashcardsRef = collection(db, 'flashcards');
+        const flashcardsQuery = query(
+          flashcardsRef,
+          where('subjectId', '==', docSnap.id)
         );
-        const subjectsSnapshot = await getDocs(subjectsRef);
-        
-        const subjectsPromises = subjectsSnapshot.docs.map(async (docSnap) => {
-          const subjectData = docSnap.data();
-          const flashcardsRef = collection(db, 'flashcards');
-          const flashcardsQuery = query(
-            flashcardsRef,
-            where('subjectId', '==', docSnap.id)
-          );
-          const flashcardsSnapshot = await getDocs(flashcardsQuery);
+        const flashcardsSnapshot = await getDocs(flashcardsQuery);
     
     const today = new Date();
-          today.setHours(23, 59, 59, 999);
-          
-          let dueCount = 0;
-          flashcardsSnapshot.docs.forEach(flashcardDoc => {
-            const flashcard = flashcardDoc.data();
-            if (!flashcard.nextReview) {
+        today.setHours(23, 59, 59, 999);
+        
+        let dueCount = 0;
+        flashcardsSnapshot.docs.forEach(flashcardDoc => {
+          const flashcard = flashcardDoc.data();
+          if (!flashcard.nextReview) {
+            dueCount++;
+  } else {
+            const nextReview = flashcard.nextReview.toDate ? 
+                  flashcard.nextReview.toDate() : 
+                  new Date(flashcard.nextReview);
+            if (nextReview <= today) {
               dueCount++;
-    } else {
-              const nextReview = flashcard.nextReview.toDate ? 
-                    flashcard.nextReview.toDate() : 
-                    new Date(flashcard.nextReview);
-              if (nextReview <= today) {
-                dueCount++;
-              }
             }
-          });
-          
-          return {
-            id: docSnap.id,
-              name: subjectData.name, 
-            description: subjectData.description || '',
-            color: subjectData.color || '#4F46E5',
-            totalFlashcards: flashcardsSnapshot.size,
-            dueFlashcards: dueCount
-          };
+          }
         });
         
-        const subjectsData = await Promise.all(subjectsPromises);
-        setSubjects(subjectsData);
-        
-      } catch (error) {
-        console.error('Erro ao carregar matérias:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar suas matérias",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchSubjects();
-  }, [toast, router]);
+        return {
+          id: docSnap.id,
+            name: subjectData.name, 
+          description: subjectData.description || '',
+          color: subjectData.color || '#4F46E5',
+          totalFlashcards: flashcardsSnapshot.size,
+          dueFlashcards: dueCount
+        };
+      });
+      
+      const subjectsData = await Promise.all(subjectsPromises);
+      setSubjects(subjectsData);
+      
+    } catch (error) {
+      console.error('Erro ao carregar matérias:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar suas matérias",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSubject = (id: string) => {
+    setSubjectToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSubject = async () => {
+    if (!subjectToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      // Primeiro exclui os flashcards associados à matéria
+      const flashcardsRef = collection(db, 'flashcards');
+      const flashcardsQuery = query(
+        flashcardsRef,
+        where('subjectId', '==', subjectToDelete)
+      );
+      const flashcardsSnapshot = await getDocs(flashcardsQuery);
+
+      // Exclusão em lote dos flashcards
+      const deletePromises = flashcardsSnapshot.docs.map(docSnap => 
+        deleteDoc(doc(db, 'flashcards', docSnap.id))
+      );
+      await Promise.all(deletePromises);
+
+      // Depois exclui a matéria
+      await deleteDoc(doc(db, 'subjects', subjectToDelete));
+      
+      // Atualiza o estado
+      setSubjects(subjects.filter(subject => subject.id !== subjectToDelete));
+      
+      toast({
+        title: "Matéria excluída",
+        description: "A matéria e todos os seus flashcards foram excluídos com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao excluir matéria:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir a matéria",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setSubjectToDelete(null);
+    }
+  };
+
+  const cancelDeleteSubject = () => {
+    setIsDeleteDialogOpen(false);
+    setSubjectToDelete(null);
+  };
 
   const filteredSubjects = subjects.filter(subject => {
     if (!searchQuery) return true;
@@ -225,25 +282,50 @@ export default function StudyPage() {
                       </p>
                     </div>
 
-                    {subject.dueFlashcards > 0 && (
+                    <div className="flex items-center gap-2">
+                      {subject.dueFlashcards > 0 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="flex items-center"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Previne o evento de clicar no card
+                            router.push(`/study/${subject.id}/study`);
+                          }}
+                        >
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Estudar
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="flex items-center"
+                        className="flex items-center text-red-400 hover:text-red-500 hover:bg-red-500/10"
                         onClick={(e) => {
                           e.stopPropagation(); // Previne o evento de clicar no card
-                          router.push(`/study/${subject.id}/study`);
+                          handleDeleteSubject(subject.id);
                         }}
                       >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Estudar
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </Card>
               ))}
             </div>
           )}
+
+          {/* Diálogo de confirmação para exclusão */}
+          <ConfirmationDialog
+            isOpen={isDeleteDialogOpen}
+            title="Excluir Matéria"
+            message="Tem certeza que deseja excluir esta matéria? Todos os flashcards associados também serão excluídos. Esta ação não pode ser desfeita."
+            confirmLabel="Excluir"
+            isDestructive={true}
+            isSubmitting={isDeleting}
+            onConfirm={confirmDeleteSubject}
+            onCancel={cancelDeleteSubject}
+          />
         </div>
       </div>
     </MainLayout>

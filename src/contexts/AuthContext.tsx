@@ -148,6 +148,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
+      // Obter o token ID do usuário
+      const idToken = await firebaseUser.getIdToken();
+      
+      // Chamar a API para criar o cookie de sessão
+      const sessionResponse = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
+      });
+      
+      if (!sessionResponse.ok) {
+        console.error('Erro ao criar cookie de sessão:', await sessionResponse.text());
+        return false;
+      }
+      
       // Buscar dados adicionais do usuário
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       
@@ -191,6 +208,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Autenticar com popup
       const userCredential = await signInWithPopup(auth, googleProvider);
       const firebaseUser = userCredential.user;
+      
+      // Obter o token ID do usuário
+      const idToken = await firebaseUser.getIdToken();
+      
+      // Chamar a API para criar o cookie de sessão
+      const sessionResponse = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
+      });
+      
+      if (!sessionResponse.ok) {
+        console.error('Erro ao criar cookie de sessão:', await sessionResponse.text());
+        return false;
+      }
       
       // Verificar se o usuário já existe no Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));

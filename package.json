@@ -47,10 +47,19 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.11",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "eslint": "9.24.0",
+    "eslint-config-next": "15.3.0",
+    "http-browserify": "^1.7.0",
     "json-loader": "^0.5.7",
     "json5-loader": "^4.0.1",
+    "path-browserify": "^1.0.1",
+    "stream-browserify": "^3.0.0",
     "string-replace-loader": "^3.1.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "url": "^0.11.4",
+    "util": "^0.12.5"
   }
 }

@@ -8,12 +8,16 @@ import { RiAddLine, RiSearchLine } from 'react-icons/ri';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { useRouter } from 'next/navigation';
+import ConfirmationDialog from '@/components/ui/confirmationDialog';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   
   useEffect(() => {
@@ -31,15 +35,30 @@ export default function NotesPage() {
     }
   }
 
-  async function handleDeleteNote(id: string) {
-    if (!confirm('Tem certeza que deseja excluir esta nota?')) return;
+  function handleDeleteNote(id: string) {
+    setNoteToDelete(id);
+    setIsDeleteDialogOpen(true);
+  }
+
+  async function confirmDeleteNote() {
+    if (!noteToDelete) return;
 
     try {
-      await deleteNote(id);
-    setNotes(notes.filter(note => note.id !== id));
+      setIsDeleting(true);
+      await deleteNote(noteToDelete);
+      setNotes(notes.filter(note => note.id !== noteToDelete));
     } catch (error) {
       console.error('Erro ao excluir nota:', error);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setNoteToDelete(null);
     }
+  }
+
+  function cancelDeleteNote() {
+    setIsDeleteDialogOpen(false);
+    setNoteToDelete(null);
   }
 
   const handleEditNote = (id: string) => {
@@ -153,8 +172,20 @@ export default function NotesPage() {
                   : 'Comece criando uma nova nota'}
               </p>
             </div>
-            </div>
-          )}
+          </div>
+        )}
+
+        {/* Diálogo de confirmação para exclusão */}
+        <ConfirmationDialog
+          isOpen={isDeleteDialogOpen}
+          title="Excluir Nota"
+          message="Tem certeza que deseja excluir esta nota? Esta ação não pode ser desfeita."
+          confirmLabel="Excluir"
+          isDestructive={true}
+          isSubmitting={isDeleting}
+          onConfirm={confirmDeleteNote}
+          onCancel={cancelDeleteNote}
+        />
       </div>
     </MainLayout>
   );
