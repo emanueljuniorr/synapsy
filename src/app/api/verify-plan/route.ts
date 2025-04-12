@@ -2,12 +2,47 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserSubscription } from '@/lib/subscription';
 import { getAuth } from 'firebase-admin/auth';
 import { initAdmin } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase-admin';
 
 // Inicializar Firebase Admin
 initAdmin();
+
+/**
+ * Função otimizada para verificar se um usuário tem plano Pro
+ */
+async function checkUserProPlan(userId: string): Promise<boolean> {
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      return false;
+    }
+    
+    const userData = userDoc.data();
+    
+    // Verificar diferentes formatos possíveis do campo plan
+    if (!userData || !userData.plan) {
+      return false;
+    }
+    
+    // Se plan for string
+    if (typeof userData.plan === 'string') {
+      return userData.plan.toLowerCase() === 'pro';
+    }
+    
+    // Se plan for objeto com property name
+    if (typeof userData.plan === 'object' && userData.plan.name) {
+      return userData.plan.name.toLowerCase() === 'pro';
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Erro ao verificar plano Pro:', error);
+    return false;
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,8 +62,8 @@ export async function GET(request: NextRequest) {
     const decodedToken = await getAuth().verifySessionCookie(sessionCookie);
     const userId = decodedToken.uid;
 
-    // Verificar o plano do usuário
-    const { isPro } = await getUserSubscription(userId);
+    // Verificar o plano do usuário com a função otimizada
+    const isPro = await checkUserProPlan(userId);
 
     if (!isPro) {
       // Redirecionar para página de planos se não for Pro

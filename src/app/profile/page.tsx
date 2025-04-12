@@ -100,9 +100,27 @@ export default function ProfilePage() {
       
       // Se o documento do usuário existir, obter informações de lá
       if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        console.log('Dados do perfil encontrados:', userData);
-        userData.createdAt = userData.createdAt || null;
+        const userDocData = userDocSnap.data();
+        console.log('Dados do perfil encontrados:', userDocData);
+        
+        // Atualizar os dados do perfil com os dados do documento
+        userData.createdAt = userDocData.createdAt || null;
+        
+        // Verificar formato do plano e atualizar
+        if (userDocData.plan) {
+          if (typeof userDocData.plan === 'string') {
+            userData.plan = { 
+              name: userDocData.plan,
+              color: userDocData.plan.toLowerCase() === 'pro' ? 'primary' : 'neutral'
+            };
+          } else if (typeof userDocData.plan === 'object' && userDocData.plan.name) {
+            userData.plan = userDocData.plan;
+          }
+        }
+        
+        // Preencher outros campos se disponíveis
+        if (userDocData.location) userData.location = userDocData.location;
+        if (userDocData.occupation) userData.occupation = userDocData.occupation;
       } else {
         console.log('Perfil não encontrado, criando novo documento');
         // Criar o documento do usuário se não existir
@@ -111,7 +129,7 @@ export default function ProfilePage() {
             name: user?.displayName,
             email: user?.email,
             photoURL: user?.photoURL,
-            plan: { name: "Free", color: "neutral" },
+            plan: "Free", // Simplificar para string para compatibilidade
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           });
@@ -273,7 +291,7 @@ export default function ProfilePage() {
           photoURL: user.photoURL,
           location,
           occupation,
-          plan: { name: "Free", color: "neutral" },
+          plan: "Free", // Simplificar para string para compatibilidade
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -362,7 +380,8 @@ export default function ProfilePage() {
                 <h1 className="text-2xl font-bold mb-2">{user?.displayName || "Usuário"}</h1>
                 <p className="text-foreground/60 mb-4">{user?.email}</p>
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <span className={`px-3 py-1 bg-${userProfile?.plan.color || 'neutral'}/10 text-${userProfile?.plan.color || 'neutral'} rounded-full text-sm`}>
+                  <span className={`px-3 py-1 ${userProfile?.plan.name.toLowerCase() === 'pro' ? 'bg-primary/10 text-primary' : 'bg-neutral-500/10 text-neutral-300'} rounded-full text-sm flex items-center gap-1`}>
+                    {userProfile?.plan.name.toLowerCase() === 'pro' && <Crown className="h-3 w-3" />}
                     Plano {userProfile?.plan.name || 'Free'}
                   </span>
                   <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm">

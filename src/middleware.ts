@@ -20,6 +20,7 @@ const PUBLIC_ROUTES = [
   '/terms',
   '/privacy',
   '/dashboard',
+  '/profile',
 ];
 
 export function middleware(request: NextRequest) {
@@ -47,8 +48,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
     
-    // Redirecionar para API de verificação de plano
-    return NextResponse.redirect(new URL(`/api/verify-plan?redirectTo=${encodeURIComponent(pathname)}`, request.url));
+    // Permitir acesso à página que fará sua própria verificação 
+    return NextResponse.next();
   }
   
   // Redirecionar para login se não estiver autenticado e tentar acessar rota protegida

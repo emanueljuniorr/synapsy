@@ -48,7 +48,21 @@ export default function RelaxPage() {
         
         if (userSnap.exists()) {
           const userData = userSnap.data();
-          const userIsPro = userData.plan === 'pro';
+          let userIsPro = false;
+          
+          // Verificar diferentes formatos possíveis do campo plan
+          if (userData.plan) {
+            // Se plan for string
+            if (typeof userData.plan === 'string') {
+              userIsPro = userData.plan.toLowerCase() === 'pro';
+            } 
+            // Se plan for objeto com property name
+            else if (typeof userData.plan === 'object' && userData.plan.name) {
+              userIsPro = userData.plan.name.toLowerCase() === 'pro';
+            }
+          }
+          
+          console.log('Status Pro do usuário:', userIsPro);
           setIsPro(userIsPro);
           
           if (!userIsPro) {

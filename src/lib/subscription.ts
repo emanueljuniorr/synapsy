@@ -11,17 +11,32 @@ export async function getUserSubscription(userId: string) {
     const userSnap = await getDoc(userRef);
     
     if (!userSnap.exists()) {
-      return { plan: 'free' };
+      return { plan: 'free', isPro: false };
     }
     
     const userData = userSnap.data();
+    
+    // Compatibilidade com diferentes estruturas de dados
+    // Verificar se o plano está em userData.plan.name ou diretamente em userData.plan
+    let planName = 'free';
+    
+    if (userData.plan) {
+      if (typeof userData.plan === 'string') {
+        planName = userData.plan;
+      } else if (typeof userData.plan === 'object' && userData.plan.name) {
+        planName = userData.plan.name;
+      }
+    }
+    
+    const isPro = planName.toLowerCase() === 'pro';
+    
     return {
-      plan: userData.plan || 'free',
-      isPro: userData.plan === 'pro',
+      plan: planName,
+      isPro: isPro,
     };
   } catch (error) {
     console.error('Erro ao buscar informações da assinatura:', error);
-    return { plan: 'free' };
+    return { plan: 'free', isPro: false };
   }
 }
 
