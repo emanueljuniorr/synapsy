@@ -57,7 +57,7 @@ export default function FocusPage() {
         // Obter o token de autenticação
         const idToken = await user.getIdToken();
         
-        // Verificar o plano usando a API verify-plan
+        // Verificar o plano usando a API check-pro-plan
         const response = await fetch('/api/check-pro-plan', {
           method: 'POST',
           headers: {
@@ -66,9 +66,13 @@ export default function FocusPage() {
           }
         });
         
+        if (!response.ok) {
+          throw new Error(`Erro ao verificar plano: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        if (response.ok && data.isPro) {
+        if (data.isPro) {
           setIsPro(true);
         } else {
           setIsPro(false);
@@ -76,8 +80,9 @@ export default function FocusPage() {
         }
       } catch (error) {
         console.error('Erro ao verificar plano do usuário:', error);
-        // Em caso de erro, deixar continuar por segurança
-        setIsPro(true);
+        // Em caso de erro, redirecionar para página de planos por segurança
+        setIsPro(false);
+        router.push('/plans?upgrade=true&error=true');
       } finally {
         setLoading(false);
       }

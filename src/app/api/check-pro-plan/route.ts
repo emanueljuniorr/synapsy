@@ -2,9 +2,7 @@
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { db } from '@/lib/firebase-admin';
-import { verifyToken } from '@/lib/firebase-admin';
+import { db, verifyToken } from '@/lib/firebase-admin';
 
 /**
  * API para verificar se o usuário tem plano Pro
