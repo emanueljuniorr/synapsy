@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { 
   RiTimeLine, 
@@ -45,6 +45,17 @@ export default function FocusPage() {
   const [isPro, setIsPro] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Estado para controlar as configurações
+  const [settings, setSettings] = useState({
+    focusTime: DEFAULT_TIMES.focus,
+    shortBreakTime: DEFAULT_TIMES.shortBreak,
+    longBreakTime: DEFAULT_TIMES.longBreak,
+    autoStartBreaks: true,
+    autoStartPomodoros: false,
+    volume: 50,
+    whiteNoise: 'none',
+  });
 
   useEffect(() => {
     console.log('Executando effect de verificação de autenticação');
@@ -104,17 +115,6 @@ export default function FocusPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // Estado para controlar as configurações
-  const [settings, setSettings] = useState({
-    focusTime: DEFAULT_TIMES.focus,
-    shortBreakTime: DEFAULT_TIMES.shortBreak,
-    longBreakTime: DEFAULT_TIMES.longBreak,
-    autoStartBreaks: true,
-    autoStartPomodoros: false,
-    volume: 50,
-    whiteNoise: 'none',
-  });
-
   // Se estiver carregando ou não for Pro, não renderizar o conteúdo
   if (loading) {
     console.log('Renderizando estado de carregamento');
@@ -173,88 +173,19 @@ export default function FocusPage() {
     { value: 'waves', label: 'Ondas' },
     { value: 'whitenoise', label: 'Ruído Branco' },
   ];
-
-  // Efeito para inicializar sons
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      tickSound.current = new Audio(SOUNDS.tick);
-      notificationSound.current = new Audio(SOUNDS.complete);
-
-      // Carrega as configurações salvas do localStorage
-      const savedSettings = localStorage.getItem('focusSettings');
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        setSettings(parsedSettings);
-        setTimeLeft(parsedSettings.focusTime * 60);
-      }
-    }
-
-    return () => {
-      backgroundSound.current?.pause();
-    };
-  }, []);
-
-  // Efeito para gerenciar o temporizador
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          
-          // Tocar som de tique a cada segundo se o volume estiver ligado
-          if (settings.volume > 0 && tickSound.current) {
-            tickSound.current.volume = settings.volume / 100;
-            tickSound.current.currentTime = 0;
-            tickSound.current.play().catch(e => console.error('Erro ao tocar o som:', e));
-          }
-          
-          return newTime;
-        });
-      }, 1000);
-    } else if (isActive && timeLeft === 0) {
-      // Sessão concluída
-      handleSessionComplete();
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isActive, timeLeft, settings.volume]);
-
-  // Efeito para gerenciar a reprodução do ruído branco
-  useEffect(() => {
-    if (whiteNoise === 'none') {
-      backgroundSound.current?.pause();
-      return;
-    }
-
-    if (typeof window !== 'undefined') {
-      if (backgroundSound.current) {
-        backgroundSound.current.pause();
-      }
-      
-      backgroundSound.current = new Audio(`/sounds/${whiteNoise}.mp3`);
-      
-      if (backgroundSound.current) {
-        backgroundSound.current.loop = true;
-        backgroundSound.current.volume = settings.volume / 100;
-        
-        if (isActive) {
-          backgroundSound.current.play().catch(e => console.error('Erro ao tocar o som de fundo:', e));
-        }
-      }
-    }
-  }, [whiteNoise, isActive, settings.volume]);
-
-  // Função para lidar com o fim de uma sessão
-  const handleSessionComplete = () => {
+  
+  // Função para lidar com o fim de uma sessão - usando useCallback para evitar dependências circulares
+  const handleSessionComplete = useCallback(() => {
+    console.log('Sessão concluída, executando handleSessionComplete');
     // Tocar som de notificação
     if (settings.volume > 0 && notificationSound.current) {
-      notificationSound.current.volume = settings.volume / 100;
-      notificationSound.current.currentTime = 0;
-      notificationSound.current.play().catch(e => console.error('Erro ao tocar notificação:', e));
+      try {
+        notificationSound.current.volume = settings.volume / 100;
+        notificationSound.current.currentTime = 0;
+        notificationSound.current.play().catch(e => console.error('Erro ao tocar notificação:', e));
+      } catch (e) {
+        console.error('Erro ao manipular áudio de notificação:', e);
+      }
     }
 
     // Determinar próxima sessão
@@ -294,7 +225,98 @@ export default function FocusPage() {
         setIsActive(false);
       }
     }
-  };
+  }, [sessionType, settings, setSessionType, setTimeLeft, setIsActive, setPomodorosCompleted]);
+
+  // Efeito para inicializar sons
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      tickSound.current = new Audio(SOUNDS.tick);
+      notificationSound.current = new Audio(SOUNDS.complete);
+
+      // Carrega as configurações salvas do localStorage
+      const savedSettings = localStorage.getItem('focusSettings');
+      if (savedSettings) {
+        try {
+          const parsedSettings = JSON.parse(savedSettings);
+          setSettings(parsedSettings);
+          setTimeLeft(parsedSettings.focusTime * 60);
+        } catch (e) {
+          console.error('Erro ao carregar configurações do localStorage:', e);
+        }
+      }
+    }
+
+    return () => {
+      backgroundSound.current?.pause();
+    };
+  }, []);
+
+  // Efeito para gerenciar o temporizador
+  useEffect(() => {
+    console.log('Efeito do temporizador executado, isActive:', isActive, 'timeLeft:', timeLeft);
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          const newTime = prev - 1;
+          
+          // Tocar som de tique a cada segundo se o volume estiver ligado
+          if (settings.volume > 0 && tickSound.current) {
+            try {
+              tickSound.current.volume = settings.volume / 100;
+              tickSound.current.currentTime = 0;
+              tickSound.current.play().catch(e => console.error('Erro ao tocar o som:', e));
+            } catch (e) {
+              console.error('Erro ao manipular áudio de tique:', e);
+            }
+          }
+          
+          return newTime;
+        });
+      }, 1000);
+    } else if (isActive && timeLeft === 0) {
+      // Sessão concluída
+      console.log('Temporizador chegou a zero, chamando handleSessionComplete');
+      handleSessionComplete();
+    }
+
+    return () => {
+      if (interval) {
+        console.log('Limpando intervalo do temporizador');
+        clearInterval(interval);
+      }
+    };
+  }, [isActive, timeLeft, settings, handleSessionComplete]);
+
+  // Efeito para gerenciar a reprodução do ruído branco
+  useEffect(() => {
+    if (whiteNoise === 'none') {
+      backgroundSound.current?.pause();
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      if (backgroundSound.current) {
+        backgroundSound.current.pause();
+      }
+      
+      try {
+        backgroundSound.current = new Audio(`/sounds/${whiteNoise}.mp3`);
+        
+        if (backgroundSound.current) {
+          backgroundSound.current.loop = true;
+          backgroundSound.current.volume = settings.volume / 100;
+          
+          if (isActive) {
+            backgroundSound.current.play().catch(e => console.error('Erro ao tocar o som de fundo:', e));
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao inicializar áudio de fundo:', e);
+      }
+    }
+  }, [whiteNoise, isActive, settings.volume]);
 
   // Função para iniciar/pausar o timer
   const toggleTimer = () => {
