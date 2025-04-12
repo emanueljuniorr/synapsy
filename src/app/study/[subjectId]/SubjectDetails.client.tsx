@@ -18,6 +18,7 @@ import { ChevronLeft, Plus, Edit, BookOpen, Clock, Calendar, Layers, CalendarClo
 import Link from 'next/link';
 import { format } from 'date-fns';
 import MainLayout from '@/components/layout/MainLayout';
+import ConfirmationDialog from '@/components/ui/confirmationDialog';
 
 interface Flashcard {
   id: string;
@@ -350,6 +351,11 @@ export default function SubjectDetails({ subjectId }: SubjectDetailsProps) {
         variant: "destructive"
       });
     }
+  };
+
+  const cancelDeleteFlashcard = () => {
+    setFlashcardToDelete(null);
+    setDeleteDialogOpen(false);
   };
 
   // Calcular quantos flashcards estão para revisão hoje
@@ -828,22 +834,15 @@ export default function SubjectDetails({ subjectId }: SubjectDetailsProps) {
           </Dialog>
           
           {/* Dialog de confirmação para deletar flashcard */}
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogContent className="bg-background/95 backdrop-blur-lg border border-white/10">
-              <DialogHeader>
-                <DialogTitle>Confirmar exclusão</DialogTitle>
-              </DialogHeader>
-              <p>Tem certeza que deseja excluir este flashcard? Esta ação não pode ser desfeita.</p>
-              <div className="flex justify-end gap-3 mt-4">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancelar</Button>
-                </DialogClose>
-                <Button variant="destructive" onClick={handleDeleteFlashcardConfirm}>
-                  Excluir
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <ConfirmationDialog
+            isOpen={deleteDialogOpen}
+            title="Excluir Flashcard"
+            message="Tem certeza que deseja excluir este flashcard? Esta ação não pode ser desfeita."
+            confirmLabel="Excluir"
+            isDestructive={true}
+            onConfirm={handleDeleteFlashcardConfirm}
+            onCancel={cancelDeleteFlashcard}
+          />
         </div>
       </div>
     </MainLayout>
