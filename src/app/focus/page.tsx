@@ -54,35 +54,23 @@ export default function FocusPage() {
       }
 
       try {
-        // Verificar plano do usuário
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
+        // Obter o token de autenticação
+        const idToken = await user.getIdToken();
         
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          let userIsPro = false;
-          
-          // Verificar diferentes formatos possíveis do campo plan
-          if (userData.plan) {
-            // Se plan for string
-            if (typeof userData.plan === 'string') {
-              userIsPro = userData.plan.toLowerCase() === 'pro';
-            } 
-            // Se plan for objeto com property name
-            else if (typeof userData.plan === 'object' && userData.plan.name) {
-              userIsPro = userData.plan.name.toLowerCase() === 'pro';
-            }
+        // Verificar o plano usando a API verify-plan
+        const response = await fetch('/api/check-pro-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
           }
-          
-          console.log('Status Pro do usuário:', userIsPro);
-          setIsPro(userIsPro);
-          
-          if (!userIsPro) {
-            // Redirecionar se não for Pro
-            router.push('/plans?upgrade=true');
-          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.isPro) {
+          setIsPro(true);
         } else {
-          // Usuário não tem documento, redirecionar
           setIsPro(false);
           router.push('/plans?upgrade=true');
         }
