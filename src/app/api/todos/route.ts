@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
 export async function GET(req: NextRequest) {
   try {
-    const token = await getToken(req);
+    const token = await getToken({ req });
     
     if (!token || !token.sub) {
       return new Response(JSON.stringify({ error: 'Não autorizado' }), {
