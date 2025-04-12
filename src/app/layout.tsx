@@ -2,6 +2,9 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter, Poppins } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { CookieConsentProvider } from '@/contexts/CookieConsentContext'
+import CookieConsent from '@/components/CookieConsent'
+import CookieBanner from '@/components/CookieBanner'
 import { cn } from '@/lib/utils'
 
 // Configuração principal da fonte
@@ -48,9 +51,13 @@ export default function RootLayout({
           <div id="stars2"></div>
           <div id="stars3"></div>
         </div>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <CookieConsentProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+          <CookieConsent />
+          <CookieBanner />
+        </CookieConsentProvider>
       </body>
     </html>
   )
