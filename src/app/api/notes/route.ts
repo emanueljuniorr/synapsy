@@ -1,10 +1,11 @@
 // API que utiliza Firebase Admin, só pode ser executada em Node.js Runtime
 export const runtime = 'nodejs';
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { hasReachedNotesLimit } from '@/lib/subscription';
 import { getAuth } from 'firebase-admin/auth';
 import { db } from '@/lib/firebase-admin';
+import { getToken } from 'next-auth/jwt';
 
 export async function POST(request: Request) {
   try {
@@ -39,11 +40,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verificar se o db foi inicializado corretamente
-    if (!db) {
-      throw new Error('Firestore não foi inicializado corretamente');
-    }
-
     // Criar nova nota no Firestore
     const notesCollection = db.collection('notes');
     const newNote = {
@@ -67,5 +63,38 @@ export async function POST(request: Request) {
       { error: 'Erro ao processar a requisição' },
       { status: 500 }
     );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const token = await getToken(req);
+    
+    if (!token || !token.sub) {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const userId = token.sub;
+    
+    const notesSnapshot = await db.collection('users').doc(userId).collection('notes').get();
+    
+    const notes = notesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    return new Response(JSON.stringify(notes), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Erro ao buscar notas:', error);
+    return new Response(JSON.stringify({ error: 'Erro ao buscar notas' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 } 

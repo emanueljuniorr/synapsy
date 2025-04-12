@@ -3,8 +3,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { initAdmin } from '@/lib/firebase-admin';
-import { db } from '@/lib/firebase-admin';
+import { initAdmin, db } from '@/lib/firebase-admin';
 
 // Inicializar Firebase Admin
 initAdmin();
@@ -14,6 +13,7 @@ initAdmin();
  */
 async function checkUserProPlan(userId: string): Promise<boolean> {
   try {
+    // Verificação removida: db nunca será nulo após inicialização em firebase-admin.ts
     const userDoc = await db.collection('users').doc(userId).get();
     
     if (!userDoc.exists) {
