@@ -253,12 +253,17 @@ export default function DashboardPage() {
                           layout="horizontal" 
                           verticalAlign="bottom" 
                           align="center"
-                          formatter={(value, entry, index) => (
-                            <span style={{ color: COLORS[index % COLORS.length] }}>
-                              {value} {((taskCompletionData[index].value / 
-                                (taskCompletionData[0].value + taskCompletionData[1].value)) * 100).toFixed(0)}%
-                            </span>
-                          )}
+                          formatter={(value, entry, index) => {
+                            const total = taskCompletionData[0].value + taskCompletionData[1].value;
+                            const percentage = total > 0 
+                              ? ((taskCompletionData[index].value / total) * 100).toFixed(0) 
+                              : '0';
+                            return (
+                              <span style={{ color: COLORS[index % COLORS.length] }}>
+                                {value} {percentage}%
+                              </span>
+                            );
+                          }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
