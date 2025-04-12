@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { RiMindMap, RiMoonClearLine, RiVolumeMuteLine, RiVolumeUpLine, RiFullscreenLine, RiArrowLeftLine, RiHome4Line, RiCloseLine, RiSettings4Line } from 'react-icons/ri';
 import Link from 'next/link';
 import MainLayout from '../../components/layout/MainLayout';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 // Sons relaxantes disponíveis
 const SOUNDS = {
@@ -25,6 +28,50 @@ const GUIDED_MEDITATIONS = [
 ];
 
 export default function RelaxPage() {
+  const router = useRouter();
+  const [isPro, setIsPro] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar se o usuário está autenticado e tem plano Pro
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Redirecionar para login se não estiver autenticado
+        router.push('/auth/login');
+        return;
+      }
+
+      try {
+        // Verificar plano do usuário
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const userIsPro = userData.plan === 'pro';
+          setIsPro(userIsPro);
+          
+          if (!userIsPro) {
+            // Redirecionar se não for Pro
+            router.push('/plans?upgrade=true');
+          }
+        } else {
+          // Usuário não tem documento, redirecionar
+          setIsPro(false);
+          router.push('/plans?upgrade=true');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar plano do usuário:', error);
+        // Em caso de erro, deixar continuar por segurança
+        setIsPro(true);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   // Estados de áudio
   const [ambientSound, setAmbientSound] = useState<string | null>(null);
   const [volume, setVolume] = useState(50);
@@ -163,6 +210,21 @@ export default function RelaxPage() {
   const saveVolumes = () => {
     localStorage.setItem('relaxSoundVolumes', JSON.stringify(volumes));
   };
+
+  // Se estiver carregando ou não for Pro, não renderizar o conteúdo
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse text-primary">Carregando...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isPro === false) {
+    return null; // Não renderizar nada, pois o usuário já está sendo redirecionado
+  }
 
   return (
     <MainLayout>
