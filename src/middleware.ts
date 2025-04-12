@@ -25,6 +25,7 @@ export const PUBLIC_ROUTES = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log(`Middleware executado para: ${pathname}`);
   
   // Verificar se a rota requer autenticação (não é uma rota pública)
   const isAuthRoute = pathname.startsWith('/auth/');
@@ -36,13 +37,17 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session')?.value;
   const isAuthenticated = !!sessionCookie;
   
+  console.log(`Rota: ${pathname}, Autenticado: ${isAuthenticated}, Rota pública: ${isPublicRoute}, Rota de auth: ${isAuthRoute}`);
+  
   // Se for uma rota de autenticação e o usuário já está logado, redirecionar para o dashboard
   if (isAuthRoute && isAuthenticated) {
+    console.log('Usuário já autenticado acessando rota de auth, redirecionando para dashboard');
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
   // Se não for rota pública e usuário não está autenticado, redirecionar para login
   if (!isPublicRoute && !isAuthenticated) {
+    console.log('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
     const url = new URL('/auth/login', request.url);
     url.searchParams.set('callbackUrl', request.nextUrl.pathname);
     return NextResponse.redirect(url);
@@ -53,23 +58,12 @@ export async function middleware(request: NextRequest) {
     pathname === route || (route.endsWith('*') && pathname.startsWith(route.slice(0, -1)))
   );
   
-  // Se for rota Pro e usuário está autenticado, adicionar um header para verificação posterior
+  // Deixar a verificação do plano Pro ser feita diretamente pelo cliente
+  // O middleware apenas garante que o usuário está autenticado
   if (isProRoute && isAuthenticated) {
-    // Em vez de verificar o token agora, apenas marcar para verificação na API
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-check-pro-plan', 'true');
-    
-    // Passar o cookie de sessão para a API verificar
-    if (sessionCookie) {
-      requestHeaders.set('x-session-cookie', sessionCookie);
-    }
-    
-    // Continuar e deixar a API de verificação de plano fazer sua verificação
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+    console.log('Rota requer plano Pro, usuário autenticado. Verificação será feita no cliente.');
+    // Continuar com a solicitação normalmente
+    return NextResponse.next();
   }
   
   return NextResponse.next();
