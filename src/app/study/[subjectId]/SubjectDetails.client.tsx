@@ -659,177 +659,195 @@ export default function SubjectDetails({ subjectId }: SubjectDetailsProps) {
           
           {/* Modal para adicionar flashcard */}
           <Dialog open={newCardOpen} onOpenChange={setNewCardOpen}>
-            <DialogContent className="bg-background/95 backdrop-blur-lg border-white/20 text-white sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Novo Flashcard</DialogTitle>
-                <DialogDescription>
+            <DialogContent className="bg-background border border-purple-500/20 rounded-2xl shadow-lg shadow-purple-500/10 w-full max-w-lg overflow-hidden p-0">
+              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+                <DialogTitle className="text-lg font-semibold text-white">Novo Flashcard</DialogTitle>
+              </div>
+              <div className="p-5">
+                <DialogDescription className="text-white/80 text-sm mb-4">
                   Adicione um novo flashcard à matéria {subject?.name}
                 </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div>
-                  <Label htmlFor="question">Pergunta</Label>
-                  <Textarea 
-                    id="question" 
-                    placeholder="Digite a pergunta" 
-                    value={newQuestion} 
-                    onChange={(e) => setNewQuestion(e.target.value)}
-                    className="resize-none bg-white/5 border-white/10"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="answer">Resposta</Label>
-                  <Textarea 
-                    id="answer" 
-                    placeholder="Digite a resposta" 
-                    value={newAnswer} 
-                    onChange={(e) => setNewAnswer(e.target.value)}
-                    className="resize-none bg-white/5 border-white/10"
-                    rows={4}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="difficulty">Dificuldade</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'easy' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
-                      onClick={() => setNewDifficulty('easy')}
-                    >
-                      Fácil
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'medium' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
-                      onClick={() => setNewDifficulty('medium')}
-                    >
-                      Médio
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'hard' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
-                      onClick={() => setNewDifficulty('hard')}
-                    >
-                      Difícil
-                    </Button>
+                <div className="grid gap-4 py-2">
+                  <div>
+                    <Label htmlFor="question">Pergunta</Label>
+                    <Textarea 
+                      id="question" 
+                      placeholder="Digite a pergunta" 
+                      value={newQuestion} 
+                      onChange={(e) => setNewQuestion(e.target.value)}
+                      className="resize-none bg-white/5 border-white/10 mt-1"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="answer">Resposta</Label>
+                    <Textarea 
+                      id="answer" 
+                      placeholder="Digite a resposta" 
+                      value={newAnswer} 
+                      onChange={(e) => setNewAnswer(e.target.value)}
+                      className="resize-none bg-white/5 border-white/10 mt-1"
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty">Dificuldade</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'easy' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
+                        onClick={() => setNewDifficulty('easy')}
+                      >
+                        Fácil
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'medium' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
+                        onClick={() => setNewDifficulty('medium')}
+                      >
+                        Médio
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'hard' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
+                        onClick={() => setNewDifficulty('hard')}
+                      >
+                        Difícil
+                      </Button>
+                    </div>
                   </div>
                 </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    type="button" 
+                    onClick={() => setNewCardOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit" 
+                    onClick={handleAddFlashcard} 
+                    disabled={isSubmittingFlashcard}
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 text-white font-medium transition-all flex items-center gap-2"
+                  >
+                    {isSubmittingFlashcard ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Salvando
+                      </>
+                    ) : (
+                      'Salvar'
+                    )}
+                  </button>
+                </div>
               </div>
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => setNewCardOpen(false)} className="border border-white/20">
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  onClick={handleAddFlashcard} 
-                  disabled={isSubmittingFlashcard}
-                  className="bg-gradient-to-r from-primary to-accent text-white"
-                >
-                  {isSubmittingFlashcard ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando
-                    </>
-                  ) : (
-                    'Salvar'
-                  )}
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
           
           {/* Modal para editar flashcard */}
           <Dialog open={editCardOpen} onOpenChange={setEditCardOpen}>
-            <DialogContent className="bg-background/95 backdrop-blur-lg border-white/20 text-white sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Editar Flashcard</DialogTitle>
-                <DialogDescription>
+            <DialogContent className="bg-background border border-purple-500/20 rounded-2xl shadow-lg shadow-purple-500/10 w-full max-w-lg overflow-hidden p-0">
+              <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10">
+                <DialogTitle className="text-lg font-semibold text-white">Editar Flashcard</DialogTitle>
+              </div>
+              <div className="p-5">
+                <DialogDescription className="text-white/80 text-sm mb-4">
                   Edite seu flashcard da matéria {subject?.name}
                 </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div>
-                  <Label htmlFor="edit-question">Pergunta</Label>
-                  <Textarea 
-                    id="edit-question" 
-                    placeholder="Digite a pergunta" 
-                    value={newQuestion} 
-                    onChange={(e) => setNewQuestion(e.target.value)}
-                    className="resize-none bg-white/5 border-white/10"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-answer">Resposta</Label>
-                  <Textarea 
-                    id="edit-answer" 
-                    placeholder="Digite a resposta" 
-                    value={newAnswer} 
-                    onChange={(e) => setNewAnswer(e.target.value)}
-                    className="resize-none bg-white/5 border-white/10"
-                    rows={4}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="difficulty">Dificuldade</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'easy' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
-                      onClick={() => setNewDifficulty('easy')}
-                    >
-                      Fácil
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'medium' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
-                      onClick={() => setNewDifficulty('medium')}
-                    >
-                      Médio
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={newDifficulty === 'hard' ? 'default' : 'outline'}
-                      className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
-                      onClick={() => setNewDifficulty('hard')}
-                    >
-                      Difícil
-                    </Button>
+                <div className="grid gap-4 py-2">
+                  <div>
+                    <Label htmlFor="edit-question">Pergunta</Label>
+                    <Textarea 
+                      id="edit-question" 
+                      placeholder="Digite a pergunta" 
+                      value={newQuestion} 
+                      onChange={(e) => setNewQuestion(e.target.value)}
+                      className="resize-none bg-white/5 border-white/10 mt-1"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-answer">Resposta</Label>
+                    <Textarea 
+                      id="edit-answer" 
+                      placeholder="Digite a resposta" 
+                      value={newAnswer} 
+                      onChange={(e) => setNewAnswer(e.target.value)}
+                      className="resize-none bg-white/5 border-white/10 mt-1"
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty">Dificuldade</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'easy' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'easy' ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-600/50 hover:text-green-600'}`}
+                        onClick={() => setNewDifficulty('easy')}
+                      >
+                        Fácil
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'medium' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' : 'hover:border-yellow-600/50 hover:text-yellow-600'}`}
+                        onClick={() => setNewDifficulty('medium')}
+                      >
+                        Médio
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={newDifficulty === 'hard' ? 'default' : 'outline'}
+                        className={`flex-1 ${newDifficulty === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-600/50 hover:text-red-600'}`}
+                        onClick={() => setNewDifficulty('hard')}
+                      >
+                        Difícil
+                      </Button>
+                    </div>
                   </div>
                 </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    type="button" 
+                    onClick={() => setEditCardOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit" 
+                    onClick={handleEditFlashcard}
+                    disabled={isSubmittingFlashcard}
+                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 text-white font-medium transition-all flex items-center gap-2"
+                  >
+                    {isSubmittingFlashcard ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Salvando
+                      </>
+                    ) : (
+                      'Salvar'
+                    )}
+                  </button>
+                </div>
               </div>
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => setEditCardOpen(false)} className="border border-white/20">
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  onClick={handleEditFlashcard} 
-                  disabled={isSubmittingFlashcard}
-                  className="bg-gradient-to-r from-primary to-accent text-white"
-                >
-                  {isSubmittingFlashcard ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando
-                    </>
-                  ) : (
-                    'Salvar'
-                  )}
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
           
