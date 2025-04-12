@@ -17,6 +17,9 @@ import {
 } from 'react-icons/ri';
 import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 // Sons para diferentes fases do Pomodoro
 const SOUNDS = {
@@ -37,6 +40,50 @@ const DEFAULT_TIMES = {
 type SessionType = 'focus' | 'shortBreak' | 'longBreak';
 
 export default function FocusPage() {
+  const router = useRouter();
+  const [isPro, setIsPro] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar se o usuário está autenticado e tem plano Pro
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Redirecionar para login se não estiver autenticado
+        router.push('/auth/login');
+        return;
+      }
+
+      try {
+        // Verificar plano do usuário
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const userIsPro = userData.plan === 'pro';
+          setIsPro(userIsPro);
+          
+          if (!userIsPro) {
+            // Redirecionar se não for Pro
+            router.push('/plans?upgrade=true');
+          }
+        } else {
+          // Usuário não tem documento, redirecionar
+          setIsPro(false);
+          router.push('/plans?upgrade=true');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar plano do usuário:', error);
+        // Em caso de erro, deixar continuar por segurança
+        setIsPro(true);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   // Estado para controlar as configurações
   const [settings, setSettings] = useState({
     focusTime: DEFAULT_TIMES.focus,
@@ -47,6 +94,21 @@ export default function FocusPage() {
     volume: 50,
     whiteNoise: 'none',
   });
+
+  // Se estiver carregando ou não for Pro, não renderizar o conteúdo
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse text-primary">Carregando...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isPro === false) {
+    return null; // Não renderizar nada, pois o usuário já está sendo redirecionado
+  }
 
   // Estados para o timer
   const [sessionType, setSessionType] = useState<SessionType>('focus');
