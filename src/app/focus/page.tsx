@@ -57,114 +57,20 @@ export default function FocusPage() {
     whiteNoise: 'none',
   });
 
-  useEffect(() => {
-    console.log('Executando effect de verificação de autenticação');
-    // Verificar se o usuário está autenticado e tem plano Pro
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      console.log('Estado de autenticação alterado:', user ? 'Autenticado' : 'Não autenticado');
-      if (!user) {
-        // Redirecionar para login se não estiver autenticado
-        console.log('Usuário não autenticado, redirecionando para login');
-        router.push('/auth/login');
-        return;
-      }
-
-      try {
-        // Obter o token de autenticação
-        const idToken = await user.getIdToken();
-        console.log('Token obtido com sucesso');
-        
-        // Verificar o plano usando a API check-pro-plan
-        console.log('Chamando API check-pro-plan');
-        const response = await fetch('/api/check-pro-plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-          }
-        });
-        
-        console.log('Resposta da API:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          throw new Error(`Erro ao verificar plano: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Dados da resposta:', data);
-        
-        if (data.isPro) {
-          console.log('Usuário tem plano Pro');
-          setIsPro(true);
-        } else {
-          console.log('Usuário não tem plano Pro, redirecionando para página de planos');
-          setIsPro(false);
-          router.push('/plans?upgrade=true');
-        }
-      } catch (error) {
-        console.error('Erro ao verificar plano do usuário:', error);
-        setError(error instanceof Error ? error.message : 'Erro desconhecido');
-        // Em caso de erro, redirecionar para página de planos por segurança
-        setIsPro(false);
-        router.push('/plans?upgrade=true&error=true');
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  // Se estiver carregando ou não for Pro, não renderizar o conteúdo
-  if (loading) {
-    console.log('Renderizando estado de carregamento');
-    return (
-      <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-pulse text-primary">Carregando...</div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (error) {
-    console.log('Renderizando estado de erro:', error);
-    return (
-      <MainLayout>
-        <div className="min-h-screen flex items-center justify-center flex-col space-y-4">
-          <div className="text-red-500">Ocorreu um erro ao carregar a página</div>
-          <div className="text-sm text-gray-500">{error}</div>
-          <button 
-            onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-          >
-            Voltar para o Dashboard
-          </button>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (isPro === false) {
-    console.log('Usuário não é Pro, retornando null');
-    return null; // Não renderizar nada, pois o usuário já está sendo redirecionado
-  }
-
-  console.log('Renderizando conteúdo da página Focus');
-  // Estados para o timer
+  // Mover todos esses estados para cá, antes das condicionais
   const [sessionType, setSessionType] = useState<SessionType>('focus');
   const [timeLeft, setTimeLeft] = useState(settings.focusTime * 60);
   const [isActive, setIsActive] = useState(false);
   const [pomodorosCompleted, setPomodorosCompleted] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
-  
+  const [whiteNoise, setWhiteNoise] = useState('none');
+
   // Referências para áudio
   const tickSound = useRef<HTMLAudioElement | null>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
   const backgroundSound = useRef<HTMLAudioElement | null>(null);
   
-  // Estado para ruído branco
-  const [whiteNoise, setWhiteNoise] = useState('none');
+  // Lista de opções de ruído branco
   const whiteNoiseOptions = [
     { value: 'none', label: 'Nenhum' },
     { value: 'rain', label: 'Chuva' },
@@ -226,6 +132,64 @@ export default function FocusPage() {
       }
     }
   }, [sessionType, settings, setSessionType, setTimeLeft, setIsActive, setPomodorosCompleted]);
+
+  useEffect(() => {
+    console.log('Executando effect de verificação de autenticação');
+    // Verificar se o usuário está autenticado e tem plano Pro
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      console.log('Estado de autenticação alterado:', user ? 'Autenticado' : 'Não autenticado');
+      if (!user) {
+        // Redirecionar para login se não estiver autenticado
+        console.log('Usuário não autenticado, redirecionando para login');
+        router.push('/auth/login');
+        return;
+      }
+
+      try {
+        // Obter o token de autenticação
+        const idToken = await user.getIdToken();
+        console.log('Token obtido com sucesso');
+        
+        // Verificar o plano usando a API check-pro-plan
+        console.log('Chamando API check-pro-plan');
+        const response = await fetch('/api/check-pro-plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+        
+        console.log('Resposta da API:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          throw new Error(`Erro ao verificar plano: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Dados da resposta:', data);
+        
+        if (data.isPro) {
+          console.log('Usuário tem plano Pro');
+          setIsPro(true);
+        } else {
+          console.log('Usuário não tem plano Pro, redirecionando para página de planos');
+          setIsPro(false);
+          router.push('/plans?upgrade=true');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar plano do usuário:', error);
+        setError(error instanceof Error ? error.message : 'Erro desconhecido');
+        // Em caso de erro, redirecionar para página de planos por segurança
+        setIsPro(false);
+        router.push('/plans?upgrade=true&error=true');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   // Efeito para inicializar sons
   useEffect(() => {
@@ -318,6 +282,43 @@ export default function FocusPage() {
     }
   }, [whiteNoise, isActive, settings.volume]);
 
+  // Se estiver carregando ou não for Pro, não renderizar o conteúdo
+  if (loading) {
+    console.log('Renderizando estado de carregamento');
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse text-primary">Carregando...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    console.log('Renderizando estado de erro:', error);
+    return (
+      <MainLayout>
+        <div className="min-h-screen flex items-center justify-center flex-col space-y-4">
+          <div className="text-red-500">Ocorreu um erro ao carregar a página</div>
+          <div className="text-sm text-gray-500">{error}</div>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+          >
+            Voltar para o Dashboard
+          </button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isPro === false) {
+    console.log('Usuário não é Pro, retornando null');
+    return null; // Não renderizar nada, pois o usuário já está sendo redirecionado
+  }
+
+  console.log('Renderizando conteúdo da página Focus');
+  
   // Função para iniciar/pausar o timer
   const toggleTimer = () => {
     // Se estiver iniciando um timer, certifique-se de que o som de fundo esteja tocando
