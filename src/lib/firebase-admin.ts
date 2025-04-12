@@ -29,6 +29,8 @@ export function initAdmin(): admin.app.App {
 
 // Inicializar o app imediatamente - declaramos como admin.app.App sem o undefined
 const app: admin.app.App = initAdmin();
+// Exportar a variável app explicitamente
+export { app };
 
 // Exportar as instâncias do Firestore e Auth - não é mais necessário usar ! ou operador ternário
 export const db = app.firestore();

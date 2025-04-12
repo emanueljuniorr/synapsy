@@ -25,6 +25,22 @@ const nextConfig = {
     // Adicionar polyfills para módulos Node.js nativos
     if (!isServer) {
       config.plugins.push(new NodePolyfillPlugin());
+      
+      // Resolver módulos node: no client side
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'node:process': 'process',
+        'node:stream': 'stream-browserify',
+        'node:util': 'util',
+        'node:buffer': 'buffer',
+        'node:url': 'url',
+        'node:http': 'http-browserify',
+        'node:path': 'path-browserify',
+        'node:crypto': 'crypto-browserify',
+        'node:fs': false,
+        'node:net': false,
+        'node:tls': false,
+      };
     }
     
     // Desativar o parser de JSON padrão para todos os arquivos JSON
