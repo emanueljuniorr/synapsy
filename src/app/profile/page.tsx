@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 // Tipo para dados do perfil
 interface UserProfile {
+  id: string;
   name: string;
   email: string;
   photoURL: string | null;
@@ -21,7 +22,7 @@ interface UserProfile {
     name: string;
     color: string;
   };
-  expirationDate?: Date | any; // Data de expiração da assinatura
+  expirationDate?: Date | Timestamp; // Data de expiração da assinatura
   stats: {
     completedTasks: number;
     createdNotes: number;
@@ -245,6 +246,7 @@ export default function ProfilePage() {
       setError('Não foi possível carregar os dados do perfil');
       // Mesmo com erro, definir um perfil padrão para exibição
       setUserProfile({
+        id: user?.uid || '',
         name: user?.displayName || 'Usuário',
         email: user?.email || '',
         photoURL: user?.photoURL || null,
@@ -630,7 +632,7 @@ function StatCard({ title, value, subtitle }: { title: string; value: string; su
 }
 
 // Função para formatar data
-function formatDate(date: Date | any): string {
+function formatDate(date: Date | Timestamp): string {
   if (!date) return '';
   
   try {
