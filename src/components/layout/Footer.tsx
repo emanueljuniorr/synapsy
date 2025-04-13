@@ -34,11 +34,13 @@ export default function Footer() {
                   Tarefas
                 </Link>
               </li>
+              {/*
               <li>
                 <Link href="/calendar" className="hover:text-primary transition-colors">
                   Calendário
                 </Link>
               </li>
+              */}
             </ul>
           </div>
 

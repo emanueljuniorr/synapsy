@@ -1,4 +1,3 @@
-// Middleware para verificação de rotas que exigem plano Pro e redirecionamento de usuários autenticados
 import { NextRequest, NextResponse } from 'next/server';
 
 // Rotas que exigem plano Pro
@@ -39,13 +38,11 @@ export async function middleware(request: NextRequest) {
   
   console.log(`Rota: ${pathname}, Autenticado: ${isAuthenticated}, Rota pública: ${isPublicRoute}, Rota de auth: ${isAuthRoute}`);
   
-  // Se for uma rota de autenticação e o usuário já está logado, redirecionar para o dashboard
   if (isAuthRoute && isAuthenticated) {
     console.log('Usuário já autenticado acessando rota de auth, redirecionando para dashboard');
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
-  // Se não for rota pública e usuário não está autenticado, redirecionar para login
   if (!isPublicRoute && !isAuthenticated) {
     console.log('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
     const url = new URL('/auth/login', request.url);
@@ -53,7 +50,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   
-  // Verificar se a rota requer plano Pro
   const isProRoute = PRO_ONLY_ROUTES.some(route => 
     pathname === route || (route.endsWith('*') && pathname.startsWith(route.slice(0, -1)))
   );
@@ -62,7 +58,6 @@ export async function middleware(request: NextRequest) {
   // O middleware apenas garante que o usuário está autenticado
   if (isProRoute && isAuthenticated) {
     console.log('Rota requer plano Pro, usuário autenticado. Verificação será feita no cliente.');
-    // Continuar com a solicitação normalmente
     return NextResponse.next();
   }
   

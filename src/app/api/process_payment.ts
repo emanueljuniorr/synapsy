@@ -108,4 +108,4 @@ export async function POST(req: NextRequest) {
 }
 
 // Para permitir solicitações POST
-export const dynamic = 'force-dynamic'; 
+export const dynamic = 'force-dynamic';

@@ -15,7 +15,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const isDashboardRoute = pathname.startsWith('/dashboard') || 
                           pathname.startsWith('/tasks') || 
                           pathname.startsWith('/notes') || 
-                          pathname.startsWith('/calendar') || 
+                          //pathname.startsWith('/calendar') || 
                           pathname.startsWith('/study');
 
   return (

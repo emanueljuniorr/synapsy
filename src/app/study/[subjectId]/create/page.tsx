@@ -22,7 +22,7 @@ export default async function CreateFlashcardPage({ params }: Props) {
     const subjectRef = doc(db, 'users', auth.currentUser?.uid || 'anonymous', 'subjects', subjectId);
     const subjectDoc = await getDoc(subjectRef);
     
-    if (!subjectDoc.exists()) {
+        if (!subjectDoc.exists()) {
       return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="flex items-center justify-center h-[50vh]">
@@ -33,13 +33,13 @@ export default async function CreateFlashcardPage({ params }: Props) {
           </div>
         </div>
       );
-    }
-    
-    const data = subjectDoc.data();
+        }
+        
+        const data = subjectDoc.data();
     const subject = {
-      id: subjectDoc.id,
-      name: data.name,
-      color: data.color || "#4F46E5",
+          id: subjectDoc.id,
+          name: data.name,
+          color: data.color || "#4F46E5",
     };
     
     return <FlashcardForm subject={subject} subjectId={subjectId} />;

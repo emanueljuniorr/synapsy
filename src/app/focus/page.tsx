@@ -64,7 +64,7 @@ export default function FocusPage() {
   const [pomodorosCompleted, setPomodorosCompleted] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [whiteNoise, setWhiteNoise] = useState('none');
-
+  
   // Referências para áudio
   const tickSound = useRef<HTMLAudioElement | null>(null);
   const notificationSound = useRef<HTMLAudioElement | null>(null);
@@ -79,16 +79,16 @@ export default function FocusPage() {
     { value: 'waves', label: 'Ondas' },
     { value: 'whitenoise', label: 'Ruído Branco' },
   ];
-  
+
   // Função para lidar com o fim de uma sessão - usando useCallback para evitar dependências circulares
   const handleSessionComplete = useCallback(() => {
     console.log('Sessão concluída, executando handleSessionComplete');
     // Tocar som de notificação
     if (settings.volume > 0 && notificationSound.current) {
       try {
-        notificationSound.current.volume = settings.volume / 100;
-        notificationSound.current.currentTime = 0;
-        notificationSound.current.play().catch(e => console.error('Erro ao tocar notificação:', e));
+      notificationSound.current.volume = settings.volume / 100;
+      notificationSound.current.currentTime = 0;
+      notificationSound.current.play().catch(e => console.error('Erro ao tocar notificação:', e));
       } catch (e) {
         console.error('Erro ao manipular áudio de notificação:', e);
       }
@@ -318,7 +318,7 @@ export default function FocusPage() {
   }
 
   console.log('Renderizando conteúdo da página Focus');
-  
+
   // Função para iniciar/pausar o timer
   const toggleTimer = () => {
     // Se estiver iniciando um timer, certifique-se de que o som de fundo esteja tocando

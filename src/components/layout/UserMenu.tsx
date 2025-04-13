@@ -91,6 +91,7 @@ export default function UserMenu() {
             Perfil
           </Link>
           
+          {/*
           <Link
             href="/settings"
             className="block px-4 py-2 text-sm hover:bg-white/5 transition-colors"
@@ -98,6 +99,7 @@ export default function UserMenu() {
           >
             Configurações
           </Link>
+          */}
           
           <button
             onClick={handleLogout}

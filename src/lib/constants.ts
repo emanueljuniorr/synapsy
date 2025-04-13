@@ -25,7 +25,7 @@ export const APP_ROUTES = {
     flashcards: '/flashcards',
     focus: '/focus',
     relax: '/relax',
-    settings: '/settings',
+    //settings: '/settings',
     profile: '/profile'
   },
   pro: {

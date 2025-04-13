@@ -5,12 +5,12 @@ import Footer from './Footer';
 
 const NO_FOOTER_ROUTES = [
   '/dashboard',
-  '/calendar',
+  //'/calendar',
   '/notes',
   '/study',
   '/tasks',
   '/auth',
-  '/settings',
+  //'/settings',
   '/profile'
 ];
 

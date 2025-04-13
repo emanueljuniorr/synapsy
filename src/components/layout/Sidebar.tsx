@@ -14,18 +14,20 @@ export default function Sidebar() {
     { path: '/dashboard', label: 'Dashboard', icon: 'dashboard-3-line' },
     { path: '/tasks', label: 'Tarefas', icon: 'task-line' },
     { path: '/notes', label: 'Notas', icon: 'file-list-3-line' },
-    { path: '/calendar', label: 'Calendário', icon: 'calendar-line' },
+    //{ path: '/calendar', label: 'Calendário', icon: 'calendar-line' },
     { path: '/study', label: 'Estudos', icon: 'book-3-line' },
     { path: '/study/stats', label: 'Estatísticas', icon: 'bar-chart-2-line' },
     { path: '/focus', label: 'Focus', icon: 'timer-line' },
     { path: '/relax', label: 'Relax', icon: 'mental-health-line' },
   ];
 
+  /*
   const recentProjects = [
     { id: '1', name: 'Projeto de Graduação', color: 'bg-blue-500' },
     { id: '2', name: 'Aprendizado de IA', color: 'bg-green-500' },
     { id: '3', name: 'Desenvolvimento Web', color: 'bg-purple-500' },
   ];
+  */
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-background/40 backdrop-blur-lg border-r border-white/5">

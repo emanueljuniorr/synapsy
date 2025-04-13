@@ -3,7 +3,6 @@ import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -21,7 +20,6 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Configurar persistência de autenticação (localStorage)
-// Isto fará com que a sessão persista mesmo após o fechamento do navegador
 if (typeof window !== 'undefined') {
   setPersistence(auth, browserLocalPersistence)
     .then(() => {

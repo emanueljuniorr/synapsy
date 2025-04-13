@@ -124,7 +124,7 @@ export default function RelaxPage() {
   
   // Referências para os elementos de áudio individuais
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({});
-  
+
   // Efeito para inicializar o áudio
   useEffect(() => {
     // Limpar animação na desmontagem
@@ -236,7 +236,7 @@ export default function RelaxPage() {
   return (
     <MainLayout>
       <div className="min-h-screen bg-background">
-        {/* Cabeçalho */}
+      {/* Cabeçalho */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -415,79 +415,79 @@ export default function RelaxPage() {
                     <p>Melhora na qualidade do sono e diminuição da insônia.</p>
                   </li>
                 </ul>
-              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Modal para seleção de tempo de meditação */}
+      {/* Modal para seleção de tempo de meditação */}
         {showMeditationTimerModal && selectedMeditation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div 
-              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div 
+            className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
               <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-2xl flex items-center gap-3">
                 <span className="text-2xl">{selectedMeditation.icon}</span>
                 <div>
                   <h3 className="text-xl font-bold text-white">{selectedMeditation.name}</h3>
                   <p className="text-white/60 text-sm">{selectedMeditation.description}</p>
                 </div>
-              </div>
+            </div>
 
-              <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4">
                 <p className="text-white/80 text-sm mb-2">Selecione a duração:</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[5, 10, 15, 20, 30, 45, 60].map((min) => (
-                    <button
-                      key={min}
-                      onClick={() => {
-                        setMeditationTimer(min * 60);
-                        setShowMeditationTimerModal(false);
-                      }}
-                      className="flex items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all hover:border-primary"
-                    >
-                      {min} min
-                    </button>
-                  ))}
-                </div>
-            
-                <div className="flex justify-end gap-3 pt-4">
+              <div className="grid grid-cols-3 gap-3">
+                {[5, 10, 15, 20, 30, 45, 60].map((min) => (
                   <button
-                    onClick={() => setShowMeditationTimerModal(false)}
-                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                    key={min}
+                    onClick={() => {
+                      setMeditationTimer(min * 60);
+                      setShowMeditationTimerModal(false);
+                    }}
+                      className="flex items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all hover:border-primary"
                   >
-                    Cancelar
+                    {min} min
                   </button>
-                </div>
+                ))}
+              </div>
+            
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setShowMeditationTimerModal(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Modal de configurações de som */}
-        {showSoundSettings && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div 
-              className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
+      {/* Modal de configurações de som */}
+      {showSoundSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div 
+            className="bg-background border border-white/10 rounded-2xl shadow-xl w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
               <div className="p-5 bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-2xl">
-                <h3 className="text-xl font-bold text-white">Configurações de Som</h3>
-              </div>
-              
-              <div className="p-5 space-y-4">
-                {Object.keys(volumes).map((sound, index) => (
+              <h3 className="text-xl font-bold text-white">Configurações de Som</h3>
+            </div>
+            
+            <div className="p-5 space-y-4">
+              {Object.keys(volumes).map((sound, index) => (
                   <div key={index} className="space-y-1">
                     <label className="text-white capitalize text-sm">{sound}</label>
-                    <div className="flex items-center gap-2">
-                      <RiVolumeMuteLine className="text-white/60" />
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={volumes[sound as keyof typeof volumes]}
-                        onChange={(e) => handleVolumeChange(sound, parseInt(e.target.value))}
+                  <div className="flex items-center gap-2">
+                    <RiVolumeMuteLine className="text-white/60" />
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={volumes[sound as keyof typeof volumes]}
+                      onChange={(e) => handleVolumeChange(sound, parseInt(e.target.value))}
                         className="w-full accent-primary"
                         style={{
                           background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${volumes[sound as keyof typeof volumes]}%, rgba(255, 255, 255, 0.1) ${volumes[sound as keyof typeof volumes]}%, rgba(255, 255, 255, 0.1) 100%)`,
@@ -496,53 +496,53 @@ export default function RelaxPage() {
                           outline: 'none',
                           WebkitAppearance: 'none'
                         }}
-                      />
-                      <RiVolumeUpLine className="text-white/60" />
-                    </div>
+                    />
+                    <RiVolumeUpLine className="text-white/60" />
                   </div>
-                ))}
-                
-                <div className="flex justify-end gap-3 pt-4">
+                </div>
+              ))}
+              
+              <div className="flex justify-end gap-3 pt-4">
                   <button
                     onClick={() => setShowSoundSettings(false)}
                     className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
                   >
                     Cancelar
                   </button>
-                  <button
-                    onClick={() => {
-                      saveVolumes();
-                      setShowSoundSettings(false);
-                    }}
+                <button
+                  onClick={() => {
+                    saveVolumes();
+                    setShowSoundSettings(false);
+                  }}
                     className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-lg shadow-primary/20"
-                  >
-                    Salvar
-                  </button>
+                >
+                  Salvar
+                </button>
                 </div>
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* Modo fullscreen */}
         {showFullscreen && (
           <div className="fixed inset-0 z-50 bg-black">
             <div className={`absolute inset-0 bg-gradient-to-br ${activeSceneObj.color}`}>
-              {/* Canvas para visualização */}
-              <canvas 
-                ref={canvasRef} 
+        {/* Canvas para visualização */}
+        <canvas 
+          ref={canvasRef} 
                 className="absolute inset-0 w-full h-full"
               />
               
               {/* Controles em tela cheia */}
               <div className="absolute inset-0 flex flex-col p-6">
                 <div className="flex justify-between">
-                  <button 
-                    onClick={toggleFullscreen}
+            <button 
+              onClick={toggleFullscreen}
                     className="bg-black/30 hover:bg-black/50 p-3 rounded-full text-white backdrop-blur-sm transition-colors"
-                  >
+            >
                     <RiCloseLine className="w-6 h-6" />
-                  </button>
+            </button>
                   
                   <h2 className="text-xl font-medium text-white backdrop-blur-sm bg-black/30 px-4 py-2 rounded-full">
                     {activeSceneObj.icon} {activeSceneObj.name}
@@ -552,32 +552,32 @@ export default function RelaxPage() {
                 <div className="mt-auto">
                   {/* Sons disponíveis */}
                   <div className="flex flex-wrap gap-2 mb-4 justify-center">
-                    {Object.keys(SOUNDS).map((sound) => (
-                      <button
-                        key={sound}
-                        onClick={() => toggleSound(sound)}
-                        className={`px-4 py-2 rounded-xl backdrop-blur-sm transition-all ${
-                          ambientSound === sound 
-                            ? 'bg-primary text-white' 
+              {Object.keys(SOUNDS).map((sound) => (
+                <button
+                  key={sound}
+                  onClick={() => toggleSound(sound)}
+                  className={`px-4 py-2 rounded-xl backdrop-blur-sm transition-all ${
+                    ambientSound === sound 
+                      ? 'bg-primary text-white' 
                             : 'bg-black/30 text-white hover:bg-black/50'
-                        }`}
-                      >
-                        {sound.charAt(0).toUpperCase() + sound.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  {/* Controle de volume */}
+                  }`}
+                >
+                  {sound.charAt(0).toUpperCase() + sound.slice(1)}
+                </button>
+              ))}
+            </div>
+            
+            {/* Controle de volume */}
                   {ambientSound && (
                     <div className="flex items-center space-x-4 bg-black/30 backdrop-blur-sm rounded-xl p-3 max-w-md mx-auto">
                       <RiVolumeMuteLine className="text-white/80" />
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={volume}
-                        onChange={(e) => setVolume(parseInt(e.target.value))}
-                        className="w-full accent-primary"
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(parseInt(e.target.value))}
+                className="w-full accent-primary"
                         style={{
                           background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${volume}%, rgba(255, 255, 255, 0.1) ${volume}%, rgba(255, 255, 255, 0.1) 100%)`,
                           height: '4px',
@@ -587,30 +587,30 @@ export default function RelaxPage() {
                         }}
                       />
                       <RiVolumeUpLine className="text-white/80" />
-                    </div>
+            </div>
                   )}
                   
                   {/* Seleção de cenários em fullscreen */}
                   <div className="mt-6 flex justify-center gap-2 flex-wrap">
                     {SCENES.map((scene) => (
-                      <button
-                        key={scene.id}
-                        onClick={() => setActiveScene(scene.id)}
+                    <button
+                      key={scene.id}
+                      onClick={() => setActiveScene(scene.id)}
                         className={`p-2 rounded-xl transition-all flex items-center gap-2 ${
-                          activeScene === scene.id 
+                        activeScene === scene.id 
                             ? 'bg-primary text-white' 
                             : 'bg-black/30 backdrop-blur-sm text-white hover:bg-black/50'
-                        }`}
-                      >
+                      }`}
+                    >
                         <span>{scene.icon}</span>
                         <span>{scene.name}</span>
-                      </button>
-                    ))}
-                  </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
     </MainLayout>
