@@ -69,8 +69,13 @@ function LoginForm() {
       const success = await login(email, password);
       
       if (success) {
-        // Redireciona para o callbackUrl ou dashboard
-        router.push(callbackUrl);
+        console.log('Login bem-sucedido, redirecionando para:', callbackUrl);
+        
+        // Pequeno atraso para garantir que os cookies sejam definidos adequadamente
+        setTimeout(() => {
+          // Redireciona para o callbackUrl ou dashboard
+          window.location.href = callbackUrl;
+        }, 300);
       } else {
         setError('Credenciais inválidas. Por favor, tente novamente.');
       }
@@ -90,8 +95,13 @@ function LoginForm() {
       const success = await loginWithGoogle();
       
       if (success) {
-        // Redireciona para o callbackUrl ou dashboard
-        router.push(callbackUrl);
+        console.log('Login com Google bem-sucedido, redirecionando para:', callbackUrl);
+        
+        // Pequeno atraso para garantir que os cookies sejam definidos adequadamente
+        setTimeout(() => {
+          // Redireciona para o callbackUrl ou dashboard
+          window.location.href = callbackUrl;
+        }, 300);
       } else {
         setError('Falha ao fazer login com Google. Por favor, tente novamente.');
       }

@@ -76,8 +76,13 @@ function RegisterForm() {
       const success = await register(name, email, password);
       
       if (success) {
-        // Redireciona para o dashboard após registro bem-sucedido
-        router.push('/dashboard');
+        console.log('Registro bem-sucedido, redirecionando para o dashboard');
+        
+        // Pequeno atraso para garantir que os cookies sejam definidos adequadamente
+        setTimeout(() => {
+          // Redireciona para o dashboard após registro bem-sucedido
+          window.location.href = '/dashboard';
+        }, 300);
       } else {
         setError('Não foi possível criar a conta. Por favor, tente novamente.');
       }
@@ -97,7 +102,13 @@ function RegisterForm() {
       const success = await loginWithGoogle();
       
       if (success) {
-        router.push('/dashboard');
+        console.log('Login com Google bem-sucedido, redirecionando para o dashboard');
+        
+        // Pequeno atraso para garantir que os cookies sejam definidos adequadamente
+        setTimeout(() => {
+          // Redireciona para o dashboard após login bem-sucedido
+          window.location.href = '/dashboard';
+        }, 300);
       } else {
         setError('Falha ao fazer login com Google. Por favor, tente novamente.');
       }

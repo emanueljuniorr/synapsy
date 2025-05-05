@@ -159,6 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
       
+      console.log('Cookie de sessão criado com sucesso');
+      
       // Buscar dados adicionais do usuário
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       
@@ -177,6 +179,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           lastLogin: serverTimestamp()
         }, { merge: true });
       }
+      
+      // Atualizar estado do usuário manualmente
+      const authUser: User = {
+        id: firebaseUser.uid,
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || userDoc.data()?.name || email.split('@')[0],
+        email: firebaseUser.email,
+        avatar: firebaseUser.photoURL || userDoc.data()?.avatar,
+      };
+      
+      setUser(authUser);
+      setIsAuthenticated(true);
       
       return true;
     } catch (error) {
@@ -220,6 +234,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
       
+      console.log('Cookie de sessão criado com sucesso para login com Google');
+      
       // Verificar se o usuário já existe no Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       
@@ -241,6 +257,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           lastLogin: serverTimestamp()
         }, { merge: true });
       }
+      
+      // Atualizar estado do usuário manualmente
+      const authUser: User = {
+        id: firebaseUser.uid,
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || '',
+        email: firebaseUser.email,
+        avatar: firebaseUser.photoURL || undefined,
+      };
+      
+      setUser(authUser);
+      setIsAuthenticated(true);
       
       return true;
     } catch (error) {
