@@ -71,11 +71,11 @@ function PlansPageContent() {
       // Obter a origem da URL atual
       const origin = window.location.origin;
 
-      // Iniciar o processo de checkout
-      const sessionId = await createCheckoutSession(user.uid, origin);
+      // Iniciar o processo de checkout e obter diretamente a URL do Stripe
+      const checkoutUrl = await createCheckoutSession(user.uid, origin);
       
-      // Redirecionar para a API local que irá redirecionar para o Stripe
-      window.location.href = `/api/checkout?session=${sessionId}`;
+      // Redirecionar diretamente para o Stripe Checkout
+      window.location.href = checkoutUrl;
     } catch (err) {
       console.error('Erro ao iniciar pagamento:', err);
       setError('Não foi possível iniciar o processo de pagamento.');

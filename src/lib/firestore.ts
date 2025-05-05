@@ -863,24 +863,40 @@ export async function checkSubscription(userId: string): Promise<{
 // Função para criar uma sessão de checkout do Stripe
 export async function createCheckoutSession(userId: string, origin: string): Promise<string> {
   try {
-    // Criar um documento de checkout na coleção 'checkouts'
-    const checkoutRef = doc(collection(db, 'checkouts'));
+    // Validar se o usuário existe
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new Error('Usuário não encontrado');
+    }
     
     // Usar a variável de ambiente pública para o ID do preço
     const priceId = process.env.NEXT_PUBLIC_STRIPE_SUBSCRIPTION_ID || "price_1RC6h0I1nDwEIRblgGnj685D";
     
-    // Dados para o checkout
-    await setDoc(checkoutRef, {
-      userId,
-      status: 'pending',
-      createdAt: serverTimestamp(),
-      priceId: priceId,
-      success_url: `${origin}/profile?checkout_success=true`,
-      cancel_url: `${origin}/plans?checkout_canceled=true`
+    // Chamar a API de checkout para criar uma sessão do Stripe
+    const response = await fetch(`${origin}/api/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        priceId,
+        successUrl: `${origin}/profile?checkout_success=true`,
+        cancelUrl: `${origin}/plans?checkout_canceled=true`
+      }),
     });
     
-    // Como simplificação, vamos retornar um ID de sessão
-    return checkoutRef.id;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erro ao criar sessão de checkout');
+    }
+    
+    const data = await response.json();
+    
+    // Retornar a URL de checkout diretamente
+    return data.url;
   } catch (error) {
     console.error('Erro ao criar sessão de checkout:', error);
     throw new Error('Não foi possível iniciar o processo de pagamento');
