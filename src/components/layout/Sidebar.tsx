@@ -3,7 +3,11 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Sidebar() {
+interface SidebarProps {
+  onToggleSidebar?: () => void;
+}
+
+export default function Sidebar({ onToggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   
   const isActive = (path: string) => {
@@ -18,7 +22,7 @@ export default function Sidebar() {
     { path: '/study', label: 'Estudos', icon: 'book-3-line' },
     { path: '/study/stats', label: 'Estatísticas', icon: 'bar-chart-2-line' },
     { path: '/focus', label: 'Focus', icon: 'timer-line' },
-    { path: '/relax', label: 'Relax', icon: 'mental-health-line' },
+    //{ path: '/relax', label: 'Relax', icon: 'mental-health-line' },
   ];
 
   /*
@@ -30,15 +34,20 @@ export default function Sidebar() {
   */
 
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-background/40 backdrop-blur-lg border-r border-white/5">
-      <nav className="h-full flex flex-col p-4">
+    <aside className="w-full h-screen sticky top-0 bg-background/40 backdrop-blur-lg border-r border-white/5 overflow-y-auto">
+      <nav className="h-full flex flex-col p-3 md:p-4">
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between mb-6 px-1">
+          <h2 className="text-sm font-medium text-foreground/70">Menu</h2>
+        </div>
+
         {/* Menu Principal */}
         <div className="space-y-1">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center px-4 py-3 rounded-lg transition-all group ${
+              className={`flex items-center px-3 md:px-4 py-2.5 md:py-3 rounded-lg transition-all group ${
                 isActive(item.path)
                   ? 'bg-primary/20 text-primary border border-primary/30'
                   : 'hover:bg-white/5 text-foreground/60 hover:text-foreground'
@@ -47,7 +56,7 @@ export default function Sidebar() {
               <i className={`ri-${item.icon} mr-3 text-lg ${
                 isActive(item.path) ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground'
               }`} />
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium text-sm">{item.label}</span>
               {isActive(item.path) && (
                 <div className="absolute right-0 w-1 h-6 bg-primary rounded-l-full transform translate-x-1/2" />
               )}
@@ -55,30 +64,9 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Projetos Recentes */}
-        {/* <div className="mt-8">
-          <h3 className="px-4 mb-3 text-sm font-medium text-foreground/40 uppercase tracking-wider">
-            Projetos Recentes
-          </h3>
-          <div className="space-y-1">
-            {recentProjects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}`}
-                className="flex items-center px-4 py-2 rounded-lg hover:bg-white/5 transition-colors group"
-              >
-                <div className={`w-2 h-2 rounded-full ${project.color} mr-3`} />
-                <span className="text-sm text-foreground/60 group-hover:text-foreground transition-colors">
-                  {project.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>*/}
-
         {/* Elementos Decorativos */}
-        <div className="mt-auto pt-8 px-4 opacity-70">
-          <div className="w-full h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center relative overflow-hidden border border-white/5">
+        <div className="mt-auto pt-6 px-2 opacity-70">
+          <div className="w-full h-28 md:h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center relative overflow-hidden border border-white/5">
             <div className="absolute w-20 h-20 bg-primary/20 rounded-full filter blur-xl animate-pulse top-5 -left-10"></div>
             <div className="absolute w-16 h-16 bg-accent/20 rounded-full filter blur-xl animate-pulse delay-1000 bottom-2 right-2"></div>
             <div className="text-center z-10">

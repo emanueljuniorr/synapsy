@@ -48,7 +48,7 @@ export default function ProfilePage() {
     // Observa mudanças no estado de autenticação
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        console.log('Usuário autenticado no perfil:', user.uid);
+        //console.log('Usuário autenticado no perfil:', user.uid);
         setUser(user);
         
         // Formatar data de criação

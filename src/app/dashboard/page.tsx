@@ -62,7 +62,7 @@ export default function DashboardPage() {
         setIsLoading(true);
         setError(null);
         
-        console.log('Usuário autenticado, buscando dados do dashboard para:', user.uid);
+        //console.log('Usuário autenticado, buscando dados do dashboard para:', user.uid);
         const data = await getDashboardData(user.uid);
         
         // Verificar se o componente ainda está montado antes de atualizar o estado
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             focusSessions: []
           });
         } else {
-          console.log('Dados do dashboard recebidos:', data);
+          //console.log('Dados do dashboard recebidos:', data);
           setDashboardData(data);
           await checkUserSubscription(user.uid);
         }
@@ -189,50 +189,50 @@ export default function DashboardPage() {
         <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
       </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        <div className="relative z-10 mx-auto px-2 sm:px-4 py-4 sm:py-8">
           {/* Cabeçalho do Dashboard */}
-          <div className="relative mb-8">
+          <div className="relative mb-4 sm:mb-8">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl"></div>
-            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
                 <div className="md:col-span-2">
-                  <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                  <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                     Dashboard
                   </h1>
-                  <p className="text-foreground/60 mb-4">
+                  <p className="text-xs sm:text-base text-foreground/60 mb-3 sm:mb-4">
                     Bem-vindo(a) ao seu espaço de produtividade e estudo.
                   </p>
                 
                 {/* Estatísticas Rápidas */}
-                  <div className="grid grid-cols-3 gap-4 mt-4">
-                    <div className="bg-background/20 rounded-xl p-4 flex items-center">
-                      <ListTodo className="h-8 w-8 mr-3 text-blue-500" />
-                      <div>
-                    <p className="text-sm text-foreground/60">Tarefas Pendentes</p>
-                    <p className="text-2xl font-bold">{dashboardData?.counts.pendingTasks || 0}</p>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-2 sm:mt-4">
+                    <div className="bg-background/20 rounded-xl p-2 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center">
+                      <ListTodo className="h-4 w-4 sm:h-8 sm:w-8 mb-1 sm:mb-0 sm:mr-3 text-blue-500" />
+                      <div className="text-center sm:text-left">
+                        <p className="text-[10px] sm:text-sm text-foreground/60">Tarefas</p>
+                        <p className="text-sm sm:text-2xl font-bold">{dashboardData?.counts.pendingTasks || 0}</p>
                   </div>
                     </div>
-                    <div className="bg-background/20 rounded-xl p-4 flex items-center">
-                      <FileText className="h-8 w-8 mr-3 text-indigo-500" />
-                      <div>
-                        <p className="text-sm text-foreground/60">Notas</p>
-                    <p className="text-2xl font-bold">{dashboardData?.counts.totalNotes || 0}</p>
+                    <div className="bg-background/20 rounded-xl p-2 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center">
+                      <FileText className="h-4 w-4 sm:h-8 sm:w-8 mb-1 sm:mb-0 sm:mr-3 text-indigo-500" />
+                      <div className="text-center sm:text-left">
+                        <p className="text-[10px] sm:text-sm text-foreground/60">Notas</p>
+                        <p className="text-sm sm:text-2xl font-bold">{dashboardData?.counts.totalNotes || 0}</p>
                       </div>
                     </div>
-                    <div className="bg-background/20 rounded-xl p-4 flex items-center">
-                      <BookOpen className="h-8 w-8 mr-3 text-violet-500" />
-                      <div>
-                        <p className="text-sm text-foreground/60">Flashcards</p>
-                        <p className="text-2xl font-bold">{dashboardData?.counts.dueFlashcards || 0}</p>
+                    <div className="bg-background/20 rounded-xl p-2 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center">
+                      <BookOpen className="h-4 w-4 sm:h-8 sm:w-8 mb-1 sm:mb-0 sm:mr-3 text-violet-500" />
+                      <div className="text-center sm:text-left">
+                        <p className="text-[10px] sm:text-sm text-foreground/60">Flashcards</p>
+                        <p className="text-sm sm:text-2xl font-bold">{dashboardData?.counts.dueFlashcards || 0}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Gráfico de tarefas */}
-                <div className="flex flex-col justify-center">
-                  <h3 className="text-sm font-medium text-center mb-3 text-foreground/60">Progresso de Tarefas</h3>
-                  <div className="h-48">
+                <div className="flex flex-col justify-center mt-2 sm:mt-0">
+                  <h3 className="text-xs font-medium text-center mb-1 sm:mb-3 text-foreground/60">Progresso de Tarefas</h3>
+                  <div className="h-28 sm:h-48">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                           cx="50%"
                           cy="50%"
                           labelLine
-                          outerRadius={60}
+                          outerRadius={window.innerWidth < 640 ? 30 : 60}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -259,7 +259,7 @@ export default function DashboardPage() {
                               ? ((taskCompletionData[index].value / total) * 100).toFixed(0) 
                               : '0';
                             return (
-                              <span style={{ color: COLORS[index % COLORS.length] }}>
+                              <span style={{ color: COLORS[index % COLORS.length], fontSize: window.innerWidth < 640 ? '10px' : '12px' }}>
                                 {value} {percentage}%
                               </span>
                             );
@@ -275,17 +275,17 @@ export default function DashboardPage() {
 
             {/* Verificar se o usuário tem assinatura Pro */}
             {!hasProPlan && (
-              <div className="mb-8 relative overflow-hidden rounded-2xl">
+              <div className="mb-4 sm:mb-8 relative overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 backdrop-blur-xl"></div>
-                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-6">
+                <div className="relative flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-6 p-3 sm:p-6">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-2">Atualize para o Plano Pro</h3>
-                    <p className="text-foreground/70 mb-4">
-                      Desbloqueie recursos avançados, notas ilimitadas e muito mais para maximizar sua produtividade.
+                    <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Plano Pro</h3>
+                    <p className="text-sm text-foreground/70 mb-2 sm:mb-4">
+                      Desbloqueie recursos avançados e muito mais.
                     </p>
                     <Link href="/plans">
-                      <button className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2">
-                        <Crown className="h-4 w-4 mr-1" />
+                      <button className="group relative px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <Crown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         <span>Conheça o Plano Pro</span>
                         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
                       </button>
@@ -300,7 +300,7 @@ export default function DashboardPage() {
             )}
 
             {/* Grid de Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-8">
             {/* Card de Tarefas Recentes */}
             <Card className="bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 transition-colors">
               <CardHeader className="pb-2">
@@ -442,22 +442,22 @@ export default function DashboardPage() {
               </div>
 
           {/* Gráfico de Focus Sessions */}
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-8">
             <Card className="bg-background/20 backdrop-blur-lg border border-white/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Timer className="h-5 w-5 text-green-500" />
+              <CardHeader className="pb-1 sm:pb-2">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Timer className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                   <span>Tempo de Foco (Últimos 7 dias)</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Tempo total: {formatMinutes(focusData.reduce((total, day) => total + day.minutes, 0))}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="h-64">
+              <CardContent className="h-48 sm:h-64 pt-2 sm:pt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={focusData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis dataKey="name" tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }} />
+                    <YAxis tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }} />
                     <Tooltip formatter={(value) => [formatMinutes(value as number), 'Tempo']} />
                     <Bar dataKey="minutes" fill="#8884d8" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -466,7 +466,7 @@ export default function DashboardPage() {
               <CardFooter>
                 <Link href="/focus" className="w-full">
                   <button
-                    className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                    className="w-full group relative px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 text-xs sm:text-sm"
                   >
                     <span>Iniciar sessão de foco</span>
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
@@ -477,40 +477,40 @@ export default function DashboardPage() {
             </div>
 
           {/* Seção de Ações Rápidas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
             <Link href="/tasks">
               <button 
-                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+                className="p-3 sm:p-6 h-auto w-full flex flex-col items-center gap-2 sm:gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
               >
-                <ListTodo className="h-12 w-12 text-blue-500" />
-                <span className="font-medium">Nova Tarefa</span>
+                <ListTodo className="h-6 w-6 sm:h-12 sm:w-12 text-blue-500" />
+                <span className="font-medium text-xs sm:text-base">Nova Tarefa</span>
               </button>
             </Link>
             
             <Link href="/notes/new">
               <button
-                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+                className="p-3 sm:p-6 h-auto w-full flex flex-col items-center gap-2 sm:gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
               >
-                <FileText className="h-12 w-12 text-indigo-500" />
-                <span className="font-medium">Nova Nota</span>
+                <FileText className="h-6 w-6 sm:h-12 sm:w-12 text-indigo-500" />
+                <span className="font-medium text-xs sm:text-base">Nova Nota</span>
               </button>
             </Link>
             
             <Link href="/study/new">
               <button
-                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+                className="p-3 sm:p-6 h-auto w-full flex flex-col items-center gap-2 sm:gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
               >
-                <BookOpen className="h-12 w-12 text-violet-500" />
-                <span className="font-medium">Nova Matéria</span>
+                <BookOpen className="h-6 w-6 sm:h-12 sm:w-12 text-violet-500" />
+                <span className="font-medium text-xs sm:text-base">Nova Matéria</span>
               </button>
             </Link>
             
             <Link href="/focus">
               <button
-                className="p-6 h-auto w-full flex flex-col items-center gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
+                className="p-3 sm:p-6 h-auto w-full flex flex-col items-center gap-2 sm:gap-4 bg-background/20 backdrop-blur-lg border border-white/10 hover:border-primary/30 rounded-xl hover:shadow-md transition-all duration-300"
               >
-                <Timer className="h-12 w-12 text-green-500" />
-                <span className="font-medium">Iniciar Foco</span>
+                <Timer className="h-6 w-6 sm:h-12 sm:w-12 text-green-500" />
+                <span className="font-medium text-xs sm:text-base">Iniciar Foco</span>
               </button>
             </Link>
               </div>

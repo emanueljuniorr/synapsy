@@ -59,7 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Configurar persistência local para manter a sessão mesmo após fechar o navegador
         await setPersistence(auth, browserLocalPersistence);
+        // Log apenas em desenvolvimento
+        if (process.env.NODE_ENV === 'development') {
         console.log('Persistência da autenticação configurada');
+        }
       } catch (error) {
         console.error('Erro ao configurar persistência:', error);
       }
@@ -71,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Verificar se o usuário está autenticado ao carregar a página
   useEffect(() => {
     let isMounted = true;
-    console.log('Iniciando verificação de autenticação...');
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!isMounted) return;
@@ -80,8 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       try {
         if (firebaseUser) {
-          console.log('Firebase User detectado:', firebaseUser.uid);
-          
           // Verificar se o token está atualizado
           const idTokenResult = await firebaseUser.getIdTokenResult(true);
           
@@ -98,12 +98,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             createdAt: userData?.createdAt ? new Date(userData.createdAt.toDate()) : undefined,
             updatedAt: userData?.updatedAt ? new Date(userData.updatedAt.toDate()) : undefined,
           };
-          
-          console.log('Autenticação concluída. Objeto user:', { 
-            id: authUser.id,
-            name: authUser.name,
-            email: authUser.email 
-          });
           
           if (isMounted) {
             setUser(authUser);

@@ -89,14 +89,14 @@ export default function NotesPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="mx-auto px-2 sm:px-4">
         {/* Seção de Tags */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-4 overflow-x-auto pb-2 -mx-2 px-2">
           {allTags.map(tag => (
             <button
               key={tag}
               onClick={() => setSelectedTag(tag)}
-              className={`px-3 py-1 rounded-full text-sm ${selectedTag === tag ? 'bg-primary text-white' : 'bg-white/10 text-white/70'} transition-colors`}
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs ${selectedTag === tag ? 'bg-primary text-white' : 'bg-white/10 text-white/70'} transition-colors whitespace-nowrap`}
             >
               {tag}
             </button>
@@ -104,7 +104,7 @@ export default function NotesPage() {
           {selectedTag && (
           <button 
               onClick={() => setSelectedTag(null)}
-              className="px-3 py-1 rounded-full text-sm bg-red-500 text-white transition-colors"
+              className="px-2 sm:px-3 py-1 rounded-full text-xs bg-red-500 text-white transition-colors whitespace-nowrap"
           >
               Limpar Filtro
           </button>
@@ -112,30 +112,30 @@ export default function NotesPage() {
         </div>
         
         {/* Header com gradiente e efeito de vidro */}
-        <div className="relative mb-8">
+        <div className="relative mb-3 sm:mb-6">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
-          <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+          <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-6">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                 Minhas Notas
               </h1>
               <Link
                 href="/notes/new"
-                className="flex items-center gap-2 px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl transition-all duration-300 backdrop-blur-lg"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-primary/80 hover:bg-primary text-white rounded-xl transition-all duration-300 backdrop-blur-lg text-xs sm:text-base"
               >
-                <RiAddLine size={20} />
+                <RiAddLine size={16} className="sm:text-lg" />
                 <span>Nova Nota</span>
               </Link>
               </div>
 
-            <div className="relative mt-6">
-              <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+            <div className="relative mt-3 sm:mt-6">
+              <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
               <input
                 type="text"
                 placeholder="Buscar notas..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-300"
+                className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-300 text-sm"
               />
             </div>
           </div>
@@ -143,10 +143,10 @@ export default function NotesPage() {
         
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : filteredNotes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredNotes.map((note) => (
               <NoteCard
                 key={note.id}
@@ -164,9 +164,9 @@ export default function NotesPage() {
         ) : (
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
-            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center text-white/60">
-              <p className="text-xl mb-2">Nenhuma nota encontrada</p>
-              <p className="text-sm">
+            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-12 flex flex-col items-center justify-center text-white/60">
+              <p className="text-lg sm:text-xl mb-2">Nenhuma nota encontrada</p>
+              <p className="text-xs sm:text-sm">
                 {searchQuery
                   ? 'Tente usar termos diferentes na busca'
                   : 'Comece criando uma nova nota'}

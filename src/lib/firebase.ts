@@ -23,7 +23,10 @@ const storage = getStorage(app);
 if (typeof window !== 'undefined') {
   setPersistence(auth, browserLocalPersistence)
     .then(() => {
+      // Remover log em produção, manter apenas em desenvolvimento
+      if (process.env.NODE_ENV === 'development') {
       console.log('Persistência de autenticação configurada');
+      }
     })
     .catch((error) => {
       console.error('Erro ao configurar persistência:', error);

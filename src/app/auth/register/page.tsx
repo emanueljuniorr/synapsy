@@ -1,5 +1,26 @@
 'use client';
 
+import { Suspense } from 'react';
+
+// Componente de carregamento
+function Loading() {
+  return (
+    <div className="min-h-screen flex justify-center items-center bg-background">
+      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
+// Componente principal da página
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+// Componente do formulário de registro que usa hooks que requerem Suspense
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,7 +29,7 @@ import PasswordInput from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -52,26 +52,3 @@ O webhook processa os seguintes eventos:
 - `invoice.payment_failed`: Quando o pagamento de uma fatura falha
 
 Cada evento atualiza o status do plano do usuário correspondente no Firestore.
-
-## Solução de Problemas
-
-### Erros de Stream e WebSocket
-
-Os erros relacionados a `Stream is already ended` ou `TypeError: undefined is not an object (evaluating 'this.#state')` geralmente ocorrem quando há problemas com a forma como o Next.js lida com respostas assíncronas em webhooks.
-
-Como solução, implementamos:
-
-1. **Resposta imediata**: O webhook retorna uma resposta HTTP 200 imediatamente para a Stripe, antes de processar o evento.
-
-2. **Processamento assíncrono**: Os eventos são processados depois que a resposta já foi enviada, evitando que operações demoradas causem timeouts.
-
-3. **Runtime Node.js**: Usamos `export const runtime = 'nodejs'` para garantir que o webhook seja executado no ambiente Node.js e não no Edge Runtime, evitando problemas de compatibilidade.
-
-4. **Promise.all para operações em lote**: Para operações em lote (como atualizar vários usuários), usamos `Promise.all()` para aguardar a conclusão de todas as operações assíncronas.
-
-Se você encontrar erros, verifique:
-
-- Se as variáveis de ambiente estão configuradas corretamente
-- Se o servidor tem tempo suficiente para processar os eventos antes de encerrar
-- Se há erros no console relacionados à conexão com o Firestore
-- Se a versão da API da Stripe está compatível com o código 

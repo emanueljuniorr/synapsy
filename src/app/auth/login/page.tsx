@@ -1,8 +1,29 @@
 'use client';
 
+import { Suspense } from 'react';
+
+// Componente de carregamento
+function Loading() {
+  return (
+    <div className="min-h-screen flex justify-center items-center bg-background">
+      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
+// Componente principal da página
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+// Componente do formulário de login que usa hooks que requerem Suspense
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/button';
@@ -11,7 +32,7 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -20,14 +41,16 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const { login, loginWithGoogle, isAuthenticated, isLoading: authLoading } = useAuth();
   
-  // Redirecionar para o dashboard se já estiver autenticado
+  // Redirecionar para o dashboard ou callbackUrl se já estiver autenticado
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      router.push('/dashboard');
+      router.push(callbackUrl);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, callbackUrl]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +69,8 @@ export default function LoginPage() {
       const success = await login(email, password);
       
       if (success) {
-        // Redireciona diretamente para o dashboard
-        router.push('/dashboard');
+        // Redireciona para o callbackUrl ou dashboard
+        router.push(callbackUrl);
       } else {
         setError('Credenciais inválidas. Por favor, tente novamente.');
       }
@@ -67,7 +90,8 @@ export default function LoginPage() {
       const success = await loginWithGoogle();
       
       if (success) {
-        router.push('/dashboard');
+        // Redireciona para o callbackUrl ou dashboard
+        router.push(callbackUrl);
       } else {
         setError('Falha ao fazer login com Google. Por favor, tente novamente.');
       }

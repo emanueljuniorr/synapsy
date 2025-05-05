@@ -237,7 +237,7 @@ export default function RelaxPage() {
     <MainLayout>
       <div className="min-h-screen bg-background">
       {/* Cabeçalho */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center space-x-3">
@@ -274,7 +274,7 @@ export default function RelaxPage() {
           </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Container principal */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Seção de visualização e sons */}

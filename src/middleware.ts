@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export const PRO_ONLY_ROUTES = [
   '/focus',
   '/focus/',
-  '/relax',
-  '/relax/',
+  //'/relax',
+  //'/relax/',
   '/notes',
   '/notes/'
 ];
@@ -22,9 +22,16 @@ export const PUBLIC_ROUTES = [
   '/terms'
 ];
 
+// Função para log condicional apenas em desenvolvimento
+const debugLog = (message: string) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message);
+  }
+};
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  console.log(`Middleware executado para: ${pathname}`);
+  debugLog(`Middleware executado para: ${pathname}`);
   
   // Verificar se a rota requer autenticação (não é uma rota pública)
   const isAuthRoute = pathname.startsWith('/auth/');
@@ -36,15 +43,15 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session')?.value;
   const isAuthenticated = !!sessionCookie;
   
-  console.log(`Rota: ${pathname}, Autenticado: ${isAuthenticated}, Rota pública: ${isPublicRoute}, Rota de auth: ${isAuthRoute}`);
+  debugLog(`Rota: ${pathname}, Autenticado: ${isAuthenticated}, Rota pública: ${isPublicRoute}, Rota de auth: ${isAuthRoute}`);
   
   if (isAuthRoute && isAuthenticated) {
-    console.log('Usuário já autenticado acessando rota de auth, redirecionando para dashboard');
+    debugLog('Usuário já autenticado acessando rota de auth, redirecionando para dashboard');
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
   if (!isPublicRoute && !isAuthenticated) {
-    console.log('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
+    debugLog('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
     const url = new URL('/auth/login', request.url);
     url.searchParams.set('callbackUrl', request.nextUrl.pathname);
     return NextResponse.redirect(url);
@@ -57,7 +64,7 @@ export async function middleware(request: NextRequest) {
   // Deixar a verificação do plano Pro ser feita diretamente pelo cliente
   // O middleware apenas garante que o usuário está autenticado
   if (isProRoute && isAuthenticated) {
-    console.log('Rota requer plano Pro, usuário autenticado. Verificação será feita no cliente.');
+    debugLog('Rota requer plano Pro, usuário autenticado. Verificação será feita no cliente.');
     return NextResponse.next();
   }
   
@@ -68,7 +75,7 @@ export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.+\\..+).*)',
     '/focus/:path*',
-    '/relax/:path*',
+    //'/relax/:path*',
     '/notes/:path*'
   ],
 }; 

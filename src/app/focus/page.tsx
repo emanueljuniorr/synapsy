@@ -405,58 +405,58 @@ export default function FocusPage() {
     <MainLayout>
       <div className="min-h-screen bg-background">
         {/* Cabeçalho */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center space-x-3">
-                <Link href="/dashboard" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-2">
-                  <RiHome4Line className="w-5 h-5 text-foreground/60" />
-                  <span className="text-foreground/60 hidden sm:block">Dashboard</span>
+        <div className="mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center space-x-2">
+                <Link href="/dashboard" className="p-1.5 sm:p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors flex items-center gap-1 sm:gap-2">
+                  <RiHome4Line className="w-4 h-4 text-foreground/60" />
+                  <span className="text-foreground/60 text-xs sm:text-sm hidden sm:block">Dashboard</span>
                 </Link>
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                   Modo Focus
                 </h1>
-                <p className="text-foreground/60 mt-1">
-                  Temporizador Pomodoro para melhorar sua produtividade
+                <p className="text-xs text-foreground/60 mt-0.5 sm:mt-1">
+                  Temporizador Pomodoro
                 </p>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center mt-2 sm:mt-0">
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-foreground/60 hover:text-primary"
+                className="p-1.5 sm:p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-foreground/60 hover:text-primary"
               >
-                <RiSettings4Line className="w-5 h-5" />
+                <RiSettings4Line className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="relative z-10 mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-4">
           {/* Container principal */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-6">
             {/* Seção do timer */}
-            <div className="md:col-span-8 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-lg">
+            <div className="md:col-span-8 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-3 sm:p-6 shadow-lg">
               {/* Tabs para selecionar o tipo de sessão */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-3 sm:mb-6">
                 <div className="inline-flex bg-white/5 backdrop-blur-md rounded-xl p-1">
                   <button 
                     onClick={() => changeSessionType('focus')}
-                    className={`px-4 py-2 rounded-lg ${sessionType === 'focus' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
+                    className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs ${sessionType === 'focus' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
                   >
                     Foco
                   </button>
                   <button 
                     onClick={() => changeSessionType('shortBreak')}
-                    className={`px-4 py-2 rounded-lg ${sessionType === 'shortBreak' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
+                    className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs ${sessionType === 'shortBreak' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
                   >
                     Pausa Curta
                   </button>
                   <button 
                     onClick={() => changeSessionType('longBreak')}
-                    className={`px-4 py-2 rounded-lg ${sessionType === 'longBreak' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
+                    className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs ${sessionType === 'longBreak' ? 'bg-primary text-white' : 'text-foreground/60 hover:text-foreground/80'}`}
                   >
                     Pausa Longa
                   </button>
@@ -464,8 +464,8 @@ export default function FocusPage() {
               </div>
 
               {/* Timer circular */}
-              <div className="flex justify-center my-10">
-                <div className="relative w-64 h-64">
+              <div className="flex justify-center my-4 sm:my-8">
+                <div className="relative w-40 h-40 sm:w-64 sm:h-64">
                   {/* Círculo de progresso */}
                   <svg className="w-full h-full" viewBox="0 0 256 256">
                     <circle
@@ -493,10 +493,10 @@ export default function FocusPage() {
 
                   {/* Tempo no centro */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-5xl font-bold text-white font-mono">
+                    <span className="text-2xl sm:text-5xl font-bold text-white font-mono">
                       {formatTime(timeLeft)}
                     </span>
-                    <span className="text-foreground/60 capitalize mt-2">
+                    <span className="text-xs text-foreground/60 capitalize mt-1 sm:mt-2">
                       {sessionType === 'focus' ? 'Foco' : sessionType === 'shortBreak' ? 'Pausa Curta' : 'Pausa Longa'}
                     </span>
                   </div>
@@ -504,92 +504,45 @@ export default function FocusPage() {
               </div>
 
               {/* Controles do timer */}
-              <div className="flex justify-center items-center gap-6">
+              <div className="flex justify-center items-center gap-4">
                 <button
                   onClick={resetTimer}
-                  className="p-3 text-foreground/60 hover:text-primary transition-colors rounded-full hover:bg-white/5"
+                  className="p-2 text-foreground/60 hover:text-primary transition-colors rounded-full hover:bg-white/5"
                 >
-                  <RiRestartLine className="w-6 h-6" />
+                  <RiRestartLine className="w-5 h-5" />
                 </button>
                 <button
                   onClick={toggleTimer}
-                  className="p-6 bg-primary hover:bg-primary/90 text-white rounded-full transition-colors shadow-lg shadow-primary/20 flex items-center justify-center"
+                  className="p-4 bg-primary hover:bg-primary/90 text-white rounded-full transition-colors shadow-lg shadow-primary/20 flex items-center justify-center"
                 >
-                  {isActive ? <RiPauseLine className="w-8 h-8" /> : <RiPlayLine className="w-8 h-8" />}
+                  {isActive ? <RiPauseLine className="w-6 h-6" /> : <RiPlayLine className="w-6 h-6" />}
                 </button>
               </div>
 
               {/* Status e contadores */}
-              <div className="mt-10 flex justify-between items-center">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-2">
                 <div className="text-foreground/60">
-                  <p className="text-sm">Status: <span className="text-foreground/90">{isActive ? 'Em andamento' : 'Pausado'}</span></p>
+                  <p className="text-xs">Status: <span className="text-foreground/90">{isActive ? 'Em andamento' : 'Pausado'}</span></p>
                 </div>
                 <div className="text-foreground/60">
-                  <p className="text-sm">Pomodoros Completados: <span className="text-primary font-medium">{pomodorosCompleted}</span></p>
+                  <p className="text-xs">Pomodoros: <span className="text-primary font-medium">{pomodorosCompleted}</span></p>
                 </div>
               </div>
             </div>
 
             {/* Painel lateral */}
-            <div className="md:col-span-4 space-y-8">
-              {/* Card de ruído branco */}
-              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                <h3 className="text-lg font-medium mb-4">Sons Ambientes</h3>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    {whiteNoiseOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setWhiteNoise(option.value)}
-                        className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                          whiteNoise === option.value 
-                            ? 'bg-primary text-white' 
-                            : 'bg-white/5 text-foreground/60 hover:bg-white/10'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  {whiteNoise !== 'none' && (
-                    <div className="mt-4">
-                      <label className="block text-sm text-foreground/60 mb-2">Volume</label>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={settings.volume} 
-                        onChange={(e) => setSettings({...settings, volume: Number(e.target.value)})}
-                        className="w-full accent-primary"
-                        style={{
-                          background: `linear-gradient(to right, rgb(139, 92, 246) 0%, rgb(139, 92, 246) ${settings.volume}%, rgba(255, 255, 255, 0.1) ${settings.volume}%, rgba(255, 255, 255, 0.1) 100%)`,
-                          height: '4px',
-                          borderRadius: '4px',
-                          outline: 'none',
-                          WebkitAppearance: 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
+            <div className="md:col-span-4 space-y-3 sm:space-y-6">
               {/* Dicas de neurociência */}
-              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg">
-                <h3 className="text-lg font-medium mb-4">Dicas de Neurociência</h3>
-                <ul className="space-y-3 text-sm text-foreground/80">
+              <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-3 sm:p-5 shadow-lg">
+                <h3 className="text-sm sm:text-base font-medium mb-2 sm:mb-3">Dicas</h3>
+                <ul className="space-y-2 text-xs text-foreground/80">
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    <p>A alternância entre foco intenso e pausas aumenta a capacidade cognitiva e reduz a fadiga mental.</p>
+                    <p>A alternância entre foco intenso e pausas aumenta a capacidade cognitiva.</p>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    <p>O córtex pré-frontal recupera melhor a capacidade de atenção após pausas regulares.</p>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary">•</span>
-                    <p>Sons de fundo sem letra (como ruído branco) estimulam a concentração sem distrair o cérebro.</p>
+                    <p>Sons de fundo sem letra estimulam a concentração sem distrair.</p>
                   </li>
                 </ul>
               </div>

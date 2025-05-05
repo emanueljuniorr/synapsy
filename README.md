@@ -52,7 +52,3 @@ src/
 ## Status do Projeto
 
 Este projeto está atualmente em desenvolvimento como um MVP (Produto Mínimo Viável). Novas funcionalidades e melhorias serão adicionadas continuamente.
-
-## Licença
-
-Este projeto é de código aberto e disponível sob a licença [MIT](LICENSE).

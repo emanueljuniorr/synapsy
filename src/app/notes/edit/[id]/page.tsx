@@ -85,7 +85,7 @@ export default function EditNotePage({ params }: { params: any }) {
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6">
         <div className="backdrop-blur-md bg-white/5 rounded-2xl p-6 border border-white/10 shadow-lg transition-all duration-300 hover:bg-white/10">
           <div className="flex items-center justify-between mb-6">
             <input
