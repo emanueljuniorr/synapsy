@@ -4,13 +4,37 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp, query, collection, where, getDocs } from 'firebase/firestore';
 
 // Inicializar Stripe com a chave secreta
-const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-03-31.basil',
-});
+let stripe: Stripe | null = null;
+
+// Tentar inicializar o Stripe apenas se a chave estiver definida
+try {
+  const stripeKey = process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY;
+  if (stripeKey) {
+    stripe = new Stripe(stripeKey, {
+      apiVersion: '2025-03-31.basil',
+    });
+    console.log('Stripe inicializado com sucesso no webhook');
+  } else {
+    console.warn('Chave da API Stripe não encontrada nas variáveis de ambiente (webhook)');
+  }
+} catch (error) {
+  console.error('Erro ao inicializar Stripe no webhook:', error);
+}
 
 export async function POST(req: NextRequest) {
   try {
     console.log("Webhook da Stripe recebido");
+    
+    // Verificar se o Stripe foi inicializado corretamente
+    if (!stripe) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Serviço de pagamento não disponível. Chave da API Stripe não configurada.' }),
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
     
     // Obter o corpo da requisição como texto
     const body = await req.text();
@@ -18,9 +42,19 @@ export async function POST(req: NextRequest) {
 
     if (!signature) {
       console.error('Assinatura do webhook não fornecida');
-      return NextResponse.json(
-        { error: 'Assinatura do webhook não fornecida' },
+      return new NextResponse(
+        JSON.stringify({ error: 'Assinatura do webhook não fornecida' }),
         { status: 400 }
+      );
+    }
+
+    // Verificar se o segredo do webhook está configurado
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error('Segredo do webhook da Stripe não configurado');
+      return new NextResponse(
+        JSON.stringify({ error: 'Webhook não configurado corretamente' }),
+        { status: 500 }
       );
     }
 
@@ -31,18 +65,49 @@ export async function POST(req: NextRequest) {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        webhookSecret
       );
     } catch (err: any) {
       console.error(`Erro de assinatura do webhook: ${err.message}`);
-      return NextResponse.json(
-        { error: `Erro de assinatura do webhook: ${err.message}` },
+      return new NextResponse(
+        JSON.stringify({ error: `Erro de assinatura do webhook: ${err.message}` }),
         { status: 400 }
       );
     }
 
     console.log(`Evento processado: ${event.type}`);
 
+    // Primeiro retornamos uma resposta 200 para a Stripe imediatamente
+    // Isso evita timeouts e problemas de conexão
+    // Processaremos o evento de forma assíncrona depois
+    
+    // Iniciar processamento do evento de forma assíncrona, sem aguardar
+    processStripeEvent(event).catch(error => {
+      console.error('Erro ao processar evento da Stripe:', error);
+    });
+
+    // Retornar sucesso imediatamente
+    return new NextResponse(
+      JSON.stringify({ received: true }),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Erro ao processar webhook:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Erro interno do servidor' }),
+      { status: 500 }
+    );
+  }
+}
+
+// Função para processar eventos da Stripe de forma assíncrona
+async function processStripeEvent(event: Stripe.Event) {
+  try {
+    if (!stripe || !db) {
+      console.error('Stripe ou Firestore não inicializados');
+      return;
+    }
+    
     // Processar diferentes tipos de eventos
     switch (event.type) {
       case 'checkout.session.completed':
@@ -68,15 +133,9 @@ export async function POST(req: NextRequest) {
       default:
         console.log(`Evento não tratado: ${event.type}`);
     }
-
-    // Retornar sucesso
-    return NextResponse.json({ received: true }, { status: 200 });
   } catch (error) {
-    console.error('Erro ao processar webhook:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    console.error(`Erro ao processar evento ${event.type}:`, error);
+    // Apenas registramos o erro, não retornamos nada, pois a resposta já foi enviada
   }
 }
 
@@ -142,7 +201,7 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
   }
   
   // Atualizar status da assinatura para todos os usuários encontrados
-  querySnapshot.forEach(async (document) => {
+  const updatePromises = querySnapshot.docs.map(async (document) => {
     const userId = document.id;
     const userRef = doc(db, 'users', userId);
     
@@ -172,6 +231,8 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
       console.log(`Assinatura marcada como inativa para o usuário: ${userId} (status: ${subscription.status})`);
     }
   });
+  
+  await Promise.all(updatePromises);
 }
 
 // Função para lidar com o evento de subscription.deleted
@@ -190,7 +251,7 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
   }
   
   // Atualizar todos os usuários com esta assinatura para o plano Free
-  querySnapshot.forEach(async (document) => {
+  const updatePromises = querySnapshot.docs.map(async (document) => {
     const userId = document.id;
     const userRef = doc(db, 'users', userId);
     
@@ -205,6 +266,8 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
     
     console.log(`Plano alterado para Free para o usuário: ${userId}`);
   });
+  
+  await Promise.all(updatePromises);
 }
 
 // Função para lidar com o evento de invoice.payment_succeeded
@@ -229,7 +292,7 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
   }
   
   // Atualizar a data de expiração para o próximo período
-  querySnapshot.forEach(async (document) => {
+  const updatePromises = querySnapshot.docs.map(async (document) => {
     const userId = document.id;
     const userRef = doc(db, 'users', userId);
     
@@ -247,6 +310,8 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
     
     console.log(`Assinatura renovada para o usuário: ${userId}`);
   });
+  
+  await Promise.all(updatePromises);
 }
 
 // Função para lidar com o evento de invoice.payment_failed
@@ -271,7 +336,7 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
   }
   
   // Atualizar o status do plano para indicar que houve falha no pagamento
-  querySnapshot.forEach(async (document) => {
+  const updatePromises = querySnapshot.docs.map(async (document) => {
     const userId = document.id;
     const userRef = doc(db, 'users', userId);
     
@@ -283,7 +348,12 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
     
     console.log(`Status de pagamento atualizado para o usuário: ${userId}`);
   });
+  
+  await Promise.all(updatePromises);
 }
 
 // Para permitir solicitações POST e garantir que cada solicitação é processada
-export const dynamic = 'force-dynamic'; 
+export const dynamic = 'force-dynamic';
+
+// Configuração para usar o runtime do Node.js em vez do runtime Edge
+export const runtime = 'nodejs'; 

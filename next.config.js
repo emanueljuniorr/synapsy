@@ -18,6 +18,8 @@ const nextConfig = {
       },
     ],
   },
+  // Configuração para build de produção standalone
+  output: 'standalone',
   // Pacotes externos para componentes de servidor
   serverExternalPackages: ['firebase-admin'],
   // Configuração para resolver problemas com arquivos JSON nas dependências
@@ -59,6 +61,48 @@ const nextConfig = {
       options: {
         esModule: false,
       },
+    });
+
+    // Regra específica para o character-entities direto
+    config.module.rules.push({
+      test: /node_modules\/character-entities\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
+    // Regra específica para character-entities-legacy direto
+    config.module.rules.push({
+      test: /node_modules\/character-entities-legacy\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
+    });
+
+    // Regra específica para character-reference-invalid direto
+    config.module.rules.push({
+      test: /node_modules\/character-reference-invalid\/index\.json$/,
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
+      type: 'javascript/auto',
     });
 
     // Regra específica para o grpc-js package.json
@@ -133,7 +177,14 @@ const nextConfig = {
     // Regra para arquivos de entidades HTML (character-entities-*)
     config.module.rules.push({
       test: /node_modules\/character-entities.*\/.*\.json$/,
-      use: 'json-loader',
+      use: {
+        loader: 'string-replace-loader',
+        options: {
+          search: /^.+$/s,
+          replace: '{}',
+          flags: 'g'
+        }
+      },
       type: 'javascript/auto',
     });
 
@@ -168,7 +219,10 @@ const nextConfig = {
     'unified',
     'unist',
     'mdast',
-    'react-syntax-highlighter'
+    'react-syntax-highlighter',
+    'refractor',
+    'parse-entities',
+    'hast-util-parse-selector'
   ]
 };
 
