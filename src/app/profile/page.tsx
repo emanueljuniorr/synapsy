@@ -7,7 +7,7 @@ import { User } from "firebase/auth";
 import Image from "next/image";
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit, Timestamp, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { CreditCard, Crown, User as UserIcon } from 'lucide-react';
+import { AlertCircle, Check, CreditCard, Crown, User as UserIcon, X } from 'lucide-react';
 import Link from 'next/link';
 
 // Tipo para dados do perfil
@@ -23,6 +23,8 @@ interface UserProfile {
     color: string;
   };
   expirationDate?: Date | Timestamp; // Data de expiração da assinatura
+  canceledAt?: Date | Timestamp; // Data de cancelamento da assinatura
+  pendingCancellation?: boolean; // Indica se a assinatura está pendente de cancelamento
   stats: {
     completedTasks: number;
     createdNotes: number;
@@ -42,6 +44,8 @@ export default function ProfilePage() {
   const [occupation, setOccupation] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -84,7 +88,7 @@ export default function ProfilePage() {
       const userDocSnap = await getDoc(userDocRef);
       
       // Inicializar dados básicos do perfil
-      const userData = {
+      const userData: UserProfile = {
         id: user?.uid || '',
         name: user?.displayName || 'Usuário',
         email: user?.email || '',
@@ -122,6 +126,9 @@ export default function ProfilePage() {
         // Preencher outros campos se disponíveis
         if (userDocData.location) userData.location = userDocData.location;
         if (userDocData.occupation) userData.occupation = userDocData.occupation;
+        if (userDocData.expirationDate) userData.expirationDate = userDocData.expirationDate;
+        if (userDocData.canceledAt) userData.canceledAt = userDocData.canceledAt;
+        if (userDocData.pendingCancellation !== undefined) userData.pendingCancellation = userDocData.pendingCancellation;
       } else {
         console.log('Perfil não encontrado, criando novo documento');
         // Criar o documento do usuário se não existir
@@ -317,9 +324,35 @@ export default function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    // ... existing effect ...
-  }, []);
+  // Função para cancelar a assinatura do plano Pro
+  const cancelSubscription = async () => {
+    if (!user) return;
+    
+    try {
+      setIsCancelling(true);
+      
+      // Obter referência para o documento do usuário
+      const userDocRef = doc(db, "users", user.uid);
+      
+      // Atualizar documento para marcar assinatura como pendente de cancelamento
+      await updateDoc(userDocRef, {
+        pendingCancellation: true,
+        canceledAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      console.log('Assinatura cancelada com sucesso');
+      setShowCancelDialog(false);
+      
+      // Atualizar dados do perfil após cancelamento
+      await fetchUserProfile(user.uid);
+    } catch (err) {
+      console.error('Erro ao cancelar assinatura:', err);
+      setError('Não foi possível cancelar a assinatura');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
   
   // Atualizar os estados de localização e ocupação quando o perfil for carregado
   useEffect(() => {
@@ -513,7 +546,7 @@ export default function ProfilePage() {
                     <span className="font-medium text-lg">{userProfile?.plan?.name || 'Free'}</span>
                     {userProfile?.plan?.name === 'Pro' && (
                       <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-500 text-xs rounded-full">
-                        Ativo
+                        {userProfile?.pendingCancellation ? 'Cancelado' : 'Ativo'}
                       </span>
                     )}
                   </div>
@@ -529,17 +562,35 @@ export default function ProfilePage() {
                 <div className="mb-4 p-3 bg-background/30 rounded-lg border border-white/5">
                   <p className="text-sm text-foreground/70">
                     Sua assinatura é válida até <span className="font-medium">{formatDate(userProfile.expirationDate)}</span>
+                    {userProfile.pendingCancellation && (
+                      <span className="block mt-1 text-amber-400">
+                        Sua assinatura foi cancelada e não será renovada automaticamente.
+                      </span>
+                    )}
                   </p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {userProfile?.plan?.name === 'Pro' ? (
-                  <button 
-                    className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
-                  >
-                    Gerenciar assinatura
-                  </button>
+                  userProfile.pendingCancellation ? (
+                    <Link href="/plans">
+                      <button 
+                        className="w-full group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                      >
+                        <Crown className="h-4 w-4 mr-1" />
+                        <span>Renovar assinatura</span>
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                      </button>
+                    </Link>
+                  ) : (
+                    <button 
+                      className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors text-white/80 hover:text-white/100"
+                      onClick={() => setShowCancelDialog(true)}
+                    >
+                      Cancelar assinatura
+                    </button>
+                  )
                 ) : (
                   <Link href="/plans">
                     <button 
@@ -552,15 +603,13 @@ export default function ProfilePage() {
                   </Link>
                 )}
                 
-                {userProfile?.plan?.name === 'Pro' && (
-                  <Link href="/plans">
-                    <button 
-                      className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
-                    >
-                      Ver detalhes do plano
-                    </button>
-                  </Link>
-                )}
+                <Link href="/plans">
+                  <button 
+                    className="w-full px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
+                  >
+                    Ver detalhes do plano
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -608,6 +657,64 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmação de cancelamento */}
+      {showCancelDialog && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-background/90 border border-white/10 rounded-xl p-6 max-w-lg w-full animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold">Cancelar assinatura?</h3>
+            </div>
+            
+            <p className="mb-6 text-foreground/80">
+              Ao cancelar sua assinatura Pro, você:
+            </p>
+            
+            <ul className="mb-6 space-y-2">
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                <span>Continuará com acesso ao plano Pro até {userProfile?.expirationDate ? formatDate(userProfile.expirationDate) : 'o final do período'}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                <span>Poderá utilizar todos os recursos Pro durante este período</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <X className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <span>Sua assinatura não será renovada automaticamente</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <X className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <span>Após o término do período, seu plano voltará para Free</span>
+              </li>
+            </ul>
+            
+            <div className="flex gap-3 justify-end">
+              <button 
+                className="px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
+                onClick={() => setShowCancelDialog(false)}
+              >
+                Voltar
+              </button>
+              <button 
+                className={`px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-2 ${isCancelling ? 'opacity-70 cursor-not-allowed' : ''}`}
+                onClick={cancelSubscription}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    Cancelando...
+                  </>
+                ) : 'Confirmar cancelamento'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 }
