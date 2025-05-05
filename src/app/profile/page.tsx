@@ -584,12 +584,12 @@ export default function ProfilePage() {
                       </button>
                     </Link>
                   ) : (
-                    <button 
+                  <button 
                       className="px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors text-white/80 hover:text-white/100"
                       onClick={() => setShowCancelDialog(true)}
-                    >
+                  >
                       Cancelar assinatura
-                    </button>
+                  </button>
                   )
                 ) : (
                   <Link href="/plans">
@@ -603,13 +603,13 @@ export default function ProfilePage() {
                   </Link>
                 )}
                 
-                <Link href="/plans">
-                  <button 
+                  <Link href="/plans">
+                    <button 
                     className="w-full px-4 py-2 bg-background/30 border border-white/10 hover:bg-background/50 rounded-lg transition-colors"
-                  >
-                    Ver detalhes do plano
-                  </button>
-                </Link>
+                    >
+                      Ver detalhes do plano
+                    </button>
+                  </Link>
               </div>
             </div>
           </div>

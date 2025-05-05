@@ -46,14 +46,20 @@ export async function POST(request: NextRequest) {
       
       // Configurar cookie na resposta
       const cookieStore = cookies();
+      
+      // Configurações específicas para ambiente de produção
+      const isProduction = process.env.NODE_ENV === 'production';
+      const cookieDomain = isProduction ? 'synapsy.vercel.app' : undefined;
+      
       cookieStore.set({
         name: 'session',
         value: sessionCookie,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
         maxAge: SESSION_EXPIRATION_TIME / 1000, // Converter para segundos
         path: '/',
-        sameSite: 'lax',
+        sameSite: isProduction ? 'none' : 'lax',
+        domain: cookieDomain,
       });
       
       return new NextResponse(
@@ -143,9 +149,21 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    // Limpar o cookie de sessão
+    // Configurar a exclusão do cookie com as mesmas configurações que foram usadas para criá-lo
     const cookieStore = cookies();
-    cookieStore.delete('session');
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieDomain = isProduction ? 'synapsy.vercel.app' : undefined;
+    
+    cookieStore.set({
+      name: 'session',
+      value: '',
+      httpOnly: true,
+      secure: isProduction,
+      maxAge: 0, // Expirar imediatamente
+      path: '/',
+      sameSite: isProduction ? 'none' : 'lax',
+      domain: cookieDomain,
+    });
     
     return new NextResponse(
       JSON.stringify({ success: true }),

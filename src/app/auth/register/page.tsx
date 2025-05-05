@@ -80,7 +80,7 @@ function RegisterForm() {
         
         // Pequeno atraso para garantir que os cookies sejam definidos adequadamente
         setTimeout(() => {
-          // Redireciona para o dashboard após registro bem-sucedido
+        // Redireciona para o dashboard após registro bem-sucedido
           window.location.href = '/dashboard';
         }, 300);
       } else {

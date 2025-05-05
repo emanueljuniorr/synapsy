@@ -142,8 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      // Obter o token ID do usuário
-      const idToken = await firebaseUser.getIdToken();
+      // Obter o token ID do usuário com força de atualização
+      const idToken = await firebaseUser.getIdToken(true);
       
       // Chamar a API para criar o cookie de sessão
       const sessionResponse = await fetch('/api/auth/session', {
@@ -152,6 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ idToken }),
+        // Garantir que cookies sejam enviados
+        credentials: 'include'
       });
       
       if (!sessionResponse.ok) {
@@ -217,8 +219,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await signInWithPopup(auth, googleProvider);
       const firebaseUser = userCredential.user;
       
-      // Obter o token ID do usuário
-      const idToken = await firebaseUser.getIdToken();
+      // Obter o token ID do usuário com força de atualização
+      const idToken = await firebaseUser.getIdToken(true);
       
       // Chamar a API para criar o cookie de sessão
       const sessionResponse = await fetch('/api/auth/session', {
@@ -227,6 +229,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ idToken }),
+        // Garantir que cookies sejam enviados
+        credentials: 'include'
       });
       
       if (!sessionResponse.ok) {
@@ -316,10 +320,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
+      
       // Limpar token e estado antes do logout
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Limpar cookie de sessão no servidor através da API
+      const sessionResponse = await fetch('/api/auth/session', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!sessionResponse.ok) {
+        console.error('Erro ao limpar cookie de sessão:', await sessionResponse.text());
+      }
+      
+      // Fazer logout no Firebase Auth
       await signOut(auth);
+      
+      // Redirecionar para a página inicial após logout
+      window.location.href = '/';
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       throw new Error('Falha ao fazer logout.');

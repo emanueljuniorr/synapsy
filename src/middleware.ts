@@ -53,10 +53,12 @@ export async function middleware(request: NextRequest) {
   if (!isPublicRoute && !isAuthenticated) {
     debugLog('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
     const url = new URL('/auth/login', request.url);
-    url.searchParams.set('callbackUrl', request.nextUrl.pathname);
+    // Usar pathname completo como callback para evitar problemas com encode
+    url.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(url);
   }
   
+  // Verificar rotas Pro
   const isProRoute = PRO_ONLY_ROUTES.some(route => 
     pathname === route || (route.endsWith('*') && pathname.startsWith(route.slice(0, -1)))
   );
