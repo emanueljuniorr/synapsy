@@ -98,7 +98,7 @@ export default function NewSubjectPage() {
         flashcardsCount: 0,
       };
       
-      console.log("Criando matéria com dados:", subjectData);
+      //console.log("Criando matéria com dados:", subjectData);
       
       const docRef = await addDoc(collection(db, 'subjects'), subjectData);
       

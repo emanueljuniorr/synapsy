@@ -81,7 +81,7 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       
-      console.log('Buscando perfil para usuário:', userId);
+      //console.log('Buscando perfil para usuário:', userId);
       
       // Buscar dados do perfil no Firestore
       const userDocRef = doc(db, "users", userId);
@@ -106,7 +106,7 @@ export default function ProfilePage() {
       // Se o documento do usuário existir, obter informações de lá
       if (userDocSnap.exists()) {
         const userDocData = userDocSnap.data();
-        console.log('Dados do perfil encontrados:', userDocData);
+        //console.log('Dados do perfil encontrados:', userDocData);
         
         // Atualizar os dados do perfil com os dados do documento
         userData.createdAt = userDocData.createdAt || null;
@@ -149,7 +149,7 @@ export default function ProfilePage() {
       try {
         // Buscar estatísticas das coleções
         // 1. Tarefas completadas
-        console.log('Buscando tarefas completadas para:', userId);
+        //console.log('Buscando tarefas completadas para:', userId);
         const tasksQuery = query(
           collection(db, "tasks"),
           where("userId", "==", userId),
@@ -165,7 +165,7 @@ export default function ProfilePage() {
         console.log(`Encontradas ${tasksSnapshot.size} tarefas completadas`);
         
         // 2. Notas criadas
-        console.log('Buscando notas para:', userId);
+        //console.log('Buscando notas para:', userId);
         const notesQuery = query(
           collection(db, "notes"),
           where("userId", "==", userId)
@@ -175,7 +175,7 @@ export default function ProfilePage() {
         console.log(`Encontradas ${notesSnapshot.size} notas`);
         
         // 3. Tempo de estudo (soma de todas as sessões de foco)
-        console.log('Buscando sessões de foco para:', userId);
+        //console.log('Buscando sessões de foco para:', userId);
         const focusQuery = query(
           collection(db, "focusSessions"),
           where("userId", "==", userId)
@@ -191,7 +191,7 @@ export default function ProfilePage() {
         console.log(`Tempo total de estudo: ${userData.stats.studyTime} minutos`);
         
         // 4. Streak (dias consecutivos de atividade)
-        console.log('Calculando streak para:', userId);
+        //console.log('Calculando streak para:', userId);
         try {
           // Uma implementação simples baseada nas sessões de foco dos últimos 30 dias
           const thirtyDaysAgo = new Date();
@@ -246,7 +246,7 @@ export default function ProfilePage() {
       
       // Atualizar estado com os dados coletados
       setUserProfile(userData);
-      console.log('Perfil carregado com sucesso:', userData);
+      //console.log('Perfil carregado com sucesso:', userData);
       
     } catch (err) {
       console.error('Erro ao buscar perfil:', err);

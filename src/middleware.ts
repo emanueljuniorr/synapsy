@@ -45,11 +45,27 @@ export async function middleware(request: NextRequest) {
   
   debugLog(`Rota: ${pathname}, Autenticado: ${isAuthenticated}, Rota pública: ${isPublicRoute}, Rota de auth: ${isAuthRoute}`);
   
+  // Se o usuário está autenticado e tenta acessar uma rota de auth, redirecionar para dashboard
   if (isAuthRoute && isAuthenticated) {
     debugLog('Usuário já autenticado acessando rota de auth, redirecionando para dashboard');
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
+  // Verificar se a URL tem um parâmetro de callbackUrl
+  const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
+  debugLog(`Parâmetro callbackUrl: ${callbackUrl}`);
+  
+  // Se o usuário chegou em um callback após login bem-sucedido, redirecionar para a URL de callback
+  if (pathname === '/dashboard' && callbackUrl && isAuthenticated) {
+    debugLog(`Redirecionando para callbackUrl: ${callbackUrl}`);
+    // Verificar se o callback é uma URL absoluta (externa) ou relativa
+    const redirectUrl = callbackUrl.startsWith('http') 
+      ? callbackUrl 
+      : new URL(callbackUrl, request.url).toString();
+    return NextResponse.redirect(redirectUrl);
+  }
+  
+  // Se não estiver autenticado e tentar acessar uma rota protegida, redirecionar para login
   if (!isPublicRoute && !isAuthenticated) {
     debugLog('Usuário não autenticado tentando acessar rota protegida, redirecionando para login');
     const url = new URL('/auth/login', request.url);

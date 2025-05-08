@@ -18,17 +18,19 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
     };
 
     return (
-      <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : '')}>
+      <div className={cn('mb-4 flex flex-col gap-1.5', fullWidth ? 'w-full' : '')}>
         {label && (
-          <label className="text-sm font-medium text-foreground/80">{label}</label>
+          <label className="text-sm font-medium text-foreground/80 mb-1">{label}</label>
         )}
 
         <div className="relative">
           <input
             type={showPassword ? 'text' : 'password'}
             className={cn(
-              'w-full px-3 py-2 bg-background border border-neutral/30 rounded-lg text-foreground placeholder:text-foreground/50',
+              'w-full px-3 py-2',
+              'bg-background/30 border border-white/10 rounded-lg text-white',
               'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
+              'placeholder:text-white/50 transition-colors',
               error ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : '',
               className
             )}
@@ -38,7 +40,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
             onClick={togglePasswordVisibility}
             tabIndex={-1}
           >

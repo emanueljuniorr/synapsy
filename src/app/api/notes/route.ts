@@ -4,7 +4,7 @@ export const runtime = 'nodejs';
 import { NextResponse, NextRequest } from 'next/server';
 import { hasReachedNotesLimit } from '@/lib/subscription';
 import { getAuth } from 'firebase-admin/auth';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase-admin-init';
 import { getToken } from 'next-auth/jwt';
 
 export async function POST(request: Request) {

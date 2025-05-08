@@ -177,156 +177,126 @@ export default function StudyPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Elementos decorativos espaciais */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-1/4 w-2 h-2 bg-primary rounded-full animate-twinkle" />
-          <div className="absolute top-40 right-1/3 w-1 h-1 bg-primary rounded-full animate-twinkle delay-100" />
-          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-primary rounded-full animate-twinkle delay-200" />
-        </div>
-
-        <div className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Cabeçalho com gradiente e efeito de vidro */}
-          <div className="relative mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
-            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-                  <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent flex items-center">
-                    <BrainCircuit className="mr-3 h-8 w-8" />
+      <div className="mx-auto px-2 sm:px-4">
+        {/* Header com gradiente e efeito de vidro */}
+        <div className="relative mb-3 sm:mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
+          <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-6">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                 Estudos
               </h1>
-              <p className="text-foreground/60 mt-1">
-                    Gerencie suas matérias e flashcards com repetição espaçada
-              </p>
+              <Link
+                href="/study/new"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-primary/80 hover:bg-primary text-white rounded-xl transition-all duration-300 backdrop-blur-lg text-xs sm:text-base"
+              >
+                <Plus size={16} className="sm:text-lg" />
+                <span>Nova Matéria</span>
+              </Link>
             </div>
-                <Button
-                  onClick={() => router.push('/study/new')}
-              className="group relative px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 flex items-center gap-2"
-            >
-                  <Plus className="w-5 h-5" />
-              <span>Nova Matéria</span>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
-                </Button>
-          </div>
-          
-              <div className="relative mt-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
-                <Input
-                  type="text"
-                  placeholder="Buscar matérias..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-300"
-                />
-              </div>
+            
+            <div className="relative mt-3 sm:mt-6">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+              <input
+                type="text"
+                placeholder="Buscar matérias..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-300 text-sm"
+              />
             </div>
           </div>
-          
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-              <p className="text-lg font-medium text-foreground/70">Carregando matérias...</p>
-            </div>
-          ) : filteredSubjects.length === 0 ? (
-            <Card className="p-6 text-center border border-white/10 backdrop-blur-lg bg-white/5">
-              <h2 className="text-xl font-medium mb-4">Nenhuma matéria encontrada</h2>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery ? "Tente usar termos diferentes na busca" : "Adicione sua primeira matéria para começar a estudar com repetição espaçada."}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => router.push('/study/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Matéria
-                </Button>
-              )}
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSubjects.map(subject => (
-                <Card 
-                  key={subject.id}
-                  className="p-5 h-full cursor-pointer hover:shadow-md transition-shadow bg-white/5 border border-white/10 backdrop-blur-lg"
-                  onClick={(e) => {
-                    // Garantir que o clique no card não seja afetado pelo botão
-                    if (!(e.target as HTMLElement).closest('button')) {
-                      router.push(`/study/${subject.id}`);
-                    }
-                  }}
-                >
-                  <div className="flex items-center mb-4">
-                    <div 
-                      className={cn(
-                        "w-3 h-10 rounded-sm mr-3",
-                      )}
-                      style={{ backgroundColor: subject.color }}
-                    />
-                    <div>
-                      <h2 className="text-xl font-medium">{subject.name}</h2>
-                      {subject.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {subject.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm">
-                      <p>
-                        <span className="font-medium text-primary">{subject.dueFlashcards}</span>
-                        {' '}para revisar hoje
-                      </p>
-                      <p className="text-muted-foreground">
-                        Total: {subject.totalFlashcards} flashcards
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {subject.dueFlashcards > 0 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="flex items-center"
-                          onClick={(e) => {
-                            e.stopPropagation(); // Previne o evento de clicar no card
-                            router.push(`/study/${subject.id}/study`);
-                          }}
-                        >
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Estudar
-                        </Button>
-                      )}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex items-center text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Previne o evento de clicar no card
-                          handleDeleteSubject(subject.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          {/* Diálogo de confirmação para exclusão */}
-          <ConfirmationDialog
-            isOpen={isDeleteDialogOpen}
-            title="Excluir Matéria"
-            message="Tem certeza que deseja excluir esta matéria? Todos os flashcards associados também serão excluídos. Esta ação não pode ser desfeita."
-            confirmLabel="Excluir"
-            isDestructive={true}
-            isSubmitting={isDeleting}
-            onConfirm={confirmDeleteSubject}
-            onCancel={cancelDeleteSubject}
-          />
         </div>
+          
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : filteredSubjects.length === 0 ? (
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-2xl blur-3xl" />
+            <div className="relative bg-background/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-12 flex flex-col items-center justify-center text-white/60">
+              <p className="text-lg sm:text-xl mb-2">Nenhuma matéria encontrada</p>
+              <p className="text-xs sm:text-sm">
+                {searchQuery
+                  ? 'Tente usar termos diferentes na busca'
+                  : 'Comece criando uma nova matéria'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredSubjects.map(subject => (
+              <Card 
+                key={subject.id}
+                className="p-4 h-full cursor-pointer hover:shadow-md transition-shadow bg-white/5 border border-white/10 backdrop-blur-lg"
+                onClick={(e) => {
+                  // Evitar que o clique no botão de excluir navegue para a matéria
+                  if ((e.target as HTMLElement).closest('.delete-button')) return;
+                  router.push(`/study/${subject.id}`);
+                }}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-base md:text-lg font-bold" style={{ color: subject.color }}>
+                    {subject.name}
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="delete-button h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSubject(subject.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {subject.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                    {subject.description}
+                  </p>
+                )}
+                
+                <div className="flex mt-auto pt-3 border-t border-white/10">
+                  <div className="text-xs md:text-sm">
+                    <span className="text-muted-foreground">Total: </span>
+                    <span className="font-medium">{subject.totalFlashcards} flashcards</span>
+                  </div>
+                  <div className="ml-auto text-xs md:text-sm">
+                    <span className="text-muted-foreground">Para revisar: </span>
+                    <span className={cn("font-medium", subject.dueFlashcards > 0 ? "text-amber-500" : "text-green-500")}>
+                      {subject.dueFlashcards}
+                    </span>
+                  </div>
+                </div>
+                
+                {subject.dueFlashcards > 0 && (
+                  <Link 
+                    href={`/study/${subject.id}/study`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="block mt-3 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary-foreground p-2 rounded-md text-center text-sm transition-colors"
+                  >
+                    <BookOpen className="h-4 w-4 inline-block mr-1 opacity-80" />
+                    Estudar agora
+                  </Link>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <ConfirmationDialog
+          isOpen={isDeleteDialogOpen}
+          title="Excluir Matéria"
+          message="Tem certeza que deseja excluir esta matéria? Todos os flashcards associados também serão excluídos. Esta ação não pode ser desfeita."
+          confirmLabel="Excluir"
+          isDestructive={true}
+          isSubmitting={isDeleting}
+          onConfirm={confirmDeleteSubject}
+          onCancel={cancelDeleteSubject}
+        />
       </div>
     </MainLayout>
   );

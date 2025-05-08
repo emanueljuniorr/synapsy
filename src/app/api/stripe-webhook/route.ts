@@ -1,3 +1,9 @@
+// Configuração para usar o runtime do Node.js em vez do runtime Edge
+export const runtime = 'nodejs';
+
+// Para permitir solicitações POST e garantir que cada solicitação é processada
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { db } from '@/lib/firebase';
@@ -8,25 +14,36 @@ let stripe: Stripe | null = null;
 
 // Tentar inicializar o Stripe apenas se a chave estiver definida
 try {
-  const stripeKey = process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY;
+  const stripeKey = process.env.NEXT_STRIPE_SECRET_KEY;
   if (stripeKey) {
     stripe = new Stripe(stripeKey, {
       apiVersion: '2025-03-31.basil',
     });
-    console.log('Stripe inicializado com sucesso no webhook');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Stripe inicializado com sucesso no webhook');
+    }
   } else {
-    console.warn('Chave da API Stripe não encontrada nas variáveis de ambiente (webhook)');
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Chave da API Stripe não encontrada nas variáveis de ambiente (webhook)');
+    }
   }
 } catch (error) {
-  console.error('Erro ao inicializar Stripe no webhook:', error);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Erro ao inicializar Stripe no webhook:', error);
+  }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("Webhook da Stripe recebido");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Webhook da Stripe recebido");
+    }
     
     // Verificar se o Stripe foi inicializado corretamente
     if (!stripe) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Stripe não inicializado, não é possível processar webhook');
+      }
       return new NextResponse(
         JSON.stringify({ error: 'Serviço de pagamento não disponível. Chave da API Stripe não configurada.' }),
         { 
@@ -41,7 +58,9 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('stripe-signature') as string;
 
     if (!signature) {
-      console.error('Assinatura do webhook não fornecida');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Assinatura do webhook não fornecida');
+      }
       return new NextResponse(
         JSON.stringify({ error: 'Assinatura do webhook não fornecida' }),
         { status: 400 }
@@ -51,7 +70,9 @@ export async function POST(req: NextRequest) {
     // Verificar se o segredo do webhook está configurado
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error('Segredo do webhook da Stripe não configurado');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Segredo do webhook da Stripe não configurado');
+      }
       return new NextResponse(
         JSON.stringify({ error: 'Webhook não configurado corretamente' }),
         { status: 500 }
@@ -68,14 +89,18 @@ export async function POST(req: NextRequest) {
         webhookSecret
       );
     } catch (err: any) {
-      console.error(`Erro de assinatura do webhook: ${err.message}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Erro de assinatura do webhook: ${err.message}`);
+      }
       return new NextResponse(
         JSON.stringify({ error: `Erro de assinatura do webhook: ${err.message}` }),
         { status: 400 }
       );
     }
 
-    console.log(`Evento processado: ${event.type}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Evento processado: ${event.type}`);
+    }
 
     // Primeiro retornamos uma resposta 200 para a Stripe imediatamente
     // Isso evita timeouts e problemas de conexão
@@ -83,7 +108,9 @@ export async function POST(req: NextRequest) {
     
     // Iniciar processamento do evento de forma assíncrona, sem aguardar
     processStripeEvent(event).catch(error => {
-      console.error('Erro ao processar evento da Stripe:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao processar evento da Stripe:', error);
+      }
     });
 
     // Retornar sucesso imediatamente
@@ -92,7 +119,9 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erro ao processar webhook:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro ao processar webhook:', error);
+    }
     return new NextResponse(
       JSON.stringify({ error: 'Erro interno do servidor' }),
       { status: 500 }
@@ -104,7 +133,9 @@ export async function POST(req: NextRequest) {
 async function processStripeEvent(event: Stripe.Event) {
   try {
     if (!stripe || !db) {
-      console.error('Stripe ou Firestore não inicializados');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Stripe ou Firestore não inicializados');
+      }
       return;
     }
     
@@ -134,8 +165,9 @@ async function processStripeEvent(event: Stripe.Event) {
         console.log(`Evento não tratado: ${event.type}`);
     }
   } catch (error) {
-    console.error(`Erro ao processar evento ${event.type}:`, error);
-    // Apenas registramos o erro, não retornamos nada, pois a resposta já foi enviada
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Erro ao processar evento ${event.type}:`, error);
+    }
   }
 }
 
@@ -143,19 +175,25 @@ async function processStripeEvent(event: Stripe.Event) {
 async function handleCheckoutSessionCompleted(event: Stripe.Event) {
   const session = event.data.object as Stripe.Checkout.Session;
   
-  console.log("Checkout completado:", session.id);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Checkout completado:", session.id);
+  }
   
   // Extrair userId do metadata
   const userId = session.metadata?.userId;
   
   if (!userId) {
-    console.error('ID do usuário não encontrado nos metadados da sessão');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ID do usuário não encontrado nos metadados da sessão');
+    }
     return;
   }
 
   // Verificar se a assinatura foi paga
   if (session.payment_status === 'paid') {
-    console.log(`Pagamento confirmado para usuário: ${userId}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Pagamento confirmado para usuário: ${userId}`);
+    }
     
     // Atualizar o usuário no Firestore com o plano Pro
     const userRef = doc(db, 'users', userId);
@@ -178,9 +216,13 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
         updatedAt: serverTimestamp()
       });
 
-      console.log(`Plano Pro ativado para o usuário: ${userId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Plano Pro ativado para o usuário: ${userId}`);
+      }
     } else {
-      console.error(`Usuário não encontrado: ${userId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Usuário não encontrado: ${userId}`);
+      }
     }
   }
 }
@@ -188,7 +230,9 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
 // Função para lidar com o evento de subscription.updated
 async function handleSubscriptionUpdated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
-  console.log("Assinatura atualizada:", subscription.id);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Assinatura atualizada:", subscription.id);
+  }
   
   // Encontrar o usuário com este ID de assinatura
   const usersRef = collection(db, 'users');
@@ -196,7 +240,9 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
   const querySnapshot = await getDocs(q);
   
   if (querySnapshot.empty) {
-    console.log(`Nenhum usuário encontrado com a assinatura: ${subscription.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Nenhum usuário encontrado com a assinatura: ${subscription.id}`);
+    }
     return;
   }
   
@@ -220,7 +266,9 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
         updatedAt: serverTimestamp()
       });
       
-      console.log(`Assinatura ativa atualizada para o usuário: ${userId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Assinatura ativa atualizada para o usuário: ${userId}`);
+      }
     } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
       await updateDoc(userRef, {
         'plan.active': false,
@@ -228,7 +276,9 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
         updatedAt: serverTimestamp()
       });
       
-      console.log(`Assinatura marcada como inativa para o usuário: ${userId} (status: ${subscription.status})`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Assinatura marcada como inativa para o usuário: ${userId} (status: ${subscription.status})`);
+      }
     }
   });
   
@@ -238,7 +288,9 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
 // Função para lidar com o evento de subscription.deleted
 async function handleSubscriptionDeleted(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
-  console.log("Assinatura cancelada:", subscription.id);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Assinatura cancelada:", subscription.id);
+  }
   
   // Encontrar o usuário com este ID de assinatura
   const usersRef = collection(db, 'users');
@@ -246,7 +298,9 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
   const querySnapshot = await getDocs(q);
   
   if (querySnapshot.empty) {
-    console.log(`Nenhum usuário encontrado com a assinatura: ${subscription.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Nenhum usuário encontrado com a assinatura: ${subscription.id}`);
+    }
     return;
   }
   
@@ -264,7 +318,9 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
       updatedAt: serverTimestamp()
     });
     
-    console.log(`Plano alterado para Free para o usuário: ${userId}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Plano alterado para Free para o usuário: ${userId}`);
+    }
   });
   
   await Promise.all(updatePromises);
@@ -273,11 +329,15 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
 // Função para lidar com o evento de invoice.payment_succeeded
 async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
   const invoice = event.data.object as Stripe.Invoice;
-  console.log("Pagamento de fatura bem-sucedido:", invoice.id);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Pagamento de fatura bem-sucedido:", invoice.id);
+  }
   
   // Verificar se esta fatura está associada a uma assinatura
   if (!invoice.subscription) {
-    console.log("Fatura não associada a uma assinatura.");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Fatura não associada a uma assinatura.");
+    }
     return;
   }
   
@@ -287,7 +347,9 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
   const querySnapshot = await getDocs(q);
   
   if (querySnapshot.empty) {
-    console.log(`Nenhum usuário encontrado com a assinatura: ${invoice.subscription}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Nenhum usuário encontrado com a assinatura: ${invoice.subscription}`);
+    }
     return;
   }
   
@@ -308,7 +370,9 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
       updatedAt: serverTimestamp()
     });
     
-    console.log(`Assinatura renovada para o usuário: ${userId}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Assinatura renovada para o usuário: ${userId}`);
+    }
   });
   
   await Promise.all(updatePromises);
@@ -317,11 +381,15 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
 // Função para lidar com o evento de invoice.payment_failed
 async function handleInvoicePaymentFailed(event: Stripe.Event) {
   const invoice = event.data.object as Stripe.Invoice;
-  console.log("Falha no pagamento de fatura:", invoice.id);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Falha no pagamento de fatura:", invoice.id);
+  }
   
   // Verificar se esta fatura está associada a uma assinatura
   if (!invoice.subscription) {
-    console.log("Fatura não associada a uma assinatura.");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Fatura não associada a uma assinatura.");
+    }
     return;
   }
   
@@ -331,7 +399,9 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
   const querySnapshot = await getDocs(q);
   
   if (querySnapshot.empty) {
-    console.log(`Nenhum usuário encontrado com a assinatura: ${invoice.subscription}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Nenhum usuário encontrado com a assinatura: ${invoice.subscription}`);
+    }
     return;
   }
   
@@ -346,14 +416,10 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
       updatedAt: serverTimestamp()
     });
     
-    console.log(`Status de pagamento atualizado para o usuário: ${userId}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Status de pagamento atualizado para o usuário: ${userId}`);
+    }
   });
   
   await Promise.all(updatePromises);
 }
-
-// Para permitir solicitações POST e garantir que cada solicitação é processada
-export const dynamic = 'force-dynamic';
-
-// Configuração para usar o runtime do Node.js em vez do runtime Edge
-export const runtime = 'nodejs'; 

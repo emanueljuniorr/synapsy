@@ -22,6 +22,44 @@ const nextConfig = {
   output: 'standalone',
   // Pacotes externos para componentes de servidor
   serverExternalPackages: ['firebase-admin'],
+  
+  // Configurações de headers de segurança
+  async headers() {
+    return [
+      {
+        // Aplicar aos headers para todas as rotas
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
+  
+  // Configuração do cookie para ambiente de produção
+  experimental: {
+    serverComponentsExternalPackages: ['firebase-admin'],
+  },
+  
   // Configuração para resolver problemas com arquivos JSON nas dependências
   webpack: (config, { isServer }) => {
     // Adicionar polyfills para módulos Node.js nativos

@@ -240,18 +240,12 @@ export default function Home() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
-                  Calendário básico
-                </li>
-                <li className="flex items-center gap-2 text-sm sm:text-base">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
                   Limite de 50 notas
                 </li>
               </ul>
               
               <Link href="/auth/register" className="block text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm sm:text-base">
-                Começar grátis
+                Começar gratuitamente
               </Link>
             </div>
             
@@ -262,7 +256,7 @@ export default function Home() {
               </div>
               <div className="text-center mb-4 sm:mb-6">
                 <h3 className="text-lg sm:text-xl font-bold">Pro</h3>
-                <div className="mt-2 text-2xl sm:text-3xl font-bold">R$ 19,90</div>
+                <div className="mt-2 text-2xl sm:text-3xl font-bold">R$ 12,90</div>
                 <div className="text-xs sm:text-sm text-foreground/60">por mês</div>
               </div>
               
@@ -283,19 +277,13 @@ export default function Home() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
-                  Gráficos de conhecimento
+                  Flashcards e revisão espaçada ilimitadas
                 </li>
                 <li className="flex items-center gap-2 text-sm sm:text-base">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
-                  Flashcards e revisão espaçada
-                </li>
-                <li className="flex items-center gap-2 text-sm sm:text-base">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  Temas personalizados
+                  Suporte prioritário
                 </li>
               </ul>
               
@@ -311,7 +299,7 @@ export default function Home() {
               </div>
               <div className="text-center mb-4 sm:mb-6 mt-2">
                 <h3 className="text-lg sm:text-xl font-bold">Teams</h3>
-                <div className="mt-2 text-2xl sm:text-3xl font-bold">R$ 49,90</div>
+                <div className="mt-2 text-2xl sm:text-3xl font-bold">R$ 29,90</div>
                 <div className="text-xs sm:text-sm text-foreground/60">por mês, até 5 membros</div>
               </div>
               
@@ -375,7 +363,7 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Orbiting planets decoration - ajustados para melhor responsividade */}
+      {/* Orbiting planets decoration */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
         <div className="absolute w-[300px] sm:w-[400px] md:w-[600px] h-[300px] sm:h-[400px] md:h-[600px] rounded-full border border-primary/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="absolute w-2 sm:w-3 md:w-4 h-2 sm:h-3 md:h-4 bg-primary rounded-full left-0 top-1/2 -translate-y-1/2 animate-orbit"></div>

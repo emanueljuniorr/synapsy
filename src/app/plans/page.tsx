@@ -149,15 +149,15 @@ function PlansPageContent() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>Tarefas básicas</span>
+                  <span>Gerenciamento básico de tarefas</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>Notas limitadas</span>
+                  <span>Anotações em Markdown</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>Timer de foco</span>
+                  <span>Recursos básicos</span>
                 </li>
               </ul>
             </CardContent>
@@ -174,12 +174,12 @@ function PlansPageContent() {
 
           {/* Plano Pro */}
           <Card className="bg-gradient-to-br from-primary/5 to-accent/5 backdrop-blur-lg border border-white/20 hover:border-primary/40 transition-colors relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-accent/80 text-white px-4 py-1 rounded-bl-lg text-sm font-medium">
+            <div className="absolute top-0 right-0 bg-purple-700 text-white px-4 py-1 rounded-bl-lg text-sm font-medium">
               Recomendado
             </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl font-bold">Plano Pro</CardTitle>
-              <div className="text-3xl font-bold mt-2">R$ 29,90<span className="text-sm font-normal text-foreground/60">/mês</span></div>
+              <div className="text-3xl font-bold mt-2">R$ 12,90<span className="text-sm font-normal text-foreground/60">/mês</span></div>
               <p className="text-foreground/60 text-sm">Acesso ilimitado a todos os recursos</p>
             </CardHeader>
             <CardContent className="pb-4">

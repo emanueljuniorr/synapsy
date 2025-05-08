@@ -1,0 +1,52 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Funções auxiliares para verificação
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Permitir leitura para usuários autenticados de forma geral (pode ajudar no desenvolvimento)
+    // Em produção, você pode querer remover esta regra e ser mais específico
+    match /{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Bloqueamos escrita global e especificamos exceções abaixo
+    }
+    
+    // Pasta de avatares de usuários
+    match /users/{userId}/avatar/{fileName} {
+      allow read: if isAuthenticated(); // Qualquer usuário autenticado pode ler avatares
+      allow write: if isOwner(userId);  // Apenas o próprio usuário pode fazer upload
+    }
+    
+    // Pasta de anexos de notas
+    match /notes/{userId}/{noteId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+    
+    // Pasta de imagens de flashcards
+    match /flashcards/{userId}/{subjectId}/{flashcardId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+    
+    // Pasta para uploads temporários - permitir uploads, mas com segurança
+    match /uploads/{userId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && 
+                    request.resource.size < 10 * 1024 * 1024 && // Limitar tamanho para 10MB
+                    request.resource.contentType.matches('image/.*'); // Permitir apenas imagens
+    }
+    
+    // Arquivos públicos (se necessário)
+    match /public/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Bloquear escrita em arquivos públicos
+    }
+  }
+} 

@@ -831,7 +831,33 @@ export async function checkSubscription(userId: string): Promise<{
           const expirationDate = plan.expirationDate.toDate ? 
             plan.expirationDate.toDate() : new Date(plan.expirationDate);
           
-          const isActive = expirationDate > new Date() && plan.active === true;
+          // Verificar explicitamente a data atual com a data de expiração
+          const now = new Date();
+          const isActive = expirationDate > now && plan.active === true;
+          
+          console.log('Verificação de assinatura:', {
+            expirationDate,
+            now,
+            isActive,
+            planActive: plan.active
+          });
+          
+          // Se a assinatura expirou, atualizar o plano para Free
+          if (expirationDate <= now && plan.active === true) {
+            //console.log(`Assinatura expirada para usuário ${userId}. Atualizando para plano Free`);
+            await updateDoc(userRef, {
+              'plan.name': 'Free',
+              'plan.active': false,
+              'plan.statusMessage': 'Assinatura expirada',
+              updatedAt: serverTimestamp()
+            });
+            
+            return {
+              isActive: false,
+              plan: 'Free',
+              expirationDate: null
+            };
+          }
           
           return {
             isActive,
@@ -872,7 +898,7 @@ export async function createCheckoutSession(userId: string, origin: string): Pro
     }
     
     // Usar a variável de ambiente pública para o ID do preço
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_SUBSCRIPTION_ID || "price_1RC6h0I1nDwEIRblgGnj685D";
+    const priceId = process.env.NEXT_STRIPE_PRICE_ID;
     
     // Chamar a API de checkout para criar uma sessão do Stripe
     const response = await fetch(`${origin}/api/checkout`, {
@@ -899,6 +925,6 @@ export async function createCheckoutSession(userId: string, origin: string): Pro
     return data.url;
   } catch (error) {
     console.error('Erro ao criar sessão de checkout:', error);
-    throw new Error('Não foi possível iniciar o processo de pagamento');
+    throw error; // Propagar o erro para poder ser tratado pelo chamador
   }
 }

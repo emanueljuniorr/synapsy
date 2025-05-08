@@ -2,8 +2,8 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@/lib/firebase-admin';
-import { db } from '@/lib/firebase-admin';
+import { getAuth } from '@/lib/firebase-admin-init';
+import { db } from '@/lib/firebase-admin-init';
 
 // Não é mais necessário inicializar Firebase Admin aqui, pois já é inicializado em firebase-admin.ts
 // quando o arquivo é importado
