@@ -83,10 +83,14 @@ export async function middleware(request: NextRequest) {
   // O middleware apenas garante que o usuário está autenticado
   if (isProRoute && isAuthenticated) {
     debugLog('Rota requer plano Pro, usuário autenticado. Verificação será feita no cliente.');
-    return NextResponse.next();
+    return NextResponse.next({
+      headers: new Headers(request.headers)
+    });
   }
   
-  return NextResponse.next();
+  return NextResponse.next({
+    headers: new Headers(request.headers)
+  });
 }
 
 export const config = {

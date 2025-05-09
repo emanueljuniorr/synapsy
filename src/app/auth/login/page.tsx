@@ -75,15 +75,18 @@ function LoginForm() {
 
   // Função para lidar com redirecionamento após login bem-sucedido
   const handleRedirect = () => {
-    // Verificar se o callback é uma URL externa (começa com http)
-    if (callbackUrl.startsWith('http')) {
-      // Para URLs externas, usar window.location.href para garantir navegação completa
-      window.location.href = callbackUrl;
-    } else {
-      // Para URLs internas da aplicação, usar window.location para força um recarregamento completo
-      // Isso garante que os cookies sejam aplicados corretamente
-      window.location.href = callbackUrl;
-    }
+    // Pequeno atraso para garantir que os cookies sejam totalmente processados
+    setTimeout(() => {
+      // Verificar se o callback é uma URL externa (começa com http)
+      if (callbackUrl.startsWith('http')) {
+        // Para URLs externas, usar window.location.href para garantir navegação completa
+        window.location.href = callbackUrl;
+      } else {
+        // Para URLs internas da aplicação, usar window.location para forçar um recarregamento completo
+        // Isso garante que os cookies sejam aplicados corretamente
+        window.location.href = callbackUrl;
+      }
+    }, 300); // 300ms de atraso antes do redirecionamento
   };
   
   // Redirecionar para o dashboard ou callbackUrl se já estiver autenticado

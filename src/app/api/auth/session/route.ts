@@ -119,8 +119,13 @@ export async function POST(request: NextRequest) {
         secure: true,
         maxAge: SESSION_EXPIRATION_TIME / 1000, // Converter para segundos
         path: '/',
-        sameSite: 'lax',
+        sameSite: 'lax', // 'none' para permitir solicitações cross-site
       });
+      
+      // Obter o domínio da solicitação para uso no cabeçalho Set-Cookie
+      //const domain = process.env.VERCEL_URL ? `.${process.env.VERCEL_URL}` : undefined;
+      //const cookieString = `session=${sessionCookie}; HttpOnly; Secure; SameSite=None; Max-Age=${SESSION_EXPIRATION_TIME / 1000}; Path=/` + 
+      //                        (domain ? `; Domain=${domain}` : '');
       
       return new NextResponse(
         JSON.stringify({ 
@@ -129,7 +134,10 @@ export async function POST(request: NextRequest) {
         }),
         { 
           status: 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 
+            'Content-Type': 'application/json'
+            //]'Set-Cookie': cookieString
+          }
         }
       );
     } catch (authError: any) {
