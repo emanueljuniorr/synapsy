@@ -53,8 +53,15 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="seu-measurement-id"`}
             <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
               <li>No console do Firebase, vá para Configurações do Projeto > Contas de serviço</li>
               <li>Clique em "Gerar nova chave privada"</li>
-              <li>Salve o arquivo JSON gerado na pasta <code className="bg-muted px-1 py-0.5 rounded">src/lib/</code> do seu projeto</li>
-              <li>Certifique-se de que o nome do arquivo corresponde ao especificado em <code className="bg-muted px-1 py-0.5 rounded">firebase-admin-init.ts</code></li>
+              <li>Baixe o arquivo JSON gerado</li>
+              <li>Remova as quebras de linha do conteúdo do arquivo JSON (mantenha os caracteres \n no campo private_key)</li>
+              <li>Adicione o conteúdo como uma variável de ambiente chamada <code className="bg-muted px-1 py-0.5 rounded">FIREBASE_SERVICE_ACCOUNT_KEY</code> no seu arquivo <code className="bg-muted px-1 py-0.5 rounded">.env.local</code></li>
+              <li>
+                Use aspas simples para envolver o valor JSON:
+                <div className="bg-muted p-3 rounded-md text-sm font-mono mt-2">
+                  FIREBASE_SERVICE_ACCOUNT_KEY=&apos;{"conteúdo-do-seu-arquivo-json-sem-quebras-de-linha"}&apos;
+                </div>
+              </li>
             </ol>
           </div>
           

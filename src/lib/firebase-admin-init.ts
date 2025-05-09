@@ -2,8 +2,6 @@
 export const runtime = 'nodejs';
 
 import * as admin from 'firebase-admin';
-import { join } from 'path';
-import * as fs from 'fs';
 
 // Função para inicializar o Firebase Admin
 export function initAdmin(): admin.app.App | null {
@@ -13,13 +11,13 @@ export function initAdmin(): admin.app.App | null {
   }
   
   try {
-    // Caminho para o arquivo de credenciais
-    const serviceAccountPath = join(process.cwd(), 'src', 'lib', 'synapsy-app-firebase-adminsdk-fbsvc-72e1d0286c.json');
-    
-    if (fs.existsSync(serviceAccountPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    // Verificar se a variável de ambiente está disponível
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      // Parsear a credencial da variável de ambiente
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      
       if (process.env.NODE_ENV === 'development') {
-        console.log('Credenciais do Firebase Admin carregadas com sucesso');
+        console.log('Credenciais do Firebase Admin carregadas com sucesso da variável de ambiente');
       }
       
       const app = admin.initializeApp({
@@ -33,7 +31,7 @@ export function initAdmin(): admin.app.App | null {
       return app;
     } else {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Arquivo de credenciais não encontrado em:', serviceAccountPath);
+        console.error('Variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY não encontrada');
       }
       return null;
     }
@@ -60,7 +58,7 @@ export const getAuth = () => app ? app.auth() : null;
 // Funções utilitárias para o Firebase Admin
 export async function verifyToken(token: string) {
   if (!app) {
-    throw new Error('Firebase Admin não inicializado. Verifique se o arquivo de credenciais existe.');
+    throw new Error('Firebase Admin não inicializado. Verifique se a variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY está configurada.');
   }
   
   try {
@@ -74,7 +72,7 @@ export async function verifyToken(token: string) {
 
 export async function getUserById(uid: string) {
   if (!app) {
-    throw new Error('Firebase Admin não inicializado. Verifique se o arquivo de credenciais existe.');
+    throw new Error('Firebase Admin não inicializado. Verifique se a variável de ambiente FIREBASE_SERVICE_ACCOUNT_KEY está configurada.');
   }
   
   try {
