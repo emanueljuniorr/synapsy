@@ -52,11 +52,8 @@ function Header({ isSidebarOpen, onToggleSidebar, isDashboardRoute }: HeaderProp
               <Link href="/#features" className="text-sm hover:text-primary transition-colors">
                 Recursos
               </Link>
-              <Link href="/#plans" className="text-sm hover:text-primary transition-colors">
+              <Link href="/#pricing" className="text-sm hover:text-primary transition-colors">
                 Planos
-              </Link>
-              <Link href="/#contact" className="text-sm hover:text-primary transition-colors">
-                Contato
               </Link>
             </nav>
           )}

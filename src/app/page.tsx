@@ -104,20 +104,6 @@ export default function Home() {
               </div>
               
               <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 px-4 sm:px-6 py-3 sm:py-4 rounded-xl max-w-[250px] sm:max-w-none">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
-                    <line x1="16" y1="8" x2="2" y2="22"></line>
-                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-semibold">Personalizado</div>
-                  <div className="text-xs sm:text-sm text-foreground/60">Adapte ao seu estilo</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 px-4 sm:px-6 py-3 sm:py-4 rounded-xl max-w-[250px] sm:max-w-none">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500">
                     <path d="M12 2v8"></path>
@@ -143,29 +129,31 @@ export default function Home() {
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
             Recursos Principais
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 max-w-5xl mx-auto">
-            <FeatureCard 
-              title="Gerenciamento de Tarefas" 
-              description="Organize suas tarefas com prioridades, datas de vencimento e categorias personalizadas."
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 11 12 14 22 4"></polyline>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-              }
-              href="/auth/login"
-            />
-            <FeatureCard 
-              title="Ferramentas de Estudo" 
-              description="Organize seus estudos por assuntos, crie flashcards e planos de estudo personalizados."
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
-              }
-              href="/auth/login"
-            />
+          <div className="w-full flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl w-full">
+              <FeatureCard 
+                title="Gerenciamento de Tarefas" 
+                description="Organize suas tarefas com prioridades, datas de vencimento e categorias personalizadas."
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  </svg>
+                }
+                href="/auth/login"
+              />
+              <FeatureCard 
+                title="Ferramentas de Estudo" 
+                description="Organize seus estudos por assuntos, crie flashcards e planos de estudo personalizados."
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                }
+                href="/auth/login"
+              />
+            </div>
           </div>
         </section>
 
@@ -313,7 +301,7 @@ export default function Home() {
               Comece a organizar sua vida agora
             </h2>
             <p className="text-base sm:text-lg text-foreground/80 mb-6 sm:mb-8">
-              Junte-se a milhares de estudantes e profissionais que já estão transformando sua produtividade com o Synapsy.
+              Junte-se e impulsione sua produtividade com o Synapsy!
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/auth/register" className="px-6 sm:px-8 py-3 sm:py-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors">
