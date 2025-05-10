@@ -136,18 +136,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            
-            <div className="mt-10 md:mt-16 text-left">
-              <h3 className="text-xl sm:text-2xl font-bold mb-3 md:mb-4">Quem Somos</h3>
-              <p className="text-base sm:text-lg text-foreground/80 mb-4 md:mb-6">
-                Somos uma equipe de desenvolvedores e entusiastas de produtividade que acredita no poder da organização para desbloquear o potencial humano. 
-                O Synapsy nasceu da nossa própria necessidade de ter um sistema integrado para gerenciar estudos, tarefas e planejamento.
-              </p>
-              <p className="text-base sm:text-lg text-foreground/80">
-                Nossa missão é criar ferramentas que realmente ajudem as pessoas a organizarem seus pensamentos, compromissos e conhecimentos, 
-                tudo em um ambiente inspirador e intuitivo que incentive o crescimento pessoal e profissional.
-              </p>
-            </div>
           </div>
         </section>
         
@@ -163,33 +151,6 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 11 12 14 22 4"></polyline>
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-              }
-              href="/auth/login"
-            />
-            <FeatureCard 
-              title="Anotações Interligadas" 
-              description="Crie anotações em Markdown com suporte a tags e conexões entre documentos."
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-              }
-              href="/auth/login"
-            />
-            <FeatureCard 
-              title="Agendamento" 
-              description="Visualize seu calendário, crie eventos recorrentes e integre com suas tarefas."
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               }
               href="/auth/login"

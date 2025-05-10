@@ -71,7 +71,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Suporte</h4>
             <ul className="space-y-2 text-sm text-foreground/70">
               <li>
-                <Link href="https://discord.gg/synapsy" className="hover:text-primary transition-colors">
+                <Link href="https://discord.gg/pwg6ERXVNq" className="hover:text-primary transition-colors">
                   Servidor do Discord
                 </Link>
               </li>
