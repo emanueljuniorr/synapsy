@@ -143,7 +143,7 @@ export default function Home() {
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
             Recursos Principais
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 max-w-5xl mx-auto">
             <FeatureCard 
               title="Gerenciamento de Tarefas" 
               description="Organize suas tarefas com prioridades, datas de vencimento e categorias personalizadas."
